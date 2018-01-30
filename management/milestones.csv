@@ -1,2 +1,16 @@
 MilestoneID,             Dependencies, EstimatedEffort, Lead,  Completed, Description
-DefineInitialMilestones,             ,               1,    ?,           , Come up with initial milestones for getting started
+DeriveManagementPlan,nil,2,yhl15,           ,Derive rough plan of project and complete milestones.csv and schedule.csv
+AttemptBasicCLexer,             LexingLab,6,vgr16,,Consider structure of C lexer and begin lexing simple C code I.e int main return 0 and most basic data types and keywords
+CompleteDecentCLexer,BasicCLexer,8,yhl15,,Complete and verify that C Lexer that is able to lex most of the functionality required. Test it with actual C code
+DesignStructureCParser,ParsingLab,3,vgr16,,Consider and design the structure of C Parser and how Bison is going to be passed the tokens from yylex()
+AttemptBasicCParser,DesignStructureCParser,8,yhl15,,Using Structure established parse individual tokens and group of syntactically correct tokens to get right AST
+NearCompletedCParser,AttemptBasicCparser,7,vgr16,,Have our parser Parse statements and chunks of code and test it against actual c code
+CtoPythonParser,NearCompletedCparser,8,yhl15,,Use Existing Lexer and parser to convert AST to python code
+TestCtoPythonParser,CtoPythonParser,8,vgr16,,Test C to python Parser and run it against testbench
+PlanCodeGenStructure,CodeGenLab,6,yhl15,,Plan Structure for Code Gen from AST to Mips Asm and have basic design layout
+StartCodeGen,PlanCodeGenStructure,8,vgr16,,Have codegen working for 30% of functionality
+DecentCodegen,StartCodeGen,8,yhl15,,Have codegen working for 50% of functionality
+WellWorkingCodegen,DecentCodegen,8,vgr16,,Codegen should work for 80% of functionality to be implemented
+Testsuiteforcomplier,StartCodeGen,8,yhl15,,Implement structure for testsuite and test the codegen with it simultaneously while developing codegen
+TestsuiteandCodegen,Testsuiteforcompiler;WellWorkingCodegen,8,vgr16,,Develop Codegen and testsuite hand in hand to attain maximum functionality of our compiler
+TieLooseEnds,TestsuiteandCodegen,8,vgr16,,Tie up loose ends and edge cases if any
