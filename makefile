@@ -1,7 +1,7 @@
 CPPFLAGS += -W -Wall -g 
 
 # This avoids error: ‘fileno’ was not declared in this scope
-CPPFLAGS += -std=c++0x
+CPPFLAGS += -std=c++11
 
 # Avoid warnings about yyunput not used
 CPPFLAGS += -Wno-unused-function -Wno-sign-compare
