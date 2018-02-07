@@ -6,33 +6,42 @@
 
 class VarType: public Node{
 private:
-    std::string type;
+    const std::string* type;
     
 public:
-    VarType(const std::string& _type)
+    VarType(const std::string* _type)
         : type(_type){}
 
     virtual void print(std::ostream& dst) const override{
-        dst<<type;
+        dst<< *type;
     }
-  
+    
+    virtual ~VarType() override{
+            delete type;
+     }
 };
 
 class VarDeclr: public Node{
 private:
     NodePtr varType;    
-    std::string declarator;
+    NodePtr identifierList;
 
 public:
-    VarDeclr(NodePtr _varType, const std::string& _declarator)
-        : varType(_varType), declarator(_declarator) {}
+    VarDeclr(NodePtr _varType, NodePtr _identifierList)
+        : varType(_varType), identifierList(_identifierList) {}
 
     virtual void print(std::ostream& dst) const override{
         varType->print(dst);
         dst << " ";
-        dst << declarator;
+        identifierList->print(dst);
         dst << ";";
     }
+    
+    virtual ~VarDeclr() override{
+        delete varType;
+        delete identifierList;
+    }
+
 };
 
 class DeclrList: public Node{
@@ -47,6 +56,11 @@ public:
     virtual void print(std::ostream& dst) const override{
         declrList->print(dst);
 	    varDeclr ->print(dst);
+    }
+    
+    virtual ~DeclrList() override{
+        delete declrList;
+        delete varDeclr;
     }
 
 };
@@ -64,25 +78,97 @@ public:
         declrList->print(dst);
 	    dst << "}";
     }
+    
+    virtual ~Block() override{
+        delete declrList;
+    }
 
 };
 
 class FunctionDef: public Node{
 private:
 	NodePtr varType;
-	std::string id;    
+	NodePtr identifier;   
 	NodePtr block;
     
 public:
-    FunctionDef(NodePtr _varType, std::string _id, NodePtr _block)
-        : varType(_varType), id(_id), block(_block) {}
+    FunctionDef(NodePtr _varType, NodePtr _identifier, NodePtr _block)
+        : varType(_varType), identifier(_identifier), block(_block) {}
 
     virtual void print(std::ostream& dst) const override{
 	    varType->print(dst);
-        dst << " " << id << "()";
+        dst << " ";
+        identifier->print(dst);
+        dst << "()";
 	    block->print(dst);
     }
-
+    
+    virtual ~FunctionDef() override{
+        delete varType;
+        delete identifier;
+        delete block;
+    }
+    
 };
 
+
+class Program: public Node{
+private:
+    NodePtr program;
+    NodePtr basicProgram;
+
+public:
+    Program(NodePtr _program, NodePtr _basicProgram)
+        :program(_program), basicProgram(_basicProgram){}
+        
+    virtual void print(std::ostream& dst) const override{
+	    program->print(dst);
+	    dst << " ";
+	    basicProgram->print(dst);
+    }
+    
+    virtual ~Program() override{
+        delete program;
+        delete basicProgram;
+    }
+};
+
+class Identifier: public Node{
+private:
+    const std::string* id;
+    
+public:
+    Identifier(const std::string* _id)
+        :id(_id){}
+        
+    virtual void print(std::ostream& dst) const override{
+        dst << *id;
+    }
+
+    virtual ~Identifier() override{
+        delete id;
+    }
+};
+
+
+class IdentifierList: public Node{
+private:
+    NodePtr identifierList;
+    NodePtr identifier;
+    
+public:
+    IdentifierList(NodePtr _identifierList, NodePtr _identifier)
+        :identifierList(_identifierList), identifier(_identifier){}
+    
+    virtual void print(std::ostream& dst) const override{
+        identifierList->print(dst);
+        dst << ", ";
+        identifier->print(dst);
+    }
+    
+    virtual ~IdentifierList() override{
+        delete identifierList;
+        delete identifier;
+    }
+};
 #endif
