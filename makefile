@@ -1,3 +1,5 @@
+INCLUDE = -I include/lexer/ -I include/ -I include/ast/ -I src/parser/
+
 CPPFLAGS += -W -Wall -g 
 
 # This avoids error: ‘fileno’ was not declared in this scope
@@ -7,11 +9,11 @@ CPPFLAGS += -std=c++11
 CPPFLAGS += -Wno-unused-function -Wno-sign-compare
 
 # Indudes paths
-CPPFLAGS += -I include/lexer
+CPPFLAGS += $(INCLUDE)
 
 all : bin/lexer bin/print_canonical
 
-src/lexer/lexer.yy.cpp : src/lexer/lexer.flex
+src/lexer/lexer.yy.cpp : src/lexer/lexer.flex src/parser/parser.tab.hpp
 	flex -o $@ $<  
 
 bin/lexer : src/lexer/lexer.yy.o src/lexer/main.o
@@ -29,4 +31,8 @@ clean :
 	-rm -r bin
 	-rm src/lexer/*.o
 	-rm src/lexer/*.yy.cpp
+	-rm src/parser/*.output
+	-rm src/parser/*.o
+	-rm src/parser/*.tab.*
+	-rm -r tests/out
 
