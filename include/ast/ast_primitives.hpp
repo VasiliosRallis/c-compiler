@@ -70,12 +70,15 @@ private:
 	NodePtr declrList;    
     
 public:
-    Block(NodePtr _declrList)
+    Block(NodePtr _declrList = NULL)
         : declrList(_declrList) {}
-
+        
     virtual void print(std::ostream& dst) const override{
 	    dst << "{";
-        declrList->print(dst);
+	    
+	    if(declrList != NULL){
+            declrList->print(dst);
+        }
 	    dst << "}";
     }
     

@@ -54,6 +54,7 @@ BASIC_PROGRAM : DECLR_LIST {$$ = $1;}
 FUNCTION_DEF : VAR_TYPE T_IDENTIFIER T_LBRACKET T_RBRACKET BLOCK {$$ = new FunctionDef($1,new Identifier($2),$5) ;}
 
 BLOCK : T_LCURLBRACKET DECLR_LIST T_RCURLBRACKET { $$ = new Block($2); }
+      | T_LCURLBRACKET T_RCURLBRACKET {$$ = new Block();}
 	
 DECLR_LIST : DECLR_LIST VARIABLE_DECLR		{ $$ = new  DeclrList($1,$2); }	
 	       | VARIABLE_DECLR				    { $$ = $1; }
