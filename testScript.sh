@@ -24,7 +24,7 @@ for i in tests/in/*.c; do
     BASENAME=$(basename $i .c);
     cat $i > tests/out/$BASENAME.c  2> tests/out/$BASENAME.stderr.txt #Must pipe the cat to the parser here
     
-    # fist test it to check if the output of the parser can even compile
+    # first test it to check if the output of the parser can even compile
     
     make tests/out/$BASENAME
     
