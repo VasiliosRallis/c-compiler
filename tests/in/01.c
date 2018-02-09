@@ -1,2 +1,1 @@
-int main(){
-return 1;}
+int a;
