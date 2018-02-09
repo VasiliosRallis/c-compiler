@@ -1,4 +1,4 @@
-#ifndef ast_primitives_hpp
+	#ifndef ast_primitives_hpp
 #define ast_primitives_hpp
 
 #include <string>
@@ -63,6 +63,32 @@ public:
         delete varDeclr;
     }
 
+};
+
+class VarInit : public Node {
+private :
+	NodePtr varType;
+	NodePtr idlist;
+	NodePtr initializer;
+
+public:
+	VarInit(NodePtr _varType, NodePtr _idlist, NodePtr _initializer)
+	: varType(_varType) , idlist(_idlist) , initializer(_initializer) {}
+	
+	virtual void print(std::ostream& dst) const override{
+		varType->print(dst);
+		dst << " ";
+		idlist ->print(dst);
+		dst << " = ";
+		initializer -> print(dst);
+		dst << ";";
+    }
+    
+    virtual ~VarInit() override{
+        delete varType;
+        delete idlist;
+	delete initializer;
+    }
 };
 
 class Block: public Node{
@@ -172,6 +198,23 @@ public:
     virtual ~IdentifierList() override{
         delete identifierList;
         delete identifier;
+    }
+};
+
+class IntConst: public Node{
+private:
+    const std::string* value;
+    
+public:
+    IntConst(const std::string* _value)
+        :value(_value){}
+        
+    virtual void print(std::ostream& dst) const override{
+        dst << std::stoi((*value));
+    }
+
+    virtual ~IntConst() override{
+        delete value;
     }
 };
 #endif

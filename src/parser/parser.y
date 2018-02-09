@@ -15,7 +15,6 @@
 // AST node.
 %union{
   NodePtr node;
-  double number;
   std::string *string;
 }
 
@@ -25,6 +24,8 @@
 %token T_TYPEDEF T_EXTERN T_UNION T_CONST T_CONTINUE T_FOR T_DEFAULT T_GOTO T_SIZEOF
 %token T_VOLATILE T_DO T_IF T_STATIC T_WHILE
 
+%token T_EQUAL
+
 %token T_LBRACKET T_RBRACKET T_LCURLBRACKET T_RCURLBRACKET 
 %token T_SEMICOLON T_COMMA
 %token T_IDENTIFIER
@@ -33,7 +34,8 @@
 //Non-terminals declaration
 %type <node> PROGRAM BASIC_PROGRAM VARIABLE_DECLR VAR_TYPE DECLR_LIST BLOCK FUNCTION_DEF
 %type <node> IDENTIFIER_LIST
-%type <number> T_INT_CONSTANT
+%type <node> INITIALIZER PRIMARY_EXPR
+%type <string> T_INT_CONSTANT
 %type <string> T_IDENTIFIER
 %type <string> T_INT T_CHAR T_VOID T_SHORT T_LONG T_FLOAT T_DOUBLE T_SIGNED T_UNSIGNED
 
@@ -61,6 +63,13 @@ DECLR_LIST : DECLR_LIST VARIABLE_DECLR		{ $$ = new  DeclrList($1,$2); }
 
 
 VARIABLE_DECLR : VAR_TYPE IDENTIFIER_LIST T_SEMICOLON  { $$ = new VarDeclr($1,$2) ; }
+		| VAR_TYPE IDENTIFIER_LIST T_EQUAL INITIALIZER T_SEMICOLON { $$ = new VarInit($1,$2,$4) ; }
+
+INITIALIZER : PRIMARY_EXPR { $$ = $1 ; }
+
+PRIMARY_EXPR : T_IDENTIFIER	 { $$ =  new Identifier($1);}
+		| T_INT_CONSTANT  { $$ = new IntConst($1); }
+
 
 IDENTIFIER_LIST: IDENTIFIER_LIST T_COMMA T_IDENTIFIER { $$ = new IdentifierList($1, new Identifier($3));}
                 | T_IDENTIFIER {$$ = new Identifier($1);}
