@@ -65,6 +65,27 @@ public:
 
 };
 
+class StatementList: public Node{
+private:
+	NodePtr statementList;    
+	NodePtr statement;
+    
+public:
+    StatementList(NodePtr _statementList, NodePtr _statement)
+        : statementList(_statementList), statement(_statement) {}
+
+    virtual void print(std::ostream& dst) const override{
+        statementList->print(dst);
+	statement ->print(dst);
+    }
+    
+    virtual ~StatementList() override{
+        delete statementList;
+        delete statement;
+    }
+
+};
+
 class VarInit : public Node {
 private :
 	NodePtr varType;
@@ -93,18 +114,25 @@ public:
 
 class Block: public Node{
 private:
-	NodePtr declrList;    
+	NodePtr declrList;
+	NodePtr statementList;    
     
 public:
-    Block(NodePtr _declrList = NULL)
-        : declrList(_declrList) {}
+    Block(NodePtr _declrList = NULL , NodePtr _statementList = NULL)
+        : declrList(_declrList), statementList(_statementList) {}
         
     virtual void print(std::ostream& dst) const override{
 	    dst << "{";
 	    
 	    if(declrList != NULL){
             declrList->print(dst);
-        }
+      	    }
+	    if(statementList != NULL){
+	   //dst << " Statement ( " ;
+            statementList->print(dst);
+	   // dst << " )";
+      	    }
+
 	    dst << "}";
     }
     
