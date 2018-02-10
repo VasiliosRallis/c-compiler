@@ -70,7 +70,11 @@ SELECTION_STATEMENT: T_IF T_LBRACKET EXPR T_RBRACKET STATEMENT {$$ = new IfState
                    | T_SWITCH T_LBRACKET EXPR T_RBRACKET STATEMENT {$$ = new CaseStatement($3, $5);}
                    
 ITERATION_STATEMENT: T_WHILE T_LBRACKET EXPR T_RBRACKET STATEMENT {$$ = new WhileStatement($3, $5);}
-                   
+                   | T_DO STATEMENT T_WHILE T_LBRACKET EXPR T_RBRACKET T_SEMICOLON {$$ = new DoStatement($2, $5);}
+                   | T_FOR T_LBRACKET T_SEMICOLON T_SEMICOLON T_RBRACKET STATEMENT {$$ = new ForStatement(NULL,NULL,NULL,$6);}
+                   | T_FOR T_LBRACKET EXPR T_SEMICOLON T_SEMICOLON T_RBRACKET STATEMENT {$$ = new ForStatement($3,NULL,NULL,$7);}
+                   | T_FOR T_LBRACKET EXPR T_SEMICOLON EXPR T_SEMICOLON T_RBRACKET STATEMENT {$$ = new ForStatement($3,$5,NULL,$8);}
+                   | T_FOR T_LBRACKET EXPR T_SEMICOLON EXPR T_SEMICOLON EXPR T_RBRACKET STATEMENT {$$ = new ForStatement($3,$5,$7,$9);}
 
 EXPR: PRIMARY_EXPR T_EQUAL PRIMARY_EXPR {$$ = new Expr($1, $3);}
 
@@ -95,6 +99,7 @@ INITIALIZER : PRIMARY_EXPR {$$ = $1 ;}
 PRIMARY_EXPR : T_IDENTIFIER	 {$$ =  new Identifier($1);}
 		     | T_INT_CONSTANT  {$$ = new IntConst($1);}
 		     | T_STR_LIT {$$ = new StrLit($1);}
+		     | T_LBRACKET EXPR T_RBRACKET {$$ = new PrimaryExpr($2);}
 
 
 IDENTIFIER_LIST: IDENTIFIER_LIST T_COMMA T_IDENTIFIER { $$ = new IdentifierList($1, new Identifier($3));}

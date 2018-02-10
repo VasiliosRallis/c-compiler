@@ -413,4 +413,83 @@ public:
         delete statement;
     }
 };
+
+class DoStatement: public Node{
+private:
+    NodePtr statement;
+    NodePtr expr;
+    
+public:
+    DoStatement(NodePtr _statement, NodePtr _expr)
+        :statement(_statement), expr(_expr){}
+        
+        
+    virtual void print(std::ostream& dst) const override{
+        dst << "do ";
+        statement->print(dst);
+        dst << "while(";
+        expr->print(dst);
+        dst << ");";
+    }
+    
+    virtual ~DoStatement() override{
+        delete statement;
+        delete expr;
+    }
+};
+
+class ForStatement: public Node{
+private:
+    NodePtr expr1;
+    NodePtr expr2;
+    NodePtr expr3;
+    NodePtr statement;
+    
+public:
+    ForStatement(NodePtr _expr1, NodePtr _expr2, NodePtr _expr3, NodePtr _statement)
+        :expr1(_expr1), expr2(_expr2), expr3(_expr3), statement(_statement){}
+        
+    virtual void print(std::ostream& dst) const override{
+        dst << "for(";
+        if(expr1 != NULL){
+            expr1->print(dst);
+        }
+        dst << ";";
+        if(expr2 != NULL){
+            expr2->print(dst);
+        }
+        dst << ";";
+        if(expr3 != NULL){
+            expr3->print(dst);
+        }
+        dst << ")";
+        statement->print(dst);
+    }
+    
+    virtual ~ForStatement() override{
+        delete expr1;
+        delete expr2;
+        delete expr3;
+        delete statement;
+    }
+};
+
+class PrimaryExpr: public Node{
+private:
+    NodePtr expr;
+
+public:
+    PrimaryExpr(NodePtr _expr)
+        :expr(_expr){}
+        
+    virtual void print(std::ostream& dst)const override{
+        dst << "(";
+        expr->print(dst);
+        dst << ")";
+    }
+    
+    ~PrimaryExpr() override{
+        delete expr;
+     }   
+};
 #endif
