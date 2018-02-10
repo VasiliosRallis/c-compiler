@@ -3,4 +3,4 @@ bin/*
 *.yy.*
 *.output
 *.tab.*
-tests/out
+tests/out/*

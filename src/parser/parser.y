@@ -56,33 +56,32 @@ BASIC_PROGRAM : DECLR_LIST {$$ = $1;}
 FUNCTION_DEF : VAR_TYPE T_IDENTIFIER T_LBRACKET T_RBRACKET BLOCK {$$ = new FunctionDef($1,new Identifier($2),$5) ;}
 
 BLOCK : T_LCURLBRACKET STATEMENT_LIST T_RCURLBRACKET { $$ = new Block(NULL,$2); }
-	| T_LCURLBRACKET DECLR_LIST T_RCURLBRACKET { $$ = new Block($2); }
-	| T_LCURLBRACKET DECLR_LIST STATEMENT_LIST T_RCURLBRACKET { $$ = new Block($2,$3) ; }
-        | T_LCURLBRACKET T_RCURLBRACKET {$$ = new Block();}
+	  | T_LCURLBRACKET DECLR_LIST T_RCURLBRACKET { $$ = new Block($2); }
+	  | T_LCURLBRACKET DECLR_LIST STATEMENT_LIST T_RCURLBRACKET { $$ = new Block($2,$3) ; }
+      | T_LCURLBRACKET T_RCURLBRACKET {$$ = new Block();}
 
 STATEMENT_LIST : STATEMENT_LIST STATEMENT	{ $$ = new StatementList($1,$2); }
-		|STATEMENT			{ $$ = $1; }
+		       |STATEMENT			{ $$ = $1; }
 
 STATEMENT : BLOCK				{ $$ = $1; }
-	   |EXPR_STATEMENT			{ $$ = $1; }
+	      |EXPR_STATEMENT			{ $$ = $1; }
 
 EXPR_STATEMENT : DECLR_LIST			{ $$ = $1; } // AM NOT SURE ABOUT THIS According to documentation, int main() { int a=7; { } int c =5 ;} is allowed, but not int main() { int a =7; { } int c; } but tested on compiler and both compiles.
 	
 DECLR_LIST : DECLR_LIST VARIABLE_DECLR		{ $$ = new  DeclrList($1,$2); }	
 	       | VARIABLE_DECLR				    { $$ = $1; }
 
-
 VARIABLE_DECLR : VAR_TYPE IDENTIFIER_LIST T_SEMICOLON  { $$ = new VarDeclr($1,$2) ; }
-		| VAR_TYPE IDENTIFIER_LIST T_EQUAL INITIALIZER T_SEMICOLON { $$ = new VarInit($1,$2,$4) ; }
+		       | VAR_TYPE IDENTIFIER_LIST T_EQUAL INITIALIZER T_SEMICOLON { $$ = new VarInit($1,$2,$4) ; }
 
 INITIALIZER : PRIMARY_EXPR { $$ = $1 ; }
 
 PRIMARY_EXPR : T_IDENTIFIER	 { $$ =  new Identifier($1);}
-		| T_INT_CONSTANT  { $$ = new IntConst($1); }
+		     | T_INT_CONSTANT  { $$ = new IntConst($1); }
 
 
 IDENTIFIER_LIST: IDENTIFIER_LIST T_COMMA T_IDENTIFIER { $$ = new IdentifierList($1, new Identifier($3));}
-                | T_IDENTIFIER {$$ = new Identifier($1);}
+               | T_IDENTIFIER {$$ = new Identifier($1);}
 	
 
 VAR_TYPE : T_INT {$$ = new VarType($1);}
