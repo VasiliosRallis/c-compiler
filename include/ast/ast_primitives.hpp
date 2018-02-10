@@ -126,18 +126,18 @@ public:
 	    
 	    if(declrList != NULL){
             declrList->print(dst);
-      	    }
+      	}
+      	
 	    if(statementList != NULL){
-	   //dst << " Statement ( " ;
             statementList->print(dst);
-	   // dst << " )";
-      	    }
+      	}
 
 	    dst << "}";
     }
     
     virtual ~Block() override{
         delete declrList;
+        delete statementList;
     }
 
 };
@@ -243,6 +243,174 @@ public:
 
     virtual ~IntConst() override{
         delete value;
+    }
+};
+
+class TypeQualifier: public Node{
+private:
+    const std::string* id;
+    
+public:
+    TypeQualifier(const std::string* _id)
+        :id(_id){}
+        
+    virtual void print(std::ostream& dst) const override{
+        dst << *id;
+    }
+    
+    virtual ~TypeQualifier() override{
+        delete id;
+    }  
+};
+
+class DeclSpecifierList: public Node{
+private:
+    NodePtr declSpecifierList;
+    NodePtr declSpecifier;
+    
+public:
+    DeclSpecifierList(NodePtr _declSpecifierList, NodePtr _declSpecifier)
+        :declSpecifierList(_declSpecifierList), declSpecifier(_declSpecifier){}
+        
+    virtual void print(std::ostream& dst) const override{
+        declSpecifierList->print(dst);
+        dst << " ";
+        declSpecifier->print(dst);
+    }
+    
+    ~DeclSpecifierList(){
+        delete declSpecifierList;
+        delete declSpecifier;
+     }
+};
+
+class StorClassSpec: public Node{
+private:
+    const std::string* id;
+    
+public:
+    StorClassSpec(const std::string* _id)
+        :id(_id){}
+        
+        
+    virtual void print(std::ostream& dst) const override{
+        dst << *id;
+    }
+    
+    virtual ~StorClassSpec() override{
+        delete id;
+    }
+};
+
+class StrLit: public Node{
+private:
+    const std::string* id;
+    
+public:
+    StrLit(const std::string* _id)
+        :id(_id){}
+        
+        
+    virtual void print(std::ostream& dst) const override{
+        dst << *id;
+    }
+    
+    virtual ~StrLit () override{
+        delete id;
+    }
+};
+
+class Expr: public Node{
+private:
+    NodePtr primaryExpr1;
+    NodePtr primaryExpr2;
+    
+public:
+    Expr(NodePtr _primaryExpr1, NodePtr _primaryExpr2)
+        :primaryExpr1(_primaryExpr1), primaryExpr2(_primaryExpr2){}
+        
+    virtual void print(std::ostream& dst) const override{
+        primaryExpr1->print(dst);
+        dst<< "=";
+        primaryExpr2->print(dst);
+    }
+    
+    virtual ~Expr() override{
+        delete primaryExpr1;
+        delete primaryExpr2;
+   }
+};
+
+class IfStatement: public Node{
+private:
+    NodePtr expr;
+    NodePtr statement1;
+    NodePtr statement2;
+    
+public:
+    IfStatement(NodePtr _expr, NodePtr _statement1, NodePtr _statement2 = NULL)
+        :expr(_expr), statement1(_statement1), statement2(_statement2){}
+        
+    virtual void print(std::ostream& dst) const override{
+        dst << "if(";
+        expr->print(dst);
+        dst << ")";
+        statement1->print(dst);
+        if(statement2 != NULL){
+            dst << "else ";
+            statement2->print(dst);
+        }
+    }
+    
+    virtual ~IfStatement() override{
+        delete expr;
+        delete statement1;
+        delete statement2;
+    }
+};
+
+class CaseStatement: public Node{
+private:
+    NodePtr expr;
+    NodePtr statement;
+    
+public:
+    CaseStatement(NodePtr _expr, NodePtr _statement)
+        :expr(_expr), statement(_statement){}
+        
+    virtual void print(std::ostream& dst) const override{
+        dst << "switch(";
+        expr->print(dst);
+        dst << ")";
+        statement->print(dst);
+    }
+    
+    virtual ~CaseStatement() override{
+        delete expr;
+        delete statement;
+    }
+};
+
+class WhileStatement: public Node{
+private:
+    NodePtr expr;
+    NodePtr statement;
+    
+public:
+    WhileStatement(NodePtr _expr, NodePtr _statement)
+        :expr(_expr), statement(_statement){}
+        
+        
+    virtual void print(std::ostream& dst) const override{
+        dst << "while(";
+        expr->print(dst);
+        dst << ")";
+        statement->print(dst);
+    }
+    
+    virtual ~WhileStatement() override{
+        delete expr;
+        delete statement;
     }
 };
 #endif

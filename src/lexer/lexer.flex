@@ -58,8 +58,8 @@ std::vector<std::string> translator{
     "T_SEMICOLON",
     "T_COMMA",
     "T_IDENTIFIER",
-    "T_INT_CONSTANT"
-
+    "T_INT_CONSTANT",
+    "T_STR_LIT"
 };
  
 /* End the embedded code section. */
@@ -67,6 +67,10 @@ std::vector<std::string> translator{
 
 IDENTIFIER      [A-Za-z_][A-Za-z_0-9]*
 INTEGER			[0-9]+
+
+S_CHAR          [^\\"\n]
+CHAR_SEQ        {CHAR}+
+STR_LIT         "{CHAR_SEQ}"|""
 
 %%
 
@@ -113,8 +117,9 @@ return 		    {yylval.string = new std::string(yytext); return reportToken(T_RETU
 \;			    {yylval.string = new std::string(yytext); return reportToken(T_SEMICOLON, yytext); }
 \,              {yylval.string = new std::string(yytext); return reportToken(T_COMMA, yytext);}
 
-{INTEGER}		{ yylval.string = new std::string(yytext); return reportToken(T_INT_CONSTANT, yytext); }
-{IDENTIFIER}		{ yylval.string = new std::string(yytext); return reportToken(T_IDENTIFIER, yytext); }
+{INTEGER}		{yylval.string = new std::string(yytext); return reportToken(T_INT_CONSTANT, yytext);}
+{IDENTIFIER}	{yylval.string = new std::string(yytext); return reportToken(T_IDENTIFIER, yytext);}
+{STR_LIT}       {yylval.string = new std::string(yytext); return reportToken(T_STR_LIT, yytext);}
 
 .|[\n] 			{ }
 
