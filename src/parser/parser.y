@@ -1,7 +1,8 @@
 %code requires{
   #include "ast.hpp"
-
+  
   #include <cassert>
+  
   extern NodePtr g_root; // A way of getting the AST out global defined in maths_parser.tab.cpp from bison
 
   //! This is to fix problems when generating C++
@@ -9,6 +10,9 @@
   // that Bison generated code can call them.
   int yylex(void);
   void yyerror(const char *);
+  
+  extern FILE* yyin;
+  
 }
 
 // Represents the value associated with any kind of
@@ -138,9 +142,12 @@ STOR_CLASS_SPEC: T_TYPEDEF {$$ = new StorClassSpec($1);}
 
 NodePtr g_root; // Definition of variable (to match declaration earlier)
 
-NodePtr parseAST()
-{
-  g_root=0;
+NodePtr parseAST(const char file[]){
+
+  g_root = 0;
+  
+  yyin = fopen(file, "r");
   yyparse();
+  
   return g_root;
 }

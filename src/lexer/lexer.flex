@@ -135,5 +135,5 @@ yytokentype reportToken(yytokentype tokenType, const char* tokenValue){
 	//Use cerr for loging/debigging purposes 
 	std::cerr << "Token: " << std::setw(20) << translator[tokenType-257] << std::setw(20) << std::string(tokenValue) << std::endl;
 	
-	return tokenType;;
+	return tokenType;
 }

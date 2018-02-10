@@ -1,12 +1,11 @@
 #include "ast.hpp"
 
-int main()
-{
-    NodePtr ast = parseAST();
-
-    ast->print(std::cout);
+int main(int argc, char* argv[]){
     
-    std::cout << std::endl;
-
+    if(argc == 5){
+        NodePtr ast = parseAST(argv[2]);
+        ast->print(std::cout);
+    }
+    
     return 0;
-}
+}        

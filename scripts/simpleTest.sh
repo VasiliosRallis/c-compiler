@@ -39,7 +39,7 @@ for i in tests/in/*.c; do
     echo "Input file : ${i}"
     BASENAME=$(basename $i .c);
     
-    # The stderr will contain the loging info (useful for debugging
+    # The stderr will contain the loging info (useful for debugging)
     cat tests/in/$BASENAME.c | ./bin/$PARSER > tests/out/$BASENAME.c  2> tests/out/$BASENAME.stderr.txt
     
     #Check if the parser actually exited with 0 (if it didn't the out.c will be empty which will actaully compile)
