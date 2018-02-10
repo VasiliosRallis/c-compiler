@@ -67,9 +67,10 @@ std::vector<std::string> translator{
 
 IDENTIFIER      [A-Za-z_][A-Za-z_0-9]*
 INTEGER			[0-9]+
+
 %%
 
-int    		{yylval.string = new std::string(yytext); return reportToken(T_INT, yytext);}
+int    		    {yylval.string = new std::string(yytext); return reportToken(T_INT, yytext);}
 char            {yylval.string = new std::string(yytext); return reportToken(T_CHAR, yytext);}
 void            {yylval.string = new std::string(yytext); return reportToken(T_VOID, yytext);}
 short           {yylval.string = new std::string(yytext); return reportToken(T_SHORT, yytext);}
@@ -101,16 +102,16 @@ do              {yylval.string = new std::string(yytext); return reportToken(T_D
 if              {yylval.string = new std::string(yytext); return reportToken(T_IF, yytext);}
 static          {yylval.string = new std::string(yytext); return reportToken(T_STATIC, yytext);}
 while           {yylval.string = new std::string(yytext); return reportToken(T_WHILE, yytext);}
-return 		{yylval.string = new std::string(yytext); return reportToken(T_RETURN, yytext);}
+return 		    {yylval.string = new std::string(yytext); return reportToken(T_RETURN, yytext);}
 
-=		{yylval.string = new std::string(yytext); return reportToken(T_EQUAL, yytext);}
+\=		        {yylval.string = new std::string(yytext); return reportToken(T_EQUAL, yytext);}
 
-\{			{ return reportToken(T_LCURLBRACKET, yytext); }
-\}			{ return reportToken(T_RCURLBRACKET, yytext); }
-\(			{ return reportToken(T_LBRACKET, yytext); }
-\)			{ return reportToken(T_RBRACKET, yytext); }
-\;			{ yylval.string = new std::string(";"); return reportToken(T_SEMICOLON, yytext); }
-\,          { yylval.string = new std::string(","); return reportToken(T_COMMA, yytext);}
+\{			    {yylval.string = new std::string(yytext); return reportToken(T_LCURLBRACKET, yytext); }
+\}			    {yylval.string = new std::string(yytext); return reportToken(T_RCURLBRACKET, yytext); }
+\(			    {yylval.string = new std::string(yytext); return reportToken(T_LBRACKET, yytext); }
+\)			    {yylval.string = new std::string(yytext); return reportToken(T_RBRACKET, yytext); }
+\;			    {yylval.string = new std::string(yytext); return reportToken(T_SEMICOLON, yytext); }
+\,              {yylval.string = new std::string(yytext); return reportToken(T_COMMA, yytext);}
 
 {INTEGER}		{ yylval.string = new std::string(yytext); return reportToken(T_INT_CONSTANT, yytext); }
 {IDENTIFIER}		{ yylval.string = new std::string(yytext); return reportToken(T_IDENTIFIER, yytext); }
