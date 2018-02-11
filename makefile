@@ -1,4 +1,4 @@
-INCLUDE = -I include/lexer/ -I include/ -I include/ast/ -I src/parser/
+INCLUDE = -I include/ -I src/parser/ -I src/lexer/
 
 CPPFLAGS += -W -Wall -g 
 
@@ -11,21 +11,17 @@ CPPFLAGS += -Wno-unused-function -Wno-sign-compare
 # Indudes paths
 CPPFLAGS += $(INCLUDE)
 
-all : bin/lexer bin/print_canonical
+all : bin/c_compiler
 
+bin/c_compiler : src/parser/parser.tab.o src/lexer/lexer.yy.o src/c_compiler.o
+	mkdir -p bin
+	g++ $(CPPFLAGS) -o $@ $^
+	
 src/lexer/lexer.yy.cpp : src/lexer/lexer.flex src/parser/parser.tab.hpp
 	flex -o $@ $<  
-
-bin/lexer : src/lexer/lexer.yy.o src/lexer/main.o
-	mkdir -p bin
-	g++ $(CPPFLAGS) -o $@ $^
-
+	
 src/parser/parser.tab.cpp src/parser/parser.tab.hpp : src/parser/parser.y
 	bison -v -d $< -o src/parser/parser.tab.cpp
-
-bin/print_canonical : src/parser/print_canonical.o src/parser/parser.tab.o src/lexer/lexer.yy.o
-	mkdir -p bin
-	g++ $(CPPFLAGS) -o $@ $^
 
 clean :
 	-rm -r bin

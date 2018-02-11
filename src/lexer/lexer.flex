@@ -58,8 +58,8 @@ std::vector<std::string> translator{
     "T_SEMICOLON",
     "T_COMMA",
     "T_IDENTIFIER",
-    "T_INT_CONSTANT"
-
+    "T_INT_CONSTANT",
+    "T_STR_LIT"
 };
  
 /* End the embedded code section. */
@@ -67,9 +67,14 @@ std::vector<std::string> translator{
 
 IDENTIFIER      [A-Za-z_][A-Za-z_0-9]*
 INTEGER			[0-9]+
+
+S_CHAR          [^\\"\n]
+CHAR_SEQ        {CHAR}+
+STR_LIT         "{CHAR_SEQ}"|""
+
 %%
 
-int    		{yylval.string = new std::string(yytext); return reportToken(T_INT, yytext);}
+int    		    {yylval.string = new std::string(yytext); return reportToken(T_INT, yytext);}
 char            {yylval.string = new std::string(yytext); return reportToken(T_CHAR, yytext);}
 void            {yylval.string = new std::string(yytext); return reportToken(T_VOID, yytext);}
 short           {yylval.string = new std::string(yytext); return reportToken(T_SHORT, yytext);}
@@ -101,19 +106,20 @@ do              {yylval.string = new std::string(yytext); return reportToken(T_D
 if              {yylval.string = new std::string(yytext); return reportToken(T_IF, yytext);}
 static          {yylval.string = new std::string(yytext); return reportToken(T_STATIC, yytext);}
 while           {yylval.string = new std::string(yytext); return reportToken(T_WHILE, yytext);}
-return 		{yylval.string = new std::string(yytext); return reportToken(T_RETURN, yytext);}
+return 		    {yylval.string = new std::string(yytext); return reportToken(T_RETURN, yytext);}
 
-=		{yylval.string = new std::string(yytext); return reportToken(T_EQUAL, yytext);}
+\=		        {yylval.string = new std::string(yytext); return reportToken(T_EQUAL, yytext);}
 
-\{			{ return reportToken(T_LCURLBRACKET, yytext); }
-\}			{ return reportToken(T_RCURLBRACKET, yytext); }
-\(			{ return reportToken(T_LBRACKET, yytext); }
-\)			{ return reportToken(T_RBRACKET, yytext); }
-\;			{ yylval.string = new std::string(";"); return reportToken(T_SEMICOLON, yytext); }
-\,          { yylval.string = new std::string(","); return reportToken(T_COMMA, yytext);}
+\{			    {yylval.string = new std::string(yytext); return reportToken(T_LCURLBRACKET, yytext); }
+\}			    {yylval.string = new std::string(yytext); return reportToken(T_RCURLBRACKET, yytext); }
+\(			    {yylval.string = new std::string(yytext); return reportToken(T_LBRACKET, yytext); }
+\)			    {yylval.string = new std::string(yytext); return reportToken(T_RBRACKET, yytext); }
+\;			    {yylval.string = new std::string(yytext); return reportToken(T_SEMICOLON, yytext); }
+\,              {yylval.string = new std::string(yytext); return reportToken(T_COMMA, yytext);}
 
-{INTEGER}		{ yylval.string = new std::string(yytext); return reportToken(T_INT_CONSTANT, yytext); }
-{IDENTIFIER}		{ yylval.string = new std::string(yytext); return reportToken(T_IDENTIFIER, yytext); }
+{INTEGER}		{yylval.string = new std::string(yytext); return reportToken(T_INT_CONSTANT, yytext);}
+{IDENTIFIER}	{yylval.string = new std::string(yytext); return reportToken(T_IDENTIFIER, yytext);}
+{STR_LIT}       {yylval.string = new std::string(yytext); return reportToken(T_STR_LIT, yytext);}
 
 .|[\n] 			{ }
 
@@ -129,5 +135,5 @@ yytokentype reportToken(yytokentype tokenType, const char* tokenValue){
 	//Use cerr for loging/debigging purposes 
 	std::cerr << "Token: " << std::setw(20) << translator[tokenType-257] << std::setw(20) << std::string(tokenValue) << std::endl;
 	
-	return tokenType;;
+	return tokenType;
 }
