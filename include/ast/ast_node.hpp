@@ -12,7 +12,8 @@ public:
     virtual ~Node(){}
 
     virtual void print(std::ostream& dst) const =0;
-    //virtual void printPy(std::ostream& dst) const=0;
+    virtual void printPy(std::ostream& dst) const=0;
+    virtual int getLength()const{return -1;}
 
 };
 

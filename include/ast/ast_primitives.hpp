@@ -4,6 +4,11 @@
 #include <string>
 #include <iostream>
 
+extern int g_depth;
+//extern std::string g_variables;
+
+//class Identifier: public Node;
+
 class VarType: public Node{
 private:
     const std::string* type;
@@ -16,6 +21,8 @@ public:
         dst<< *type;
     }
     
+    virtual void printPy(std::ostream& dst) const override{}
+    
     virtual ~VarType() override{
             delete type;
      }
@@ -25,10 +32,14 @@ class VarDeclr: public Node{
 private:
     NodePtr varType;    
     NodePtr identifierList;
-
 public:
     VarDeclr(NodePtr _varType, NodePtr _identifierList)
         : varType(_varType), identifierList(_identifierList) {}
+        
+    
+    //void getGlobal(){
+    //    (dynamic_cast<const Identifier*>(identifierList))->getGlobal();
+    //}
 
     virtual void print(std::ostream& dst) const override{
         varType->print(dst);
@@ -37,6 +48,18 @@ public:
         dst << ";";
     }
     
+    virtual void printPy(std::ostream& dst) const override{
+        for(int i(0); i < g_depth; ++i){
+            dst << "\t";
+        }
+        identifierList->printPy(dst); 
+        dst << "=0";
+        int l = identifierList->getLength();
+        for(int i(0); i < l-1; ++i){
+            dst << ",0";
+        }
+    }
+       
     virtual ~VarDeclr() override{
         delete varType;
         delete identifierList;
@@ -58,6 +81,12 @@ public:
 	    varDeclr ->print(dst);
     }
     
+    virtual void printPy(std::ostream& dst) const override{
+        declrList->printPy(dst);
+        dst << "\n";
+        varDeclr->printPy(dst);
+    }
+    
     virtual ~DeclrList() override{
         delete declrList;
         delete varDeclr;
@@ -77,6 +106,12 @@ public:
     virtual void print(std::ostream& dst) const override{
         statementList->print(dst);
 	statement ->print(dst);
+    }
+    
+    virtual void printPy(std::ostream& dst) const override{
+        statementList->printPy(dst);
+        dst << "\n";
+        statement->printPy(dst);
     }
     
     virtual ~StatementList() override{
@@ -105,6 +140,20 @@ public:
 		dst << ";";
     }
     
+    virtual void printPy(std::ostream& dst) const override{
+        for(int i(0); i < g_depth; ++i){
+            dst << "\t";
+        }
+        idlist->printPy(dst);
+        dst << "=";
+        initializer->printPy(dst);
+        int l = idlist->getLength();
+        for(int i(0); i < l-1; ++i){
+            dst << ",";
+            initializer->printPy(dst);
+        }
+    }
+    
     virtual ~VarInit() override{
         delete varType;
         delete idlist;
@@ -120,7 +169,6 @@ private:
 public:
     Block(NodePtr _declrList = NULL , NodePtr _statementList = NULL)
         : declrList(_declrList), statementList(_statementList) {}
-        
     virtual void print(std::ostream& dst) const override{
 	    dst << "{";
 	    
@@ -133,6 +181,20 @@ public:
       	}
 
 	    dst << "}";
+    }
+    
+
+    virtual void printPy(std::ostream& dst) const override{
+        g_depth++;
+        if(declrList  != NULL){
+            declrList->printPy(dst);
+            dst << "\n";
+        }
+        if(statementList != NULL){
+            statementList->printPy(dst);
+            dst << "\n";
+        }
+        g_depth--;   
     }
     
     virtual ~Block() override{
@@ -151,6 +213,7 @@ private:
 public:
     FunctionDef(NodePtr _varType, NodePtr _identifier, NodePtr _block)
         : varType(_varType), identifier(_identifier), block(_block) {}
+        
 
     virtual void print(std::ostream& dst) const override{
 	    varType->print(dst);
@@ -158,6 +221,21 @@ public:
         identifier->print(dst);
         dst << "()";
 	    block->print(dst);
+    }
+    
+    virtual void printPy(std::ostream& dst) const override{
+        dst << "def ";
+        identifier->printPy(dst);
+        dst << "():\n";
+        for(int i(0); i < g_depth + 1; ++i){
+           dst << "\t";
+        }
+        //if(g_variables != ""){
+        //    dst << "global ";
+        //    dst << g_variables;
+        //}
+        
+        block->printPy(dst);
     }
     
     virtual ~FunctionDef() override{
@@ -184,6 +262,12 @@ public:
 	    basicProgram->print(dst);
     }
     
+    virtual void printPy(std::ostream& dst) const override{
+    //    if(dynamic_cast<const VarDeclr*>(program)){
+    //       dynamic_cast<const VarDeclr*>(program)->getGlobal(); 
+    //    }
+    }
+    
     virtual ~Program() override{
         delete program;
         delete basicProgram;
@@ -198,9 +282,19 @@ public:
     Identifier(const std::string* _id)
         :id(_id){}
         
+    //void getGlobal(){
+    //    g_variables = *id;
+    //}
+        
     virtual void print(std::ostream& dst) const override{
         dst << *id;
     }
+    
+    virtual void printPy(std::ostream& dst) const override{
+        dst << *id;
+    }
+    
+    int getLength() const override{return 1;}
 
     virtual ~Identifier() override{
         delete id;
@@ -223,6 +317,16 @@ public:
         identifier->print(dst);
     }
     
+    int getLength()const override{
+        return identifierList->getLength() + identifier->getLength();
+    }
+    
+    virtual void printPy(std::ostream& dst) const override{
+        identifierList->printPy(dst);
+        dst<<",";
+        identifier->printPy(dst);
+    }
+    
     virtual ~IdentifierList() override{
         delete identifierList;
         delete identifier;
@@ -238,6 +342,10 @@ public:
         :value(_value){}
         
     virtual void print(std::ostream& dst) const override{
+        dst << std::stoi((*value));
+    }
+    
+    virtual void printPy(std::ostream& dst) const override{
         dst << std::stoi((*value));
     }
 
@@ -257,6 +365,8 @@ public:
     virtual void print(std::ostream& dst) const override{
         dst << *id;
     }
+    
+    virtual void printPy(std::ostream& dst) const override{}
     
     virtual ~TypeQualifier() override{
         delete id;
@@ -278,6 +388,8 @@ public:
         declSpecifier->print(dst);
     }
     
+    virtual void printPy(std::ostream& dst) const override{}
+    
     ~DeclSpecifierList(){
         delete declSpecifierList;
         delete declSpecifier;
@@ -297,6 +409,8 @@ public:
         dst << *id;
     }
     
+    virtual void printPy(std::ostream& dst) const override{}
+    
     virtual ~StorClassSpec() override{
         delete id;
     }
@@ -314,6 +428,8 @@ public:
     virtual void print(std::ostream& dst) const override{
         dst << *id;
     }
+    
+    virtual void printPy(std::ostream& dst) const override{}
     
     virtual ~StrLit () override{
         delete id;
@@ -335,6 +451,11 @@ public:
         primaryExpr2->print(dst);
     }
     
+    virtual void printPy(std::ostream& dst) const override{
+        primaryExpr1->print(dst);
+        dst<< "=";
+        primaryExpr2->print(dst);
+    }
     virtual ~Expr() override{
         delete primaryExpr1;
         delete primaryExpr2;
@@ -362,6 +483,27 @@ public:
         }
     }
     
+    virtual void printPy(std::ostream& dst) const override{
+        for(int i(0); i < g_depth; ++i){
+            dst << "\t";
+        }
+        dst << "if(";
+        expr->printPy(dst);
+        dst << ")";
+        dst << "\n";
+        statement1->printPy(dst);
+        dst << "\n";
+        if(statement2 != NULL){
+            for(int i(0); i < g_depth; ++i){
+                dst << "\t";
+            }
+            dst << "else:";
+            dst << "\n";
+            statement2->printPy(dst);
+       }
+   }
+        
+    
     virtual ~IfStatement() override{
         delete expr;
         delete statement1;
@@ -384,6 +526,8 @@ public:
         dst << ")";
         statement->print(dst);
     }
+    
+    virtual void printPy(std::ostream& dst) const override{}
     
     virtual ~CaseStatement() override{
         delete expr;
@@ -408,6 +552,8 @@ public:
         statement->print(dst);
     }
     
+    virtual void printPy(std::ostream& dst) const override{}
+    
     virtual ~WhileStatement() override{
         delete expr;
         delete statement;
@@ -431,6 +577,8 @@ public:
         expr->print(dst);
         dst << ");";
     }
+    
+    virtual void printPy(std::ostream& dst) const override{}
     
     virtual ~DoStatement() override{
         delete statement;
@@ -466,6 +614,8 @@ public:
         statement->print(dst);
     }
     
+    virtual void printPy(std::ostream& dst) const override{}
+    
     virtual ~ForStatement() override{
         delete expr1;
         delete expr2;
@@ -488,6 +638,8 @@ public:
         dst << ")";
     }
     
+    virtual void printPy(std::ostream& dst) const override{}
+        
     ~PrimaryExpr() override{
         delete expr;
      }   

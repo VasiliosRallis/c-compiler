@@ -1,0 +1,3 @@
+Token:                T_INT                 int
+Token:         T_IDENTIFIER                   x
+Token:          T_SEMICOLON                   ;

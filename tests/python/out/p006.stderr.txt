@@ -1,0 +1,15 @@
+Token:               T_VOID                void
+Token:         T_IDENTIFIER                   f
+Token:           T_LBRACKET                   (
+Token:           T_RBRACKET                   )
+Token:       T_LCURLBRACKET                   {
+Token:                T_INT                 int
+Token:         T_IDENTIFIER                   x
+Token:          T_SEMICOLON                   ;
+Token:                T_INT                 int
+Token:         T_IDENTIFIER                   y
+Token:          T_SEMICOLON                   ;
+Token:                T_INT                 int
+Token:         T_IDENTIFIER                   z
+Token:          T_SEMICOLON                   ;
+Token:       T_RCURLBRACKET                   }

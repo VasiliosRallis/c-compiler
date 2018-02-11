@@ -1,0 +1,6 @@
+Token:               T_VOID                void
+Token:         T_IDENTIFIER                  fo
+Token:           T_LBRACKET                   (
+Token:           T_RBRACKET                   )
+Token:       T_LCURLBRACKET                   {
+Token:       T_RCURLBRACKET                   }

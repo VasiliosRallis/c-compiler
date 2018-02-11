@@ -1,0 +1,5 @@
+Token:               T_CHAR                char
+Token:         T_IDENTIFIER                   a
+Token:              T_EQUAL                   =
+Token:       T_INT_CONSTANT                   1
+Token:          T_SEMICOLON                   ;

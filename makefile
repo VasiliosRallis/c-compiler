@@ -30,5 +30,6 @@ clean :
 	-rm src/parser/*.output
 	-rm src/parser/*.o
 	-rm src/parser/*.tab.*
-	-rm -r tests/out
+	-rm -r tests/c/out
+	-rm -r tests/python/out
 

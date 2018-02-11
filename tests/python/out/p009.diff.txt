@@ -1,0 +1,13 @@
+1,7c1,4
+< def main():
+< 		if(1=2)
+< 		a=0
+< 
+< 	else:
+< 		b=0
+< 
+---
+> int main(){
+> if(1=2){
+>     int a;
+> }else{int b;}}
