@@ -1,6 +1,6 @@
 Token:                T_INT                 int
-Token:         T_IDENTIFIER                   x
-Token:          T_SEMICOLON                   ;
+Token:                                        x
+Token:                                        ;
 Token:                T_INT                 int
-Token:         T_IDENTIFIER                   y
-Token:          T_SEMICOLON                   ;
+Token:                                        y
+Token:                                        ;
