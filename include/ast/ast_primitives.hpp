@@ -473,8 +473,12 @@ public:
         :expr(_expr){}
         
     virtual void print(std::ostream& dst) const override{
-        expr->print(dst);
-        dst << ";";
+        if(expr != NULL){
+            expr->print(dst);
+            dst << ";";
+        }else{
+            dst << ";";
+        }
     }
     
     virtual void printPy(std::ostream& dst) const override{
@@ -748,26 +752,6 @@ public:
     virtual void printPy(std::ostream& dst)const override{}
 };
 
-
-class ExprStatement: public Node{
-private:
-    NodePtr expr;
-
-public:
-    ExprStatement(NodePtr _expr = NULL)
-        :expr(_expr){}
-        
-    virtual void print(std::ostream& dst)const override{
-        if(expr != NULL){
-            expr->print(dst);
-            dst << ";";
-        }else{
-            dst << ";";
-        }
-    }
-  
-    virtual void printPy(std::ostream& dst)const override{}
-};
 
 class BinaryOperation: public Node{
 private:
