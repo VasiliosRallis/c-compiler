@@ -1,3 +1,5 @@
-Date,		Effort,		Developers,	Milestones,
-26/01/2018,	2,		vgr16,		BasicCLexer,
-04/02/2018,	10,		yhl15;vgr16,	BasicCParser;DeriveManagementPlan,
+Date,		Effort,		Developers,	Milestones
+26/01/2018,	2,		vgr16,		BasicCLexer
+04/02/2018,	10,		yhl15;vgr16,	BasicCParser;DeriveManagementPlan
+07/02/18,2,vg16,Script_Tests_Lexer_parser
+10/02/18,8,vgr16;yhl15,Grammar_Hieracrchy
