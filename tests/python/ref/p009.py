@@ -1,4 +1,5 @@
-int main(){
-if(1=2){
-    int a;
-}else{int b;}}
+def main():
+	if(1=2)
+		a=0
+	else:
+		b=0

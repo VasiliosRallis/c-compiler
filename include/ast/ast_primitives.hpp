@@ -439,31 +439,6 @@ public:
     }
 };
 
-class Expr: public Node{
-private:
-    NodePtr primaryExpr1;
-    NodePtr primaryExpr2;
-    
-public:
-    Expr(NodePtr _primaryExpr1, NodePtr _primaryExpr2)
-        :primaryExpr1(_primaryExpr1), primaryExpr2(_primaryExpr2){}
-        
-    virtual void print(std::ostream& dst) const override{
-        primaryExpr1->print(dst);
-        dst<< "=";
-        primaryExpr2->print(dst);
-    }
-    
-    virtual void printPy(std::ostream& dst) const override{
-        primaryExpr1->printPy(dst);
-        dst<< "=";
-        primaryExpr2->printPy(dst);
-    }
-    virtual ~Expr() override{
-        delete primaryExpr1;
-        delete primaryExpr2;
-   }
-};
 
 class ExprStatement: public Node{
 private:
@@ -729,7 +704,12 @@ public:
         assignmentExpr->print(dst);
     }
     
-    virtual void printPy(std::ostream& dst) const override{}
+    virtual void printPy(std::ostream& dst) const override{
+	unaryExpr->printPy(dst);
+        assignmentOper->printPy(dst);
+        assignmentExpr->printPy(dst);
+
+	}
 };
 
 class ConditionalExpr: public Node{

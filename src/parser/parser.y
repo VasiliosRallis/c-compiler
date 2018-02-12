@@ -182,8 +182,7 @@ STATEMENT : BLOCK { $$ = $1; }
 	      | SELECTION_STATEMENT {$$ = $1;}
 	      | ITERATION_STATEMENT {$$ = $1;}
 
-EXPR_STATEMENT : DECLR_LIST	{ $$ = $1; }
-               | EXPR T_SEMICOLON {$$ = new ExprStatement($1);}
+EXPR_STATEMENT : EXPR T_SEMICOLON {$$ = new ExprStatement($1);}
                | T_SEMICOLON {$$ = new ExprStatement(NULL);} 
 	
 DECLR_LIST : DECLR_LIST VARIABLE_DECLR		{ $$ = new  DeclrList($1,$2); }	

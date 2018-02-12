@@ -1,5 +1,5 @@
 def main():
-	if()
+	if(1=2)
 		a=0
 
 	else:
