@@ -109,8 +109,54 @@ while           {yylval.string = new std::string(yytext); return reportToken(T_W
 return 		    {yylval.string = new std::string(yytext); return reportToken(T_RETURN, yytext);}
 
 \=		        {yylval.string = new std::string(yytext); return reportToken(T_EQUAL, yytext);}
+\>\>=           {yylval.string = new std::string(yytext); return reportToken(T_RIGHT_S_ASSIGN, yytext);}
+\<\<=           {yylval.string = new std::string(yytext); return reportToken(T_LEFT_S_ASSIGN, yytext);}
+\+=             {yylval.string = new std::string(yytext); return reportToken(T_ADD_ASSIGN, yytext);}
+\-=             {yylval.string = new std::string(yytext); return reportToken(T_SUB_ASSIGN, yytext);}
+\*=             {yylval.string = new std::string(yytext); return reportToken(T_MUL_ASSIGN, yytext);}
+\/=             {yylval.string = new std::string(yytext); return reportToken(T_DIV_ASSIGN, yytext);}
+\%=             {yylval.string = new std::string(yytext); return reportToken(T_MOD_ASSIGN, yytext);}
+&=              {yylval.string = new std::string(yytext); return reportToken(T_AND_ASSIGN, yytext);}
+\^=             {yylval.string = new std::string(yytext); return reportToken(T_XOR_ASSIGN, yytext);}
+\|=             {yylval.string = new std::string(yytext); return reportToken(T_OR_ASSIGN, yytext);}
 
-\{			    {yylval.string = new std::string(yytext); return reportToken(T_LCURLBRACKET, yytext); }
+\+\+            {yylval.string = new std::string(yytext); return reportToken(T_INCREMENT, yytext);}
+\-\-            {yylval.string = new std::string(yytext); return reportToken(T_DECREMENT, yytext);}
+
+\?              {yylval.string = new std::string(yytext); return reportToken(T_QUESTION, yytext);}
+\:              {yylval.string = new std::string(yytext); return reportToken(T_COLON, yytext);}
+
+\|\|            {yylval.string = new std::string(yytext); return reportToken(T_LOGICAL_OR, yytext);}
+\&\&            {yylval.string = new std::string(yytext); return reportToken(T_LOGICAL_AND, yytext);}
+
+\|              {yylval.string = new std::string(yytext); return reportToken(T_OR, yytext);}
+\^              {yylval.string = new std::string(yytext); return reportToken(T_XOR, yytext);}
+\&              {yylval.string = new std::string(yytext); return reportToken(T_AND, yytext);}
+
+\=\=            {yylval.string = new std::string(yytext); return reportToken(T_EQUALITY, yytext);}
+\!\=            {yylval.string = new std::string(yytext); return reportToken(T_INEQUALITY, yytext);}
+
+\<              {yylval.string = new std::string(yytext); return reportToken(T_SMALLER, yytext);}
+\>              {yylval.string = new std::string(yytext); return reportToken(T_GREATER, yytext);}
+\<\=            {yylval.string = new std::string(yytext); return reportToken(T_SMALLER_EQUAL, yytext);}
+\>\=            {yylval.string = new std::string(yytext); return reportToken(T_GREATER_EQUAL, yytext);}
+
+\<\<            {yylval.string = new std::string(yytext); return reportToken(T_SHIFT_L, yytext);}
+\>\>            {yylval.string = new std::string(yytext); return reportToken(T_SHIFT_R, yytext);}
+
+\+              {yylval.string = new std::string(yytext); return reportToken(T_PLUS, yytext);}
+\-              {yylval.string = new std::string(yytext); return reportToken(T_MINUS, yytext);}
+
+\*              {yylval.string = new std::string(yytext); return reportToken(T_MULT, yytext);}
+\/              {yylval.string = new std::string(yytext); return reportToken(T_DIV, yytext);}
+\%              {yylval.string = new std::string(yytext); return reportToken(T_MOD, yytext);}
+
+\-\>            {yylval.string = new std::string(yytext); return reportToken(T_ARROW, yytext);}
+\.              {yylval.string = new std::string(yytext); return reportToken(T_DOT, yytext);}
+\[              {yylval.string = new std::string(yytext); return reportToken(T_SQUARE_LBRACKET, yytext);}
+\]              {yylval.string = new std::string(yytext); return reportToken(T_SQUARE_RBRACKET  , yytext);}
+
+\{			    {yylval.string = new std::string(yytext); return reportToken(T_LCURLBRACKET, yytext);}
 \}			    {yylval.string = new std::string(yytext); return reportToken(T_RCURLBRACKET, yytext); }
 \(			    {yylval.string = new std::string(yytext); return reportToken(T_LBRACKET, yytext); }
 \)			    {yylval.string = new std::string(yytext); return reportToken(T_RBRACKET, yytext); }

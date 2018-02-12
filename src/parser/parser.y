@@ -27,19 +27,23 @@
 %token T_RETURN T_AUTO T_STRUCT T_BREAK T_ELSE T_SWITCH T_CASE T_ENUM T_REGISTER
 %token T_TYPEDEF T_EXTERN T_UNION T_CONST T_CONTINUE T_FOR T_DEFAULT T_GOTO T_SIZEOF
 %token T_VOLATILE T_DO T_IF T_STATIC T_WHILE
-
-%token T_EQUAL
+%token T_EQUAL T_RIGHT_S_ASSIGN T_LEFT_S_ASSIGN T_ADD_ASSIGN T_SUB_ASSIGN T_MUL_ASSIGN T_DIV_ASSIGN T_MOD_ASSIGN T_AND_ASSIGN T_XOR_ASSIGN T_OR_ASSIGN
 
 %token T_LBRACKET T_RBRACKET T_LCURLBRACKET T_RCURLBRACKET 
-%token T_SEMICOLON T_COMMA
+%token T_SEMICOLON T_COMMA T_QUESTION T_COLON
 %token T_IDENTIFIER
 %token T_INT_CONSTANT T_STR_LIT
+%token T_AMPERSAND T_EXCLAMATION T_TILDE T_INCREMENT T_DECREMENT T_LOGICAL_OR T_LOGICAL_AND T_OR T_AND T_XOR T_EQUALITY T_INEQUALITY
+%token T_SMALLER T_GREATER T_GREATER_EQUAL T_SMALLER_EQUAL T_SHIFT_L T_SHIFT_R T_PLUS T_MINUS T_DIV T_MULT T_MOD
+%token T_ARROW T_DOT T_SQUARE_LBRACKET T_SQUARE_RBRACKET
 
 //Non-terminals declaration
 %type <node> PROGRAM BASIC_PROGRAM VARIABLE_DECLR VAR_TYPE DECLR_LIST BLOCK FUNCTION_DEF
 %type <node> IDENTIFIER_LIST STATEMENT_LIST 
 %type <node> INITIALIZER PRIMARY_EXPR STATEMENT EXPR_STATEMENT EXPR SELECTION_STATEMENT ITERATION_STATEMENT
 %type <node> TYPE_QUALIFIER DECL_SPECIFIER DECL_SPECIFIER_LIST STOR_CLASS_SPEC
+%type <node> ASSIGNMENT_OPER UNARY_EXPR CONDITIONAL_EXPR ASSIGNMENT_EXPR POSTFIX_EXPR CAST_EXPR
+%type <node> LOGICAL_OR_EXPR LOGICAL_AND_EXPR INCLUSIVE_OR_EXPR EXCLUSIVE_OR_EXPR AND_EXPR EQUAL_EXPR RELATIONAL_EXPR SHIFT_EXPR ADDITIVE_EXPR MULT_EXPR ARGUMENT_EXPR_LIST
 
 
 %type <string> T_INT_CONSTANT
@@ -47,6 +51,11 @@
 %type <string> T_INT T_CHAR T_VOID T_SHORT T_LONG T_FLOAT T_DOUBLE T_SIGNED T_UNSIGNED
 %type <string> T_CONST T_VOLATILE T_TYPEDEF T_EXTERN T_STATIC T_AUTO T_REGISTER
 %type <string> T_WHILE T_DO
+%type <string> T_EQUAL T_RIGHT_S_ASSIGN T_LEFT_S_ASSIGN T_ADD_ASSIGN T_SUB_ASSIGN T_MUL_ASSIGN T_DIV_ASSIGN T_MOD_ASSIGN T_AND_ASSIGN T_XOR_ASSIGN T_OR_ASSIGN
+%type <string> T_AMPERSAND T_EXCLAMATION T_TILDE T_INCREMENT T_DECREMENT T_LOGICAL_OR T_LOGICAL_AND T_OR T_AND T_XOR T_EQUALITY T_INEQUALITY
+%type <string> T_SMALLER T_GREATER T_GREATER_EQUAL T_SMALLER_EQUAL T_SHIFT_L T_SHIFT_R T_PLUS T_MINUS T_DIV T_MULT T_MOD UNARY_OPER
+%type <string> T_ARROW T_DOT T_SQUARE_LBRACKET T_SQUARE_RBRACKET T_LBRACKET T_RBRACKET
+
 
 %start ROOT
 
@@ -80,7 +89,90 @@ ITERATION_STATEMENT: T_WHILE T_LBRACKET EXPR T_RBRACKET STATEMENT {$$ = new Whil
                    | T_FOR T_LBRACKET EXPR T_SEMICOLON EXPR T_SEMICOLON T_RBRACKET STATEMENT {$$ = new ForStatement($3,$5,NULL,$8);}
                    | T_FOR T_LBRACKET EXPR T_SEMICOLON EXPR T_SEMICOLON EXPR T_RBRACKET STATEMENT {$$ = new ForStatement($3,$5,$7,$9);}
 
-EXPR: PRIMARY_EXPR T_EQUAL PRIMARY_EXPR {$$ = new Expr($1, $3);}
+EXPR: ASSIGNMENT_EXPR {$$ = $1;} //Add more
+
+ASSIGNMENT_EXPR: CONDITIONAL_EXPR {$$ = $1;}
+               | UNARY_EXPR ASSIGNMENT_OPER ASSIGNMENT_EXPR {$$ = new AssignmentExpr($1, $2, $3);}
+               
+CONDITIONAL_EXPR: LOGICAL_OR_EXPR {$$ = $1;}
+                | LOGICAL_OR_EXPR T_QUESTION EXPR T_COLON CONDITIONAL_EXPR {$$ = new ConditionalExpr($1, $3, $5);}
+                
+LOGICAL_OR_EXPR: LOGICAL_AND_EXPR {$$ = $1;}
+               | LOGICAL_OR_EXPR T_LOGICAL_OR LOGICAL_AND_EXPR {$$ = new BinaryOperation($1, $2, $3);}
+               
+LOGICAL_AND_EXPR: INCLUSIVE_OR_EXPR {$$ = $1;}
+                | LOGICAL_AND_EXPR T_LOGICAL_AND INCLUSIVE_OR_EXPR {$$ = new BinaryOperation($1, $2, $3);}
+                
+INCLUSIVE_OR_EXPR: EXCLUSIVE_OR_EXPR {$$ = $1;}
+                 | INCLUSIVE_OR_EXPR T_OR EXCLUSIVE_OR_EXPR {$$ = new BinaryOperation($1, $2, $3);}
+                 
+EXCLUSIVE_OR_EXPR: AND_EXPR {$$ = $1;}
+                 | EXCLUSIVE_OR_EXPR T_XOR AND_EXPR {$$ = new BinaryOperation($1, $2, $3);}
+                 
+AND_EXPR: EQUAL_EXPR {$$ = $1;}
+        | AND_EXPR T_AND EQUAL_EXPR {$$ = new BinaryOperation($1, $2, $3);}
+        
+EQUAL_EXPR: RELATIONAL_EXPR {$$ = $1;}
+          | EQUAL_EXPR T_EQUALITY RELATIONAL_EXPR {$$ = new BinaryOperation($1, $2, $3);}
+          | EQUAL_EXPR T_INEQUALITY RELATIONAL_EXPR {$$ = new BinaryOperation($1, $2, $3);}
+     
+RELATIONAL_EXPR: SHIFT_EXPR {$$ = $1;}
+               | RELATIONAL_EXPR T_SMALLER SHIFT_EXPR {$$ = new BinaryOperation($1, $2, $3);}
+               | RELATIONAL_EXPR T_GREATER SHIFT_EXPR {$$ = new BinaryOperation($1, $2, $3);}
+               | RELATIONAL_EXPR T_SMALLER_EQUAL SHIFT_EXPR {$$ = new BinaryOperation($1, $2, $3);}
+               | RELATIONAL_EXPR T_GREATER_EQUAL SHIFT_EXPR {$$ = new BinaryOperation($1, $2, $3);}
+               
+SHIFT_EXPR: ADDITIVE_EXPR {$$ = $1;}
+          | SHIFT_EXPR T_SHIFT_L ADDITIVE_EXPR {$$ = new BinaryOperation($1, $2, $3);}
+          | SHIFT_EXPR T_SHIFT_R ADDITIVE_EXPR {$$ = new BinaryOperation($1, $2, $3);}
+          
+ADDITIVE_EXPR: MULT_EXPR {$$ = $1;}
+             | ADDITIVE_EXPR T_PLUS MULT_EXPR {$$ = new BinaryOperation($1, $2, $3);}
+             | ADDITIVE_EXPR T_MINUS MULT_EXPR {$$ = new BinaryOperation($1, $2, $3);}
+             
+MULT_EXPR: CAST_EXPR {$$ = $1;}
+         | MULT_EXPR T_MULT CAST_EXPR {$$ = new BinaryOperation($1, $2, $3);}
+         | MULT_EXPR T_DIV CAST_EXPR {$$ = new BinaryOperation($1, $2, $3);}
+         | MULT_EXPR T_MOD CAST_EXPR {$$ = new BinaryOperation($1, $2, $3);}
+                       
+UNARY_EXPR: POSTFIX_EXPR {$$ = $1;}
+          | T_INCREMENT UNARY_EXPR {$$ = new UnaryExpr($1,$2);}
+          | T_DECREMENT UNARY_EXPR {$$ = new UnaryExpr($1,$2);}
+          | UNARY_OPER CAST_EXPR {$$ = new UnaryExpr($1,$2);} //Add more
+
+UNARY_OPER: T_AMPERSAND {$$ = $1;}
+          | T_MULT      {$$ = $1;}
+          | T_PLUS      {$$ = $1;}
+          | T_MINUS     {$$ = $1;}
+          | T_TILDE     {$$ = $1;}
+          | T_EXCLAMATION {$$ = $1;}
+          
+CAST_EXPR: UNARY_EXPR {$$ = $1;}
+         | T_LBRACKET VAR_TYPE T_RBRACKET CAST_EXPR {$$ = new CastExpr($2, $4);} //Temporary use VarType instead of TYPE_NAME
+          
+POSTFIX_EXPR: PRIMARY_EXPR {$$ = $1;}
+            | POSTFIX_EXPR T_SQUARE_LBRACKET EXPR T_SQUARE_RBRACKET {$$ = new PostfixExpr($1, $2, $3, $4);}
+            | POSTFIX_EXPR T_LBRACKET ARGUMENT_EXPR_LIST T_RBRACKET {$$ = new PostfixExpr($1, $2, $3, $4);}
+            | POSTFIX_EXPR T_LBRACKET T_RBRACKET {$$ = new PostfixExpr($1, $2, NULL, $3);}
+            | POSTFIX_EXPR T_DOT T_IDENTIFIER {$$ = new PostfixExpr($1, $2, new Identifier($3), NULL);}
+            | POSTFIX_EXPR T_ARROW T_IDENTIFIER {$$ = new PostfixExpr($1, $2, new Identifier($3), NULL);}
+            | POSTFIX_EXPR T_INCREMENT {$$ = new PostfixExpr($1, NULL, NULL, NULL);}
+            | POSTFIX_EXPR T_DECREMENT {$$ = new PostfixExpr($1, NULL, NULL, NULL);}
+            
+ARGUMENT_EXPR_LIST: ASSIGNMENT_EXPR {$$ = $1;}
+                  | ARGUMENT_EXPR_LIST T_COMMA ASSIGNMENT_EXPR {$$ = new ArgumentExprList($1, $3);}
+
+ASSIGNMENT_OPER: T_EQUAL {$$ = new Operator($1);}
+               | T_RIGHT_S_ASSIGN {$$ = new Operator($1);}
+               | T_LEFT_S_ASSIGN {$$ = new Operator($1);}
+               | T_ADD_ASSIGN {$$ = new Operator($1);}
+               | T_SUB_ASSIGN {$$ = new Operator($1);}
+               | T_MUL_ASSIGN {$$ = new Operator($1);}
+               | T_DIV_ASSIGN {$$ = new Operator($1);}
+               | T_MOD_ASSIGN {$$ = new Operator($1);}
+               | T_AND_ASSIGN {$$ = new Operator($1);}
+               | T_XOR_ASSIGN {$$ = new Operator($1);}
+               | T_OR_ASSIGN {$$ = new Operator($1);}
 
 STATEMENT_LIST : STATEMENT_LIST STATEMENT	{ $$ = new StatementList($1,$2); }
 		       | STATEMENT { $$ = $1; }
@@ -90,7 +182,9 @@ STATEMENT : BLOCK { $$ = $1; }
 	      | SELECTION_STATEMENT {$$ = $1;}
 	      | ITERATION_STATEMENT {$$ = $1;}
 
-EXPR_STATEMENT : DECLR_LIST	{ $$ = $1; } // AM NOT SURE ABOUT THIS According to documentation, int main() { int a=7; { } int c =5 ;} is allowed, but not int main() { int a =7; { } int c; } but tested on compiler and both compiles.
+EXPR_STATEMENT : DECLR_LIST	{ $$ = $1; }
+               | EXPR T_SEMICOLON {$$ = new ExprStatement($1);}
+               | T_SEMICOLON {$$ = new ExprStatement(NULL);} // AM NOT SURE ABOUT THIS According to documentation, int main() { int a=7; { } int c =5 ;} is allowed, but not int main() { int a =7; { } int c; } but tested on compiler and both compiles.
 	
 DECLR_LIST : DECLR_LIST VARIABLE_DECLR		{ $$ = new  DeclrList($1,$2); }	
 	       | VARIABLE_DECLR				    { $$ = $1; }

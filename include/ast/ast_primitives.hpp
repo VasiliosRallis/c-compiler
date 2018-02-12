@@ -1,4 +1,4 @@
-	#ifndef ast_primitives_hpp
+#ifndef ast_primitives_hpp
 #define ast_primitives_hpp
 
 #include <string>
@@ -644,4 +644,205 @@ public:
         delete expr;
      }   
 };
+
+class Operator: public Node{
+private:
+    const std::string* oper;
+public:
+    Operator(const std::string* _oper)
+        :oper(_oper){}
+        
+    virtual void print(std::ostream& dst)const override{
+        dst << *oper;
+    }
+    
+    virtual void printPy(std::ostream& dst)const override{
+        dst << *oper;
+    }
+    
+    ~Operator(){
+        delete oper;
+     }
+};
+
+class UnaryExpr: public Node{
+private:
+    const std::string* oper;
+    NodePtr postfixExpr;
+public:
+    UnaryExpr(const std::string* _oper, NodePtr _postfixExpr)
+        :oper(_oper), postfixExpr(_postfixExpr){}
+        
+    virtual void print(std::ostream& dst) const override{
+        dst << *oper;
+        postfixExpr->print(dst);
+    }
+    
+    virtual void printPy(std::ostream& dst)const override{}
+};
+
+class AssignmentExpr: public Node{
+private:
+    NodePtr unaryExpr;
+    NodePtr assignmentOper;
+    NodePtr assignmentExpr;
+public:
+    AssignmentExpr(NodePtr _unaryExpr, NodePtr _assignmentOper, NodePtr _assignmentExpr)
+        :unaryExpr(_unaryExpr), assignmentOper(_assignmentOper), assignmentExpr(_assignmentExpr){}
+        
+    virtual void print(std::ostream& dst)const override{
+        unaryExpr->print(dst);
+        assignmentOper->print(dst);
+        assignmentExpr->print(dst);
+    }
+    
+    virtual void printPy(std::ostream& dst) const override{}
+};
+
+class ConditionalExpr: public Node{
+private:
+    NodePtr logicalOrExpr;
+    NodePtr expr;
+    NodePtr conditionalExpr;
+
+public:
+    ConditionalExpr(NodePtr _logicalOrExpr, NodePtr _expr, NodePtr _conditionalExpr)
+        :logicalOrExpr(_logicalOrExpr), expr(_expr), conditionalExpr(_conditionalExpr){}
+        
+    virtual void print(std::ostream& dst)const override{
+        logicalOrExpr->print(dst);
+        dst << " ? ";
+        expr->print(dst);
+        dst << " : ";
+        conditionalExpr->print(dst);
+    }
+    virtual void printPy(std::ostream& dst)const override{}
+};
+
+
+class ExprStatement: public Node{
+private:
+    NodePtr expr;
+
+public:
+    ExprStatement(NodePtr _expr = NULL)
+        :expr(_expr){}
+        
+    virtual void print(std::ostream& dst)const override{
+        if(expr != NULL){
+            expr->print(dst);
+            dst << ";";
+        }else{
+            dst << ";";
+        }
+    }
+  
+    virtual void printPy(std::ostream& dst)const override{}
+};
+
+class BinaryOperation: public Node{
+private:
+    NodePtr operand1;
+    std::string* oper;
+    NodePtr operand2;
+    
+public:
+    BinaryOperation(NodePtr _operand1, std::string* _oper, NodePtr _operand2)
+        :operand1(_operand1), oper(_oper), operand2(_operand2){}
+        
+    virtual void print(std::ostream& dst)const override{
+        operand1->print(dst);
+        dst << " " << *oper << " ";
+        operand2->print(dst);
+    }
+    
+    virtual void printPy(std::ostream& dst)const override{}
+    
+    virtual ~BinaryOperation()override{
+        delete operand1;
+        delete oper;
+        delete operand2;
+     }
+};
+
+class CastExpr: public Node{
+private:
+    NodePtr typeName;
+    NodePtr unaryExpr;
+    
+public:
+    CastExpr(NodePtr _typeName, NodePtr _unaryExpr)
+        :typeName(_typeName), unaryExpr(_unaryExpr){}
+        
+    virtual void print(std::ostream& dst)const override{
+        dst << "(";
+        typeName->print(dst);
+        dst << ")";
+        unaryExpr->print(dst);
+    }
+   
+   virtual void printPy(std::ostream& dst)const override{}
+   
+   virtual ~CastExpr()override{
+        delete typeName;
+        delete unaryExpr;
+   }
+};
+
+class PostfixExpr: public Node{
+private:
+    NodePtr primaryExpr;
+    const std::string* oper1;
+    NodePtr operand;
+    const std::string* oper2;
+    
+public:
+    PostfixExpr(NodePtr _primaryExpr, const std::string* _oper1, NodePtr _operand, const std::string* _oper2)
+        :primaryExpr(_primaryExpr), oper1(_oper1), operand(_operand), oper2(_oper2){}
+        
+    virtual void print(std::ostream& dst)const override{
+        primaryExpr->print(dst);
+        if(oper1 != NULL){
+            dst << *oper1;
+        }
+        if(operand != NULL){
+            operand->print(dst);
+        }
+        if(oper2 != NULL){
+            dst << *oper2;
+        }
+    }
+    
+    virtual void printPy(std::ostream& dst)const override{}
+    
+    virtual ~PostfixExpr()override{
+        delete primaryExpr;
+        delete oper1;
+        delete operand;
+        delete oper2;
+    }
+};
+
+class ArgumentExprList: public Node{
+private:
+    NodePtr argumentExprList;
+    NodePtr assignmentExpr;
+
+public:
+    ArgumentExprList(NodePtr _argumentExprList, NodePtr _assignmentExpr)
+        :argumentExprList(_argumentExprList), assignmentExpr(_assignmentExpr){}
+        
+    virtual void print(std::ostream& dst)const override{
+        argumentExprList->print(dst);
+        dst << " ";
+        assignmentExpr->print(dst);
+    }
+    
+    virtual void printPy(std::ostream& dst)const override{}
+    
+    virtual ~ArgumentExprList()override{
+        delete argumentExprList;
+        delete assignmentExpr;
+    }
+};   
 #endif

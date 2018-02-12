@@ -6,7 +6,7 @@ CPPFLAGS += -W -Wall -g
 CPPFLAGS += -std=c++11
 
 # Avoid warnings about yyunput not used
-CPPFLAGS += -Wno-unused-function -Wno-sign-compare
+CPPFLAGS += -Wno-unused-function -Wno-sign-compare -Wno-unused-parameter
 
 # Indudes paths
 CPPFLAGS += $(INCLUDE)
