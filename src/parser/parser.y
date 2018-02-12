@@ -90,7 +90,7 @@ STATEMENT : BLOCK { $$ = $1; }
 	      | SELECTION_STATEMENT {$$ = $1;}
 	      | ITERATION_STATEMENT {$$ = $1;}
 
-EXPR_STATEMENT : DECLR_LIST	{ $$ = $1; } // AM NOT SURE ABOUT THIS According to documentation, int main() { int a=7; { } int c =5 ;} is allowed, but not int main() { int a =7; { } int c; } but tested on compiler and both compiles.
+EXPR_STATEMENT : EXPR T_SEMICOLON { $$ = new ExprStatement($1); } // Only assignment can compound statement, also here we should have expr statement as expr or expr semioclon
 	
 DECLR_LIST : DECLR_LIST VARIABLE_DECLR		{ $$ = new  DeclrList($1,$2); }	
 	       | VARIABLE_DECLR				    { $$ = $1; }

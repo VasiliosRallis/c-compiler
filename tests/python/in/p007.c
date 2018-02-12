@@ -2,7 +2,7 @@ void f(){
     int x;
     int y;
     {
-    int a;
+    	int a;
     }
-    int b;
-    }
+    x=4;
+}

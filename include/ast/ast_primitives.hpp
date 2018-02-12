@@ -223,13 +223,13 @@ public:
 	    block->print(dst);
     }
     
-    virtual void printPy(std::ostream& dst) const override{
-        dst << "def ";
+    virtual void printPy(std::ostream& dst) const override{    
+	 dst << "def ";
         identifier->printPy(dst);
         dst << "():\n";
-        for(int i(0); i < g_depth + 1; ++i){
+       /* for(int i(0); i < g_depth + 1; ++i){
            dst << "\t";
-        }
+        }*/
         //if(g_variables != ""){
         //    dst << "global ";
         //    dst << g_variables;
@@ -263,6 +263,9 @@ public:
     }
     
     virtual void printPy(std::ostream& dst) const override{
+	program->printPy(dst);
+	dst << "\n";
+	basicProgram->printPy(dst);
     //    if(dynamic_cast<const VarDeclr*>(program)){
     //       dynamic_cast<const VarDeclr*>(program)->getGlobal(); 
     //    }
@@ -452,14 +455,38 @@ public:
     }
     
     virtual void printPy(std::ostream& dst) const override{
-        primaryExpr1->print(dst);
+        primaryExpr1->printPy(dst);
         dst<< "=";
-        primaryExpr2->print(dst);
+        primaryExpr2->printPy(dst);
     }
     virtual ~Expr() override{
         delete primaryExpr1;
         delete primaryExpr2;
    }
+};
+
+class ExprStatement: public Node{
+private:
+    NodePtr expr;    
+public:
+    ExprStatement(NodePtr _expr)
+        :expr(_expr){}
+        
+    virtual void print(std::ostream& dst) const override{
+        expr->print(dst);
+        dst << ";";
+    }
+    
+    virtual void printPy(std::ostream& dst) const override{
+	for(int i(0); i < g_depth; ++i){
+		dst << "\t";
+	}
+	expr->printPy(dst);
+    }
+    
+    virtual ~ExprStatement() override{
+        delete expr;
+    }
 };
 
 class IfStatement: public Node{
@@ -638,7 +665,9 @@ public:
         dst << ")";
     }
     
-    virtual void printPy(std::ostream& dst) const override{}
+    virtual void printPy(std::ostream& dst) const override{
+	expr -> printPy(dst);	
+	}
         
     ~PrimaryExpr() override{
         delete expr;

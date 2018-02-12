@@ -14,7 +14,8 @@ Token:                T_INT                 int
 Token:         T_IDENTIFIER                   a
 Token:          T_SEMICOLON                   ;
 Token:       T_RCURLBRACKET                   }
-Token:                T_INT                 int
-Token:         T_IDENTIFIER                   b
+Token:         T_IDENTIFIER                   x
+Token:              T_EQUAL                   =
+Token:       T_INT_CONSTANT                   4
 Token:          T_SEMICOLON                   ;
 Token:       T_RCURLBRACKET                   }

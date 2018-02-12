@@ -4,7 +4,7 @@ Token:           T_LBRACKET                   (
 Token:           T_RBRACKET                   )
 Token:       T_LCURLBRACKET                   {
 Token:                T_INT                 int
-Token:         T_IDENTIFIER                   c
+Token:         T_IDENTIFIER                   b
 Token:              T_EQUAL                   =
 Token:       T_INT_CONSTANT                   7
 Token:          T_SEMICOLON                   ;
@@ -15,9 +15,8 @@ Token:              T_EQUAL                   =
 Token:       T_INT_CONSTANT                   4
 Token:          T_SEMICOLON                   ;
 Token:       T_RCURLBRACKET                   }
-Token:                T_INT                 int
 Token:         T_IDENTIFIER                   b
 Token:              T_EQUAL                   =
-Token:       T_INT_CONSTANT                   7
+Token:       T_INT_CONSTANT                   4
 Token:          T_SEMICOLON                   ;
 Token:       T_RCURLBRACKET                   }

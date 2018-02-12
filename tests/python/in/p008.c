@@ -4,5 +4,5 @@ void f(){
     {
     int a;
     }
-    int b;
+    x=4;
     }

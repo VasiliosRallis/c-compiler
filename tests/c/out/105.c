@@ -1,1 +1,1 @@
-int main(){int c = 7;{int a = 4;}int b = 7;}
+int main(){int b = 7;{int a = 4;}b=4;}
