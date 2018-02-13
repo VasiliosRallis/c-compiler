@@ -1,0 +1,15 @@
+Token:                T_INT                 int
+Token:         T_IDENTIFIER                   a
+Token:              T_EQUAL                   =
+Token:       T_INT_CONSTANT                   7
+Token:              T_COMMA                   ,
+Token:         T_IDENTIFIER                   b
+Token:              T_EQUAL                   =
+Token:       T_INT_CONSTANT                   8
+Token:          T_SEMICOLON                   ;
+Token:                T_INT                 int
+Token:         T_IDENTIFIER                   f
+Token:           T_LBRACKET                   (
+Token:           T_RBRACKET                   )
+Token:       T_LCURLBRACKET                   {
+Token:       T_RCURLBRACKET                   }

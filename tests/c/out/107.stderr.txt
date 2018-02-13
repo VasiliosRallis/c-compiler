@@ -1,0 +1,9 @@
+Token:                T_INT                 int
+Token:         T_IDENTIFIER                   a
+Token:          T_SEMICOLON                   ;
+Token:                T_INT                 int
+Token:         T_IDENTIFIER                   f
+Token:           T_LBRACKET                   (
+Token:           T_RBRACKET                   )
+Token:       T_LCURLBRACKET                   {
+Token:       T_RCURLBRACKET                   }

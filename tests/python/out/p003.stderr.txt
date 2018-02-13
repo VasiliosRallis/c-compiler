@@ -1,5 +1,5 @@
 Token:                T_INT                 int
-Token:                                        a
+Token:         T_IDENTIFIER                   a
 Token:              T_EQUAL                   =
-Token:                                        2
-Token:                                        ;
+Token:       T_INT_CONSTANT                   2
+Token:          T_SEMICOLON                   ;
