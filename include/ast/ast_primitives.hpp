@@ -11,6 +11,100 @@ extern std::vector<std::string> g_var;
 
 //class Identifier: public Node;
 
+class Declaration : public Node {
+private:
+    NodePtr declrspecList;    
+    NodePtr initdeclrList;
+public:
+    Declaration(NodePtr _declrspecList, NodePtr _initdeclrList)
+        : declrspecList(_declrspecList), initdeclrList(_initdeclrList) {}
+    
+    virtual void print(std::ostream& dst) const override{
+        declrspecList->print(dst);
+	dst << " ";
+	if(initdeclrList != NULL) {       
+        	initdeclrList->print(dst);
+	}
+        dst << ";";
+    }
+    
+    virtual void printPy(std::ostream& dst) const override{ }
+       
+    virtual ~Declaration() override{
+        delete declrspecList;
+        delete initdeclrList;
+    }
+
+};
+
+class InitDeclaratorList : public Node {
+private:
+	NodePtr initdeclrList;    
+	NodePtr initdeclr;
+    
+public:
+    InitDeclaratorList(NodePtr _initdeclrList, NodePtr _initdeclr)
+        : initdeclrList(_initdeclrList), initdeclr(_initdeclr) {}
+
+    virtual void print(std::ostream& dst) const override{
+        initdeclrList->print(dst);
+	dst << "," ;
+	    initdeclr ->print(dst);
+    }
+    
+    virtual void printPy(std::ostream& dst) const override{    }
+    
+    virtual ~InitDeclaratorList() override{
+        delete initdeclrList;
+        delete initdeclr;
+    }
+
+};
+
+
+class InitDeclarator : public Node {
+private:
+    NodePtr directDeclarator;    
+    NodePtr asgnExpr;
+public:
+    InitDeclarator(NodePtr _directDeclarator, NodePtr _asgnExpr)
+        : directDeclarator(_directDeclarator), asgnExpr(_asgnExpr) {}
+    
+    virtual void print(std::ostream& dst) const override{
+        directDeclarator->print(dst);
+	dst << "=";      
+        asgnExpr->print(dst);
+    }
+    
+    virtual void printPy(std::ostream& dst) const override{ }
+       
+    virtual ~InitDeclarator() override{
+        delete directDeclarator;
+        delete asgnExpr;
+    }
+
+};
+
+class FunctionDeclaration : public Node {
+private:
+    NodePtr directDeclarator;    
+public:
+    FunctionDeclaration(NodePtr _directDeclarator)
+        : directDeclarator(_directDeclarator) {}
+    
+    virtual void print(std::ostream& dst) const override{
+        directDeclarator->print(dst);
+	dst << "()";      
+    }
+    
+    virtual void printPy(std::ostream& dst) const override{ }
+       
+    virtual ~FunctionDeclaration() override{
+        delete directDeclarator;
+    }
+
+};
+
 class VarType: public Node{
 private:
     const std::string* type;
@@ -212,12 +306,12 @@ public:
 class FunctionDef: public Node{
 private:
 	NodePtr varType;
-	NodePtr identifier;   
+	NodePtr directDeclarator;   
 	NodePtr block;
     
 public:
-    FunctionDef(NodePtr _varType, NodePtr _identifier, NodePtr _block)
-        : varType(_varType), identifier(_identifier), block(_block) {}
+    FunctionDef(NodePtr _varType, NodePtr _directDeclarator, NodePtr _block)
+        : varType(_varType), directDeclarator(_directDeclarator), block(_block) {}
         
     std::vector<std::string> gVar;
         
@@ -225,15 +319,15 @@ public:
     virtual void print(std::ostream& dst) const override{
 	    varType->print(dst);
         dst << " ";
-        identifier->print(dst);
-        dst << "()";
+        directDeclarator->print(dst);
 	    block->print(dst);
     }
     
-    virtual void printPy(std::ostream& dst) const override{
-        dst << "def ";
-        identifier->printPy(dst);
+    virtual void printPy(std::ostream& dst) const override{    
+	 dst << "def ";
+        directDeclarator->printPy(dst);
         dst << "():\n";
+<<<<<<< HEAD
         
         for(int j(0); j < g_var.size(); j++){
             for(int i(0); i < g_depth + 1; ++i){
@@ -242,13 +336,22 @@ public:
             dst << "global: ";
             dst << g_var[j];
        }
+=======
+       /* for(int i(0); i < g_depth + 1; ++i){
+           dst << "\t";
+        }*/
+        //if(g_variables != ""){
+        //    dst << "global ";
+        //    dst << g_variables;
+        //}
+>>>>>>> 087bb6602a75646f948c5532375e9c6f75cb869a
         
         block->printPy(dst);
     }
     
     virtual ~FunctionDef() override{
         delete varType;
-        delete identifier;
+        delete directDeclarator;
         delete block;
     }
     
@@ -271,9 +374,18 @@ public:
     }
     
     virtual void printPy(std::ostream& dst) const override{
+<<<<<<< HEAD
         if(dynamic_cast<const VarDeclr*>(program)){
            dynamic_cast<const VarDeclr*>(program)->sendGlobal(); 
         }
+=======
+	program->printPy(dst);
+	dst << "\n";
+	basicProgram->printPy(dst);
+    //    if(dynamic_cast<const VarDeclr*>(program)){
+    //       dynamic_cast<const VarDeclr*>(program)->getGlobal(); 
+    //    }
+>>>>>>> 087bb6602a75646f948c5532375e9c6f75cb869a
     }
     
     virtual ~Program() override{
@@ -416,30 +528,33 @@ public:
     }
 };
 
-class Expr: public Node{
+
+class ExprStatement: public Node{
 private:
-    NodePtr primaryExpr1;
-    NodePtr primaryExpr2;
-    
+    NodePtr expr;    
 public:
-    Expr(NodePtr _primaryExpr1, NodePtr _primaryExpr2)
-        :primaryExpr1(_primaryExpr1), primaryExpr2(_primaryExpr2){}
+    ExprStatement(NodePtr _expr)
+        :expr(_expr){}
         
     virtual void print(std::ostream& dst) const override{
-        primaryExpr1->print(dst);
-        dst<< "=";
-        primaryExpr2->print(dst);
+        if(expr != NULL){
+            expr->print(dst);
+            dst << ";";
+        }else{
+            dst << ";";
+        }
     }
     
     virtual void printPy(std::ostream& dst) const override{
-        primaryExpr1->print(dst);
-        dst<< "=";
-        primaryExpr2->print(dst);
+	for(int i(0); i < g_depth; ++i){
+		dst << "\t";
+	}
+	expr->printPy(dst);
     }
-    virtual ~Expr() override{
-        delete primaryExpr1;
-        delete primaryExpr2;
-   }
+    
+    virtual ~ExprStatement() override{
+        delete expr;
+    }
 };
 
 class IfStatement: public Node{
@@ -618,7 +733,9 @@ public:
         dst << ")";
     }
     
-    virtual void printPy(std::ostream& dst) const override{}
+    virtual void printPy(std::ostream& dst) const override{
+	expr -> printPy(dst);	
+	}
         
     ~PrimaryExpr() override{
         delete expr;
@@ -676,7 +793,12 @@ public:
         assignmentExpr->print(dst);
     }
     
-    virtual void printPy(std::ostream& dst) const override{}
+    virtual void printPy(std::ostream& dst) const override{
+	unaryExpr->printPy(dst);
+        assignmentOper->printPy(dst);
+        assignmentExpr->printPy(dst);
+
+	}
 };
 
 class ConditionalExpr: public Node{
@@ -699,26 +821,6 @@ public:
     virtual void printPy(std::ostream& dst)const override{}
 };
 
-
-class ExprStatement: public Node{
-private:
-    NodePtr expr;
-
-public:
-    ExprStatement(NodePtr _expr = NULL)
-        :expr(_expr){}
-        
-    virtual void print(std::ostream& dst)const override{
-        if(expr != NULL){
-            expr->print(dst);
-            dst << ";";
-        }else{
-            dst << ";";
-        }
-    }
-  
-    virtual void printPy(std::ostream& dst)const override{}
-};
 
 class BinaryOperation: public Node{
 private:

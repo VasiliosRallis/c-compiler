@@ -1,9 +1,0 @@
-Token:                 NONE                 int
-Token:                 NONE                main
-Token:                 NONE                   (
-Token:                 NONE                   )
-Token:                 NONE                   {
-Token:                 NONE              return
-Token:                 NONE                   0
-Token:                 NONE                   ;
-Token:                 NONE                   }

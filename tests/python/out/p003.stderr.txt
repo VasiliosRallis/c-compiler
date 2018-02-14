@@ -1,5 +1,0 @@
-Token:                 NONE                 int
-Token:                 NONE                   a
-Token:                 NONE                   =
-Token:                 NONE                   2
-Token:                 NONE                   ;

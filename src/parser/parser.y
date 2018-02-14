@@ -38,8 +38,8 @@
 %token T_ARROW T_DOT T_SQUARE_LBRACKET T_SQUARE_RBRACKET
 
 //Non-terminals declaration
-%type <node> PROGRAM BASIC_PROGRAM VARIABLE_DECLR VAR_TYPE DECLR_LIST BLOCK FUNCTION_DEF
-%type <node> IDENTIFIER_LIST STATEMENT_LIST 
+%type <node> PROGRAM EXT_DECLARATION VARIABLE_DECLR VAR_TYPE DECLR_LIST BLOCK FUNCTION_DEF DECLARATION INIT_DECLARATOR DIRECT_DECLARATOR
+%type <node> IDENTIFIER_LIST STATEMENT_LIST INIT_DECLARATOR_LIST
 %type <node> INITIALIZER PRIMARY_EXPR STATEMENT EXPR_STATEMENT EXPR SELECTION_STATEMENT ITERATION_STATEMENT
 %type <node> TYPE_QUALIFIER DECL_SPECIFIER DECL_SPECIFIER_LIST STOR_CLASS_SPEC
 %type <node> ASSIGNMENT_OPER UNARY_EXPR CONDITIONAL_EXPR ASSIGNMENT_EXPR POSTFIX_EXPR CAST_EXPR
@@ -66,6 +66,7 @@ ROOT : PROGRAM { g_root = $1; }
 
 //BASIC_PROGRAM is the simplest program that will actually compile
 //A PROGRAM consists of zero or more basic programs I haven't added the zero case I'm not sure how to do it
+<<<<<<< HEAD
 PROGRAM : BASIC_PROGRAM {$$ = $1;}
         | PROGRAM BASIC_PROGRAM {$$ = new Program($1, $2);}
        
@@ -73,6 +74,28 @@ BASIC_PROGRAM : FUNCTION_DEF {$$ = $1;}
 	          | DECLR_LIST {$$ = $1;}
 
 FUNCTION_DEF : DECL_SPECIFIER_LIST T_IDENTIFIER T_LBRACKET T_RBRACKET BLOCK {$$ = new FunctionDef($1,new Identifier(new std::string("2")),$5) ;}
+=======
+PROGRAM : PROGRAM EXT_DECLARATION {$$ = new Program($1, $2);}
+        | EXT_DECLARATION {$$ = $1;}
+       
+EXT_DECLARATION :FUNCTION_DEF {$$ = $1;}
+		|DECLARATION {$$ =$1;} //DECLR_LIST {$$ = $1;} 
+
+DECLARATION : DECL_SPECIFIER_LIST T_SEMICOLON { $$ = new Declaration($1,NULL); }
+		|DECL_SPECIFIER_LIST INIT_DECLARATOR_LIST T_SEMICOLON { $$ = new Declaration($1,$2); }
+
+INIT_DECLARATOR_LIST : INIT_DECLARATOR { $$ = $1 ; }
+			| INIT_DECLARATOR_LIST T_COMMA INIT_DECLARATOR { $$ = new InitDeclaratorList($1,$3); }
+
+INIT_DECLARATOR : DIRECT_DECLARATOR { $$ = $1;}
+		| DIRECT_DECLARATOR T_EQUAL ASSIGNMENT_EXPR { $$ = new InitDeclarator($1,$3); }
+
+DIRECT_DECLARATOR : T_IDENTIFIER { $$ = new Identifier($1); }
+		| DIRECT_DECLARATOR T_LBRACKET T_RBRACKET { $$ = new FunctionDeclaration($1); }
+		
+
+FUNCTION_DEF : DECL_SPECIFIER_LIST DIRECT_DECLARATOR BLOCK {$$ = new FunctionDef($1,$2,$3) ;}
+>>>>>>> 087bb6602a75646f948c5532375e9c6f75cb869a
 
 BLOCK : T_LCURLBRACKET STATEMENT_LIST T_RCURLBRACKET { $$ = new Block(NULL,$2); }
 	  | T_LCURLBRACKET DECLR_LIST T_RCURLBRACKET { $$ = new Block($2); }
@@ -184,9 +207,8 @@ STATEMENT : BLOCK { $$ = $1; }
 	      | ITERATION_STATEMENT {$$ = $1;}
 	      | JUMP_STATEMENT {$$ = $1;}
 
-EXPR_STATEMENT : DECLR_LIST	{ $$ = $1; }
-               | EXPR T_SEMICOLON {$$ = new ExprStatement($1);}
-               | T_SEMICOLON {$$ = new ExprStatement(NULL);} // AM NOT SURE ABOUT THIS According to documentation, int main() { int a=7; { } int c =5 ;} is allowed, but not int main() { int a =7; { } int c; } but tested on compiler and both compiles.
+EXPR_STATEMENT : EXPR T_SEMICOLON {$$ = new ExprStatement($1);}
+               | T_SEMICOLON {$$ = new ExprStatement(NULL);} 
 	
 JUMP_STATEMENT: T_GOTO T_IDENTIFIER T_SEMICOLON {$$ = new JumpStatement($1, new Identifier($2));}
               | T_CONTINUE T_SEMICOLON {$$ = new JumpStatement($1, NULL);}

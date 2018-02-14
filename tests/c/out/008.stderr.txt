@@ -1,5 +1,0 @@
-Token:                 NONE                char
-Token:                 NONE                   a
-Token:                 NONE                   =
-Token:                 NONE                   1
-Token:                 NONE                   ;

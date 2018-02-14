@@ -1,3 +1,0 @@
-Token:                 NONE                 int
-Token:                 NONE                   a
-Token:                 NONE                   ;

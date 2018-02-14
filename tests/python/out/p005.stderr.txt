@@ -1,6 +1,0 @@
-Token:                 NONE                 int
-Token:                 NONE                   x
-Token:                 NONE                   ;
-Token:                 NONE                 int
-Token:                 NONE                   y
-Token:                 NONE                   ;

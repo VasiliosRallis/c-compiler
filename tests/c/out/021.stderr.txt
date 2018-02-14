@@ -1,9 +1,0 @@
-Token:                 NONE                void
-Token:                 NONE                   f
-Token:                 NONE                   (
-Token:                 NONE                   )
-Token:                 NONE                   {
-Token:                 NONE                   }
-Token:                 NONE                 int
-Token:                 NONE                   ;
-Flex Error: syntax error

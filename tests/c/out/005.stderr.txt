@@ -1,6 +1,0 @@
-Token:                 NONE                void
-Token:                 NONE                  fo
-Token:                 NONE                   (
-Token:                 NONE                   )
-Token:                 NONE                   {
-Token:                 NONE                   }

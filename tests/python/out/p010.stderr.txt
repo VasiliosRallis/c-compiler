@@ -1,7 +1,0 @@
-Token:                 NONE                 int
-Token:                 NONE                   a
-Token:                 NONE                   ;
-Token:                 NONE                 int
-Token:                 NONE                   f
-Token:                 NONE                   (
-Flex Error: syntax error
