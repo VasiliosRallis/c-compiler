@@ -43,7 +43,7 @@
 %type <node> INITIALIZER PRIMARY_EXPR STATEMENT EXPR_STATEMENT EXPR SELECTION_STATEMENT ITERATION_STATEMENT
 %type <node> TYPE_QUALIFIER DECL_SPECIFIER DECL_SPECIFIER_LIST STOR_CLASS_SPEC
 %type <node> ASSIGNMENT_OPER UNARY_EXPR CONDITIONAL_EXPR ASSIGNMENT_EXPR POSTFIX_EXPR CAST_EXPR
-%type <node> LOGICAL_OR_EXPR LOGICAL_AND_EXPR INCLUSIVE_OR_EXPR EXCLUSIVE_OR_EXPR AND_EXPR EQUAL_EXPR RELATIONAL_EXPR SHIFT_EXPR ADDITIVE_EXPR MULT_EXPR ARGUMENT_EXPR_LIST
+%type <node> LOGICAL_OR_EXPR LOGICAL_AND_EXPR INCLUSIVE_OR_EXPR EXCLUSIVE_OR_EXPR AND_EXPR EQUAL_EXPR RELATIONAL_EXPR SHIFT_EXPR ADDITIVE_EXPR MULT_EXPR ARGUMENT_EXPR_LIST JUMP_STATEMENT
 
 
 %type <string> T_INT_CONSTANT
@@ -55,6 +55,7 @@
 %type <string> T_AMPERSAND T_EXCLAMATION T_TILDE T_INCREMENT T_DECREMENT T_LOGICAL_OR T_LOGICAL_AND T_OR T_AND T_XOR T_EQUALITY T_INEQUALITY
 %type <string> T_SMALLER T_GREATER T_GREATER_EQUAL T_SMALLER_EQUAL T_SHIFT_L T_SHIFT_R T_PLUS T_MINUS T_DIV T_MULT T_MOD UNARY_OPER
 %type <string> T_ARROW T_DOT T_SQUARE_LBRACKET T_SQUARE_RBRACKET T_LBRACKET T_RBRACKET
+%type <string> T_GOTO T_CONTINUE T_BREAK T_RETURN
 
 
 %start ROOT
@@ -65,13 +66,13 @@ ROOT : PROGRAM { g_root = $1; }
 
 //BASIC_PROGRAM is the simplest program that will actually compile
 //A PROGRAM consists of zero or more basic programs I haven't added the zero case I'm not sure how to do it
-PROGRAM : PROGRAM BASIC_PROGRAM {$$ = new Program($1, $2);}
-        | BASIC_PROGRAM {$$ = $1;}
+PROGRAM : BASIC_PROGRAM {$$ = $1;}
+        | PROGRAM BASIC_PROGRAM {$$ = new Program($1, $2);}
        
-BASIC_PROGRAM : DECLR_LIST {$$ = $1;}
-	          | FUNCTION_DEF {$$ = $1;}
+BASIC_PROGRAM : FUNCTION_DEF {$$ = $1;}
+	          | DECLR_LIST {$$ = $1;}
 
-FUNCTION_DEF : DECL_SPECIFIER_LIST T_IDENTIFIER T_LBRACKET T_RBRACKET BLOCK {$$ = new FunctionDef($1,new Identifier($2),$5) ;}
+FUNCTION_DEF : DECL_SPECIFIER_LIST T_IDENTIFIER T_LBRACKET T_RBRACKET BLOCK {$$ = new FunctionDef($1,new Identifier(new std::string("2")),$5) ;}
 
 BLOCK : T_LCURLBRACKET STATEMENT_LIST T_RCURLBRACKET { $$ = new Block(NULL,$2); }
 	  | T_LCURLBRACKET DECLR_LIST T_RCURLBRACKET { $$ = new Block($2); }
@@ -102,7 +103,7 @@ LOGICAL_OR_EXPR: LOGICAL_AND_EXPR {$$ = $1;}
                
 LOGICAL_AND_EXPR: INCLUSIVE_OR_EXPR {$$ = $1;}
                 | LOGICAL_AND_EXPR T_LOGICAL_AND INCLUSIVE_OR_EXPR {$$ = new BinaryOperation($1, $2, $3);}
-                
+                    
 INCLUSIVE_OR_EXPR: EXCLUSIVE_OR_EXPR {$$ = $1;}
                  | INCLUSIVE_OR_EXPR T_OR EXCLUSIVE_OR_EXPR {$$ = new BinaryOperation($1, $2, $3);}
                  
@@ -139,16 +140,16 @@ UNARY_EXPR: POSTFIX_EXPR {$$ = $1;}
           | T_INCREMENT UNARY_EXPR {$$ = new UnaryExpr($1,$2);}
           | T_DECREMENT UNARY_EXPR {$$ = new UnaryExpr($1,$2);}
           | UNARY_OPER CAST_EXPR {$$ = new UnaryExpr($1,$2);} //Add more
-
+          
+CAST_EXPR: UNARY_EXPR {$$ = $1;}
+         | T_LBRACKET VAR_TYPE T_RBRACKET CAST_EXPR {$$ = new CastExpr($2, $4);} //Temporary use VarType instead of TYPE_NAME
+         
 UNARY_OPER: T_AMPERSAND {$$ = $1;}
           | T_MULT      {$$ = $1;}
           | T_PLUS      {$$ = $1;}
           | T_MINUS     {$$ = $1;}
           | T_TILDE     {$$ = $1;}
           | T_EXCLAMATION {$$ = $1;}
-          
-CAST_EXPR: UNARY_EXPR {$$ = $1;}
-         | T_LBRACKET VAR_TYPE T_RBRACKET CAST_EXPR {$$ = new CastExpr($2, $4);} //Temporary use VarType instead of TYPE_NAME
           
 POSTFIX_EXPR: PRIMARY_EXPR {$$ = $1;}
             | POSTFIX_EXPR T_SQUARE_LBRACKET EXPR T_SQUARE_RBRACKET {$$ = new PostfixExpr($1, $2, $3, $4);}
@@ -181,16 +182,24 @@ STATEMENT : BLOCK { $$ = $1; }
 	      | EXPR_STATEMENT { $$ = $1; }
 	      | SELECTION_STATEMENT {$$ = $1;}
 	      | ITERATION_STATEMENT {$$ = $1;}
+	      | JUMP_STATEMENT {$$ = $1;}
 
 EXPR_STATEMENT : DECLR_LIST	{ $$ = $1; }
                | EXPR T_SEMICOLON {$$ = new ExprStatement($1);}
                | T_SEMICOLON {$$ = new ExprStatement(NULL);} // AM NOT SURE ABOUT THIS According to documentation, int main() { int a=7; { } int c =5 ;} is allowed, but not int main() { int a =7; { } int c; } but tested on compiler and both compiles.
 	
+JUMP_STATEMENT: T_GOTO T_IDENTIFIER T_SEMICOLON {$$ = new JumpStatement($1, new Identifier($2));}
+              | T_CONTINUE T_SEMICOLON {$$ = new JumpStatement($1, NULL);}
+              | T_BREAK T_SEMICOLON {$$ = new JumpStatement($1, NULL);}
+              | T_RETURN EXPR T_SEMICOLON {$$ = new JumpStatement($1, $2);}
+              | T_RETURN T_SEMICOLON {$$ = new JumpStatement($1, NULL);}
+              
 DECLR_LIST : DECLR_LIST VARIABLE_DECLR		{ $$ = new  DeclrList($1,$2); }	
 	       | VARIABLE_DECLR				    { $$ = $1; }
 
-VARIABLE_DECLR : DECL_SPECIFIER_LIST IDENTIFIER_LIST T_SEMICOLON  { $$ = new VarDeclr($1,$2) ; }
-		       | DECL_SPECIFIER_LIST IDENTIFIER_LIST T_EQUAL INITIALIZER T_SEMICOLON { $$ = new VarInit($1,$2,$4) ; }
+VARIABLE_DECLR : DECL_SPECIFIER_LIST T_SEMICOLON {$$ = new VarDeclr($1, NULL);}
+              | DECL_SPECIFIER_LIST IDENTIFIER_LIST T_LBRACKET T_SEMICOLON  { $$ = new VarDeclr($1,$2) ; std::cerr << "Variable Declaration!"; }
+		      | DECL_SPECIFIER_LIST IDENTIFIER_LIST T_EQUAL INITIALIZER T_SEMICOLON { $$ = new VarInit($1,$2,$4) ; std::cerr << "Variable Declaration!";}
 
 INITIALIZER : PRIMARY_EXPR {$$ = $1 ;}
 
@@ -201,12 +210,12 @@ PRIMARY_EXPR : T_IDENTIFIER	 {$$ =  new Identifier($1);}
 
 
 IDENTIFIER_LIST: IDENTIFIER_LIST T_COMMA T_IDENTIFIER { $$ = new IdentifierList($1, new Identifier($3));}
-               | T_IDENTIFIER {$$ = new Identifier($1);}
+               | T_IDENTIFIER {$$ = new Identifier($1); std::cerr << "Identifier List" << std::endl;}
                
-DECL_SPECIFIER_LIST: DECL_SPECIFIER_LIST DECL_SPECIFIER {$$ = new DeclSpecifierList($1, $2);}
-                   | DECL_SPECIFIER {$$ = $1;}
+DECL_SPECIFIER_LIST: DECL_SPECIFIER_LIST DECL_SPECIFIER {$$ = new DeclSpecifierList($1, $2); std::cerr << "Declaration Specifier List" << std::endl;}
+                   | DECL_SPECIFIER {$$ = $1; std::cerr << "Declaration Specifier List" << std::endl;}
                    
-DECL_SPECIFIER: VAR_TYPE {$$ = $1;}
+DECL_SPECIFIER: VAR_TYPE {$$ = $1; std::cerr << "Declaration Specifier" << std::endl;}
               | TYPE_QUALIFIER {$$ = $1;}
               | STOR_CLASS_SPEC {$$ = $1;}
 	
@@ -231,7 +240,7 @@ STOR_CLASS_SPEC: T_TYPEDEF {$$ = new StorClassSpec($1);}
                | T_AUTO {$$ = new StorClassSpec($1);}
                | T_REGISTER {$$ = new StorClassSpec($1);}
               
-
+FUNCTION_DEF : DECL_SPECIFIER_LIST T_IDENTIFIER T_LBRACKET T_RBRACKET BLOCK {$$ = new FunctionDef($1,new Identifier(new std::string("2")),$5) ;}
 %%
 
 NodePtr g_root; // Definition of variable (to match declaration earlier)

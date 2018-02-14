@@ -1,6 +1,6 @@
-Token:                T_INT                 int
-Token:                                        x
-Token:                                        ;
-Token:                T_INT                 int
-Token:                                        y
-Token:                                        ;
+Token:                 NONE                 int
+Token:                 NONE                   x
+Token:                 NONE                   ;
+Token:                 NONE                 int
+Token:                 NONE                   y
+Token:                 NONE                   ;

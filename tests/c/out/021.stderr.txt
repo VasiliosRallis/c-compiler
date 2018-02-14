@@ -1,6 +1,9 @@
 Token:                 NONE                void
-Token:                 NONE                  fo
+Token:                 NONE                   f
 Token:                 NONE                   (
 Token:                 NONE                   )
 Token:                 NONE                   {
 Token:                 NONE                   }
+Token:                 NONE                 int
+Token:                 NONE                   ;
+Flex Error: syntax error

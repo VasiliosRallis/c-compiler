@@ -1,5 +1,5 @@
-Token:                T_INT                 int
-Token:                                        b
-Token:              T_EQUAL                   =
-Token:                                        7
-Token:                                        ;
+Token:                 NONE                 int
+Token:                 NONE                   b
+Token:                 NONE                   =
+Token:                 NONE                   7
+Token:                 NONE                   ;

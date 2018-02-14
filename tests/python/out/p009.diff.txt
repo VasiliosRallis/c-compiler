@@ -1,6 +1,6 @@
 1,7c1,4
 < def main():
-< 		if()
+< 	if()
 < 		a=0
 < 
 < 	else:

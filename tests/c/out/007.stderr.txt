@@ -1,4 +1,4 @@
-Token:              T_CONST               const
-Token:                T_INT                 int
-Token:                                        a
-Token:                                        ;
+Token:                 NONE               const
+Token:                 NONE                 int
+Token:                 NONE                   a
+Token:                 NONE                   ;

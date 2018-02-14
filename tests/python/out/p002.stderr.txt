@@ -1,5 +1,5 @@
-Token:                T_INT                 int
-Token:                                        a
-Token:                                        ,
-Token:                                        b
-Token:                                        ;
+Token:                 NONE                 int
+Token:                 NONE                   a
+Token:                 NONE                   ,
+Token:                 NONE                   b
+Token:                 NONE                   ;

@@ -1,12 +1,9 @@
 Token:                 NONE                 int
-Token:                 NONE                  fo
+Token:                 NONE                main
 Token:                 NONE                   (
 Token:                 NONE                   )
 Token:                 NONE                   {
-Token:                 NONE                 int
-Token:                 NONE                   c
-Token:                 NONE                   ;
-Token:                 NONE                 int
-Token:                 NONE                   d
+Token:                 NONE              return
+Token:                 NONE                   0
 Token:                 NONE                   ;
 Token:                 NONE                   }

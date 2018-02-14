@@ -3,9 +3,11 @@
 
 #include <string>
 #include <iostream>
+#include <vector>
+#include "ast/ast_more.hpp"
 
 extern int g_depth;
-//extern std::string g_variables;
+extern std::vector<std::string> g_var;
 
 //class Identifier: public Node;
 
@@ -36,15 +38,18 @@ public:
     VarDeclr(NodePtr _varType, NodePtr _identifierList)
         : varType(_varType), identifierList(_identifierList) {}
         
-    
-    //void getGlobal(){
-    //    (dynamic_cast<const Identifier*>(identifierList))->getGlobal();
-    //}
+    void sendGlobal()const{
+        if(dynamic_cast<const Identifier*>(identifierList)){
+            dynamic_cast<const Identifier*>(identifierList)->sendGlobal();
+        }
+    }
 
     virtual void print(std::ostream& dst) const override{
         varType->print(dst);
         dst << " ";
-        identifierList->print(dst);
+        if(identifierList != NULL){
+            identifierList->print(dst);
+        }
         dst << ";";
     }
     
@@ -214,6 +219,8 @@ public:
     FunctionDef(NodePtr _varType, NodePtr _identifier, NodePtr _block)
         : varType(_varType), identifier(_identifier), block(_block) {}
         
+    std::vector<std::string> gVar;
+        
 
     virtual void print(std::ostream& dst) const override{
 	    varType->print(dst);
@@ -227,13 +234,14 @@ public:
         dst << "def ";
         identifier->printPy(dst);
         dst << "():\n";
-        for(int i(0); i < g_depth + 1; ++i){
-           dst << "\t";
-        }
-        //if(g_variables != ""){
-        //    dst << "global ";
-        //    dst << g_variables;
-        //}
+        
+        for(int j(0); j < g_var.size(); j++){
+            for(int i(0); i < g_depth + 1; ++i){
+               dst << "\t";
+            }
+            dst << "global: ";
+            dst << g_var[j];
+       }
         
         block->printPy(dst);
     }
@@ -263,9 +271,9 @@ public:
     }
     
     virtual void printPy(std::ostream& dst) const override{
-    //    if(dynamic_cast<const VarDeclr*>(program)){
-    //       dynamic_cast<const VarDeclr*>(program)->getGlobal(); 
-    //    }
+        if(dynamic_cast<const VarDeclr*>(program)){
+           dynamic_cast<const VarDeclr*>(program)->sendGlobal(); 
+        }
     }
     
     virtual ~Program() override{
@@ -273,34 +281,6 @@ public:
         delete basicProgram;
     }
 };
-
-class Identifier: public Node{
-private:
-    const std::string* id;
-    
-public:
-    Identifier(const std::string* _id)
-        :id(_id){}
-        
-    //void getGlobal(){
-    //    g_variables = *id;
-    //}
-        
-    virtual void print(std::ostream& dst) const override{
-        dst << *id;
-    }
-    
-    virtual void printPy(std::ostream& dst) const override{
-        dst << *id;
-    }
-    
-    int getLength() const override{return 1;}
-
-    virtual ~Identifier() override{
-        delete id;
-    }
-};
-
 
 class IdentifierList: public Node{
 private:
@@ -844,5 +824,29 @@ public:
         delete argumentExprList;
         delete assignmentExpr;
     }
-};   
+};
+
+class JumpStatement: public Node{
+private:
+    const std::string* oper;
+    NodePtr expr;
+
+public:
+    JumpStatement(const std::string* _oper, NodePtr _expr)
+        :oper(_oper), expr(_expr){}
+        
+    virtual void print(std::ostream& dst)const override{
+        dst << *oper << " ";
+        if(expr!=NULL){
+            expr->print(dst);
+        }
+        dst << ";";
+    }
+    virtual void printPy(std::ostream& dst)const override{}
+    
+    virtual ~JumpStatement()override{
+        delete oper;
+        delete expr;
+    }
+};
 #endif
