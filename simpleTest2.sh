@@ -28,7 +28,7 @@ NC='\033[0m' # No Color
 # First test that all the test in test/in can actually compile
 for i in tests/c/in/*.c; do
     BASENAME=$(basename $i .c);
-    gcc -std=c89 -c tests/c/in/$BASENAME.c -o tests/c/in/$BASENAME.o
+    gcc -std=c89 -w -c tests/c/in/$BASENAME.c -o tests/c/in/$BASENAME.o
     if [[ "$?" -ne "0" ]]; then
         rm tests/c/in/*.o
         echo ""
@@ -56,7 +56,7 @@ for i in tests/c/in/*.c; do
     else
         PASSED=$(( ${PASSED}+1 ));
         # Check if the parser output can compile
-        gcc -std=c89 -c tests/c/out/$BASENAME.c -o tests/c/out/$BASENAME.o
+        gcc -std=c89 -w -c tests/c/out/$BASENAME.c -o tests/c/out/$BASENAME.o
     
         if [[ "$?" -ne "0" ]]; then
             echo -e "${i} \t ${RED}PASS${NC} 1/2"

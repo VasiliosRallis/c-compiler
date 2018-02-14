@@ -1,5 +1,0 @@
-Token:                T_INT                 int
-Token:         T_IDENTIFIER                   a
-Token:              T_COMMA                   ,
-Token:         T_IDENTIFIER                   b
-Token:          T_SEMICOLON                   ;

@@ -3,4 +3,5 @@ bin/*
 *.yy.*
 *.output
 *.tab.*
-tests/out/*
+tests/c/out
+tests/python/out

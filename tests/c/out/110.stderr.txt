@@ -1,2 +1,0 @@
-Token:                T_INT                 int
-Token:          T_SEMICOLON                   ;
