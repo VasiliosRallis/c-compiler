@@ -38,7 +38,7 @@
 %token T_ARROW T_DOT T_SQUARE_LBRACKET T_SQUARE_RBRACKET
 
 //Non-terminals declaration
-%type <node> PROGRAM EXT_DECLARATION VARIABLE_DECLR VAR_TYPE DECLR_LIST BLOCK FUNCTION_DEF DECLARATION INIT_DECLARATOR DIRECT_DECLARATOR
+%type <node> PROGRAM EXT_DECLARATION VAR_TYPE DECLR_LIST BLOCK FUNCTION_DEF DECLARATION INIT_DECLARATOR DIRECT_DECLARATOR
 %type <node> IDENTIFIER_LIST STATEMENT_LIST INIT_DECLARATOR_LIST
 %type <node> INITIALIZER PRIMARY_EXPR STATEMENT EXPR_STATEMENT EXPR SELECTION_STATEMENT ITERATION_STATEMENT
 %type <node> TYPE_QUALIFIER DECL_SPECIFIER DECL_SPECIFIER_LIST STOR_CLASS_SPEC
@@ -63,28 +63,26 @@
 
 ROOT : PROGRAM { g_root = $1; }
 
-//BASIC_PROGRAM is the simplest program that will actually compile
-//A PROGRAM consists of zero or more basic programs I haven't added the zero case I'm not sure how to do it
 PROGRAM : PROGRAM EXT_DECLARATION {$$ = new Program($1, $2);}
         | EXT_DECLARATION {$$ = $1;}
        
-EXT_DECLARATION :FUNCTION_DEF {$$ = $1;}
-		|DECLARATION {$$ =$1;} //DECLR_LIST {$$ = $1;} 
+EXT_DECLARATION: FUNCTION_DEF {$$ = $1;}
+		       | DECLARATION  {$$ =$1;}
 
-DECLARATION : DECL_SPECIFIER_LIST T_SEMICOLON { $$ = new Declaration($1,NULL); }
-		|DECL_SPECIFIER_LIST INIT_DECLARATOR_LIST T_SEMICOLON { $$ = new Declaration($1,$2); }
+DECLARATION: DECL_SPECIFIER_LIST T_SEMICOLON                      {$$ = new Declaration($1,NULL);}
+           | DECL_SPECIFIER_LIST INIT_DECLARATOR_LIST T_SEMICOLON {$$ = new Declaration($1,$2);}
 
-INIT_DECLARATOR_LIST : INIT_DECLARATOR { $$ = $1 ; }
-			| INIT_DECLARATOR_LIST T_COMMA INIT_DECLARATOR { $$ = new InitDeclaratorList($1,$3); }
+INIT_DECLARATOR_LIST: INIT_DECLARATOR {$$ = $1;}
+			        | INIT_DECLARATOR_LIST T_COMMA INIT_DECLARATOR { $$ = new List($1,$3); }
 
-INIT_DECLARATOR : DIRECT_DECLARATOR { $$ = $1;}
-		| DIRECT_DECLARATOR T_EQUAL ASSIGNMENT_EXPR { $$ = new InitDeclarator($1,$3); }
+INIT_DECLARATOR: DIRECT_DECLARATOR {$$ = $1;}
+		       | DIRECT_DECLARATOR T_EQUAL ASSIGNMENT_EXPR { $$ = new InitDeclarator($1,$3);}
 
-DIRECT_DECLARATOR : T_IDENTIFIER { $$ = new Identifier($1); }
-		| DIRECT_DECLARATOR T_LBRACKET T_RBRACKET { $$ = new FunctionDeclaration($1); }
+DIRECT_DECLARATOR: T_IDENTIFIER {$$ = new StringNode($1);}
+		         | DIRECT_DECLARATOR T_LBRACKET T_RBRACKET { $$ = new FunctionDeclaration($1);}
 		
 
-FUNCTION_DEF : DECL_SPECIFIER_LIST DIRECT_DECLARATOR BLOCK {$$ = new FunctionDef($1,$2,$3) ;}
+FUNCTION_DEF : DECL_SPECIFIER_LIST DIRECT_DECLARATOR BLOCK {$$ = new FunctionDef($1,$2,$3);}
 
 BLOCK : T_LCURLBRACKET STATEMENT_LIST T_RCURLBRACKET { $$ = new Block(NULL,$2); }
 	  | T_LCURLBRACKET DECLR_LIST T_RCURLBRACKET { $$ = new Block($2); }
@@ -125,40 +123,40 @@ EXCLUSIVE_OR_EXPR: AND_EXPR {$$ = $1;}
 AND_EXPR: EQUAL_EXPR {$$ = $1;}
         | AND_EXPR T_AND EQUAL_EXPR {$$ = new BinaryOperation($1, $2, $3);}
         
-EQUAL_EXPR: RELATIONAL_EXPR {$$ = $1;}
-          | EQUAL_EXPR T_EQUALITY RELATIONAL_EXPR {$$ = new BinaryOperation($1, $2, $3);}
-          | EQUAL_EXPR T_INEQUALITY RELATIONAL_EXPR {$$ = new BinaryOperation($1, $2, $3);}
+EQUAL_EXPR: RELATIONAL_EXPR                             {$$ = $1;}
+          | EQUAL_EXPR T_EQUALITY RELATIONAL_EXPR       {$$ = new BinaryOperation($1, $2, $3);}
+          | EQUAL_EXPR T_INEQUALITY RELATIONAL_EXPR     {$$ = new BinaryOperation($1, $2, $3);}
      
-RELATIONAL_EXPR: SHIFT_EXPR {$$ = $1;}
-               | RELATIONAL_EXPR T_SMALLER SHIFT_EXPR {$$ = new BinaryOperation($1, $2, $3);}
-               | RELATIONAL_EXPR T_GREATER SHIFT_EXPR {$$ = new BinaryOperation($1, $2, $3);}
-               | RELATIONAL_EXPR T_SMALLER_EQUAL SHIFT_EXPR {$$ = new BinaryOperation($1, $2, $3);}
-               | RELATIONAL_EXPR T_GREATER_EQUAL SHIFT_EXPR {$$ = new BinaryOperation($1, $2, $3);}
+RELATIONAL_EXPR: SHIFT_EXPR                                     {$$ = $1;}
+               | RELATIONAL_EXPR T_SMALLER SHIFT_EXPR           {$$ = new BinaryOperation($1, $2, $3);}
+               | RELATIONAL_EXPR T_GREATER SHIFT_EXPR           {$$ = new BinaryOperation($1, $2, $3);}
+               | RELATIONAL_EXPR T_SMALLER_EQUAL SHIFT_EXPR     {$$ = new BinaryOperation($1, $2, $3);}
+               | RELATIONAL_EXPR T_GREATER_EQUAL SHIFT_EXPR     {$$ = new BinaryOperation($1, $2, $3);}
                
-SHIFT_EXPR: ADDITIVE_EXPR {$$ = $1;}
-          | SHIFT_EXPR T_SHIFT_L ADDITIVE_EXPR {$$ = new BinaryOperation($1, $2, $3);}
-          | SHIFT_EXPR T_SHIFT_R ADDITIVE_EXPR {$$ = new BinaryOperation($1, $2, $3);}
+SHIFT_EXPR: ADDITIVE_EXPR                       {$$ = $1;}
+          | SHIFT_EXPR T_SHIFT_L ADDITIVE_EXPR  {$$ = new BinaryOperation($1, $2, $3);}
+          | SHIFT_EXPR T_SHIFT_R ADDITIVE_EXPR  {$$ = new BinaryOperation($1, $2, $3);}
           
-ADDITIVE_EXPR: MULT_EXPR {$$ = $1;}
-             | ADDITIVE_EXPR T_PLUS MULT_EXPR {$$ = new BinaryOperation($1, $2, $3);}
-             | ADDITIVE_EXPR T_MINUS MULT_EXPR {$$ = new BinaryOperation($1, $2, $3);}
+ADDITIVE_EXPR: MULT_EXPR                        {$$ = $1;}
+             | ADDITIVE_EXPR T_PLUS MULT_EXPR   {$$ = new BinaryOperation($1, $2, $3);}
+             | ADDITIVE_EXPR T_MINUS MULT_EXPR  {$$ = new BinaryOperation($1, $2, $3);}
              
-MULT_EXPR: CAST_EXPR {$$ = $1;}
-         | MULT_EXPR T_MULT CAST_EXPR {$$ = new BinaryOperation($1, $2, $3);}
-         | MULT_EXPR T_DIV CAST_EXPR {$$ = new BinaryOperation($1, $2, $3);}
-         | MULT_EXPR T_MOD CAST_EXPR {$$ = new BinaryOperation($1, $2, $3);}
+MULT_EXPR: CAST_EXPR                    {$$ = $1;}
+         | MULT_EXPR T_MULT CAST_EXPR   {$$ = new BinaryOperation($1, $2, $3);}
+         | MULT_EXPR T_DIV CAST_EXPR    {$$ = new BinaryOperation($1, $2, $3);}
+         | MULT_EXPR T_MOD CAST_EXPR    {$$ = new BinaryOperation($1, $2, $3);}
                        
-UNARY_EXPR: POSTFIX_EXPR {$$ = $1;}
-          | T_INCREMENT UNARY_EXPR {$$ = new UnaryExpr($1,$2);}
-          | T_DECREMENT UNARY_EXPR {$$ = new UnaryExpr($1,$2);}
-          | UNARY_OPER CAST_EXPR {$$ = new UnaryExpr($1,$2);} //Add more
+UNARY_EXPR: POSTFIX_EXPR            {$$ = $1;}
+          | T_INCREMENT UNARY_EXPR  {$$ = new UnaryExpr($1,$2);}
+          | T_DECREMENT UNARY_EXPR  {$$ = new UnaryExpr($1,$2);}
+          | UNARY_OPER CAST_EXPR    {$$ = new UnaryExpr($1,$2);} //Add more
 
-UNARY_OPER: T_AMPERSAND {$$ = $1;}
-          | T_MULT      {$$ = $1;}
-          | T_PLUS      {$$ = $1;}
-          | T_MINUS     {$$ = $1;}
-          | T_TILDE     {$$ = $1;}
-          | T_EXCLAMATION {$$ = $1;}
+UNARY_OPER: T_AMPERSAND     {$$ = $1;}
+          | T_MULT          {$$ = $1;}
+          | T_PLUS          {$$ = $1;}
+          | T_MINUS         {$$ = $1;}
+          | T_TILDE         {$$ = $1;}
+          | T_EXCLAMATION   {$$ = $1;}
           
 CAST_EXPR: UNARY_EXPR {$$ = $1;}
          | T_LBRACKET VAR_TYPE T_RBRACKET CAST_EXPR {$$ = new CastExpr($2, $4);} //Temporary use VarType instead of TYPE_NAME
@@ -167,13 +165,13 @@ POSTFIX_EXPR: PRIMARY_EXPR {$$ = $1;}
             | POSTFIX_EXPR T_SQUARE_LBRACKET EXPR T_SQUARE_RBRACKET {$$ = new PostfixExpr($1, $2, $3, $4);}
             | POSTFIX_EXPR T_LBRACKET ARGUMENT_EXPR_LIST T_RBRACKET {$$ = new PostfixExpr($1, $2, $3, $4);}
             | POSTFIX_EXPR T_LBRACKET T_RBRACKET {$$ = new PostfixExpr($1, $2, NULL, $3);}
-            | POSTFIX_EXPR T_DOT T_IDENTIFIER {$$ = new PostfixExpr($1, $2, new Identifier($3), NULL);}
-            | POSTFIX_EXPR T_ARROW T_IDENTIFIER {$$ = new PostfixExpr($1, $2, new Identifier($3), NULL);}
+            | POSTFIX_EXPR T_DOT T_IDENTIFIER {$$ = new PostfixExpr($1, $2, new StringNode($3), NULL);}
+            | POSTFIX_EXPR T_ARROW T_IDENTIFIER {$$ = new PostfixExpr($1, $2, new StringNode($3), NULL);}
             | POSTFIX_EXPR T_INCREMENT {$$ = new PostfixExpr($1, NULL, NULL, NULL);}
             | POSTFIX_EXPR T_DECREMENT {$$ = new PostfixExpr($1, NULL, NULL, NULL);}
             
 ARGUMENT_EXPR_LIST: ASSIGNMENT_EXPR {$$ = $1;}
-                  | ARGUMENT_EXPR_LIST T_COMMA ASSIGNMENT_EXPR {$$ = new ArgumentExprList($1, $3);}
+                  | ARGUMENT_EXPR_LIST T_COMMA ASSIGNMENT_EXPR {$$ = new List($1, $3);}
 
 ASSIGNMENT_OPER: T_EQUAL {$$ = new Operator($1);}
                | T_RIGHT_S_ASSIGN {$$ = new Operator($1);}
@@ -198,52 +196,45 @@ STATEMENT : BLOCK { $$ = $1; }
 EXPR_STATEMENT : EXPR T_SEMICOLON {$$ = new ExprStatement($1);}
                | T_SEMICOLON {$$ = new ExprStatement(NULL);} 
 	
-DECLR_LIST : DECLR_LIST VARIABLE_DECLR		{ $$ = new  DeclrList($1,$2); }	
-	       | VARIABLE_DECLR				    { $$ = $1; }
+DECLR_LIST : DECLR_LIST DECLARATION	{$$ = new  DeclrList($1,$2);}	
+	       | DECLARATION		    {$$ = $1;}
 
-VARIABLE_DECLR : DECL_SPECIFIER_LIST IDENTIFIER_LIST T_SEMICOLON  { $$ = new VarDeclr($1,$2) ; }
-		       | DECL_SPECIFIER_LIST IDENTIFIER_LIST T_EQUAL INITIALIZER T_SEMICOLON { $$ = new VarInit($1,$2,$4) ; }
+INITIALIZER : PRIMARY_EXPR {$$ = $1;}
 
-INITIALIZER : PRIMARY_EXPR {$$ = $1 ;}
-
-PRIMARY_EXPR : T_IDENTIFIER	 {$$ =  new Identifier($1);}
-		     | T_INT_CONSTANT  {$$ = new IntConst($1);}
-		     | T_STR_LIT {$$ = new StrLit($1);}
-		     | T_LBRACKET EXPR T_RBRACKET {$$ = new PrimaryExpr($2);}
+PRIMARY_EXPR : T_IDENTIFIER	                {$$ =  new StringNode($1);}
+		     | T_INT_CONSTANT               {$$ = new IntConst($1);}
+		     | T_STR_LIT                    {$$ = new StringNode($1);}
+		     | T_LBRACKET EXPR T_RBRACKET   {$$ = new PrimaryExpr($2);}
 
 
-IDENTIFIER_LIST: IDENTIFIER_LIST T_COMMA T_IDENTIFIER { $$ = new IdentifierList($1, new Identifier($3));}
-               | T_IDENTIFIER {$$ = new Identifier($1);}
+IDENTIFIER_LIST: IDENTIFIER_LIST T_COMMA T_IDENTIFIER   {$$ = new List($1, new StringNode($3));}
+               | T_IDENTIFIER                           {$$ = new StringNode($1);}
                
 DECL_SPECIFIER_LIST: DECL_SPECIFIER_LIST DECL_SPECIFIER {$$ = new DeclSpecifierList($1, $2);}
-                   | DECL_SPECIFIER {$$ = $1;}
+                   | DECL_SPECIFIER                     {$$ = $1;}
                    
-DECL_SPECIFIER: VAR_TYPE {$$ = $1;}
-              | TYPE_QUALIFIER {$$ = $1;}
-              | STOR_CLASS_SPEC {$$ = $1;}
+DECL_SPECIFIER: VAR_TYPE            {$$ = $1;}
+              | TYPE_QUALIFIER      {$$ = $1;}
+              | STOR_CLASS_SPEC     {$$ = $1;}
 	
-VAR_TYPE : T_INT {$$ = new VarType($1);}
-         | T_CHAR {$$ = new VarType($1);}
-         | T_VOID {$$ = new VarType($1);}
-         | T_SHORT {$$ = new VarType($1);}
-         | T_LONG {$$ = new VarType($1);}
-         | T_FLOAT {$$ = new VarType($1);}
-         | T_DOUBLE {$$ = new VarType($1);}
-         | T_SIGNED {$$ = new VarType($1);}
-         | T_UNSIGNED {$$ = new VarType($1);}
+VAR_TYPE : T_INT        {$$ = new DeclSpecifier($1);}
+         | T_CHAR       {$$ = new DeclSpecifier($1);}
+         | T_VOID       {$$ = new DeclSpecifier($1);}
+         | T_SHORT      {$$ = new DeclSpecifier($1);}
+         | T_LONG       {$$ = new DeclSpecifier($1);}
+         | T_FLOAT      {$$ = new DeclSpecifier($1);}
+         | T_DOUBLE     {$$ = new DeclSpecifier($1);}
+         | T_SIGNED     {$$ = new DeclSpecifier($1);}
+         | T_UNSIGNED   {$$ = new DeclSpecifier($1);}
 
-TYPE_QUALIFIER: T_CONST {$$ = new TypeQualifier($1);}
-              | T_VOLATILE {$$ = new TypeQualifier($1);}
+TYPE_QUALIFIER: T_CONST     {$$ = new DeclSpecifier($1);}
+              | T_VOLATILE  {$$ = new DeclSpecifier($1);}
 
-//According to the C-Spec "At most one storage-class specifier may be given in the declaration specifiers in a declaration"
-//http://port70.net/~nsz/c/c89/c89-draft.html#storage-class-specifier
-STOR_CLASS_SPEC: T_TYPEDEF {$$ = new StorClassSpec($1);}
-               | T_EXTERN {$$ = new StorClassSpec($1);}
-               | T_STATIC {$$ = new StorClassSpec($1);}
-               | T_AUTO {$$ = new StorClassSpec($1);}
-               | T_REGISTER {$$ = new StorClassSpec($1);}
-              
-
+STOR_CLASS_SPEC: T_TYPEDEF  {$$ = new DeclSpecifier($1);}
+               | T_EXTERN   {$$ = new DeclSpecifier($1);}
+               | T_STATIC   {$$ = new DeclSpecifier($1);}
+               | T_AUTO     {$$ = new DeclSpecifier($1);}
+               | T_REGISTER {$$ = new DeclSpecifier($1);}
 %%
 
 NodePtr g_root; // Definition of variable (to match declaration earlier)

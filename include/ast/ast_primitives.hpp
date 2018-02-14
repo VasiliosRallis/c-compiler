@@ -35,31 +35,6 @@ public:
 
 };
 
-class InitDeclaratorList : public Node {
-private:
-	NodePtr initdeclrList;    
-	NodePtr initdeclr;
-    
-public:
-    InitDeclaratorList(NodePtr _initdeclrList, NodePtr _initdeclr)
-        : initdeclrList(_initdeclrList), initdeclr(_initdeclr) {}
-
-    virtual void print(std::ostream& dst) const override{
-        initdeclrList->print(dst);
-	dst << "," ;
-	    initdeclr ->print(dst);
-    }
-    
-    virtual void printPy(std::ostream& dst) const override{    }
-    
-    virtual ~InitDeclaratorList() override{
-        delete initdeclrList;
-        delete initdeclr;
-    }
-
-};
-
-
 class InitDeclarator : public Node {
 private:
     NodePtr directDeclarator;    
@@ -101,25 +76,6 @@ public:
         delete directDeclarator;
     }
 
-};
-
-class VarType: public Node{
-private:
-    const std::string* type;
-    
-public:
-    VarType(const std::string* _type)
-        : type(_type){}
-
-    virtual void print(std::ostream& dst) const override{
-        dst<< *type;
-    }
-    
-    virtual void printPy(std::ostream& dst) const override{}
-    
-    virtual ~VarType() override{
-            delete type;
-     }
 };
 
 class VarDeclr: public Node{
@@ -188,31 +144,21 @@ public:
 
 };
 
-class StatementList: public Node{
-private:
-	NodePtr statementList;    
-	NodePtr statement;
-    
+class StatementList: public List{
 public:
-    StatementList(NodePtr _statementList, NodePtr _statement)
-        : statementList(_statementList), statement(_statement) {}
+    StatementList(NodePtr _l, NodePtr _r)
+        :List(l, r){};
 
     virtual void print(std::ostream& dst) const override{
-        statementList->print(dst);
-	statement ->print(dst);
+        l->print(dst);
+	    r->print(dst);
     }
     
     virtual void printPy(std::ostream& dst) const override{
-        statementList->printPy(dst);
+        l->printPy(dst);
         dst << "\n";
-        statement->printPy(dst);
+        r->printPy(dst);
     }
-    
-    virtual ~StatementList() override{
-        delete statementList;
-        delete statement;
-    }
-
 };
 
 class VarInit : public Node {
@@ -370,168 +316,32 @@ public:
     }
 };
 
-class Identifier: public Node{
-private:
-    const std::string* id;
-    
+class IntConst: public StringNode{
 public:
-    Identifier(const std::string* _id)
-        :id(_id){}
-        
-    //void getGlobal(){
-    //    g_variables = *id;
-    //}
+    IntConst(const std::string* _id)
+        :StringNode(_id){}
         
     virtual void print(std::ostream& dst) const override{
-        dst << *id;
+        dst << std::stoi((*id));
     }
-    
     virtual void printPy(std::ostream& dst) const override{
-        dst << *id;
-    }
-    
-    int getLength() const override{return 1;}
-
-    virtual ~Identifier() override{
-        delete id;
+        dst << std::stoi((*id));
     }
 };
 
-
-class IdentifierList: public Node{
-private:
-    NodePtr identifierList;
-    NodePtr identifier;
-    
+class DeclSpecifierList: public List{
 public:
-    IdentifierList(NodePtr _identifierList, NodePtr _identifier)
-        :identifierList(_identifierList), identifier(_identifier){}
-    
-    virtual void print(std::ostream& dst) const override{
-        identifierList->print(dst);
-        dst << ", ";
-        identifier->print(dst);
-    }
-    
-    int getLength()const override{
-        return identifierList->getLength() + identifier->getLength();
-    }
-    
-    virtual void printPy(std::ostream& dst) const override{
-        identifierList->printPy(dst);
-        dst<<",";
-        identifier->printPy(dst);
-    }
-    
-    virtual ~IdentifierList() override{
-        delete identifierList;
-        delete identifier;
-    }
-};
-
-class IntConst: public Node{
-private:
-    const std::string* value;
-    
-public:
-    IntConst(const std::string* _value)
-        :value(_value){}
+    DeclSpecifierList(NodePtr _l, NodePtr _r)
+        :List(_l, _r){}
         
     virtual void print(std::ostream& dst) const override{
-        dst << std::stoi((*value));
-    }
-    
-    virtual void printPy(std::ostream& dst) const override{
-        dst << std::stoi((*value));
-    }
-
-    virtual ~IntConst() override{
-        delete value;
-    }
-};
-
-class TypeQualifier: public Node{
-private:
-    const std::string* id;
-    
-public:
-    TypeQualifier(const std::string* _id)
-        :id(_id){}
-        
-    virtual void print(std::ostream& dst) const override{
-        dst << *id;
-    }
-    
-    virtual void printPy(std::ostream& dst) const override{}
-    
-    virtual ~TypeQualifier() override{
-        delete id;
-    }  
-};
-
-class DeclSpecifierList: public Node{
-private:
-    NodePtr declSpecifierList;
-    NodePtr declSpecifier;
-    
-public:
-    DeclSpecifierList(NodePtr _declSpecifierList, NodePtr _declSpecifier)
-        :declSpecifierList(_declSpecifierList), declSpecifier(_declSpecifier){}
-        
-    virtual void print(std::ostream& dst) const override{
-        declSpecifierList->print(dst);
+        l->print(dst);
         dst << " ";
-        declSpecifier->print(dst);
+        r->print(dst);
     }
-    
+        
     virtual void printPy(std::ostream& dst) const override{}
-    
-    ~DeclSpecifierList(){
-        delete declSpecifierList;
-        delete declSpecifier;
-     }
 };
-
-class StorClassSpec: public Node{
-private:
-    const std::string* id;
-    
-public:
-    StorClassSpec(const std::string* _id)
-        :id(_id){}
-        
-        
-    virtual void print(std::ostream& dst) const override{
-        dst << *id;
-    }
-    
-    virtual void printPy(std::ostream& dst) const override{}
-    
-    virtual ~StorClassSpec() override{
-        delete id;
-    }
-};
-
-class StrLit: public Node{
-private:
-    const std::string* id;
-    
-public:
-    StrLit(const std::string* _id)
-        :id(_id){}
-        
-        
-    virtual void print(std::ostream& dst) const override{
-        dst << *id;
-    }
-    
-    virtual void printPy(std::ostream& dst) const override{}
-    
-    virtual ~StrLit () override{
-        delete id;
-    }
-};
-
 
 class ExprStatement: public Node{
 private:
@@ -739,11 +549,7 @@ public:
     
     virtual void printPy(std::ostream& dst) const override{
 	expr -> printPy(dst);	
-	}
-        
-    ~PrimaryExpr() override{
-        delete expr;
-     }   
+	} 
 };
 
 class Operator: public Node{
@@ -908,27 +714,10 @@ public:
         delete oper2;
     }
 };
-
-class ArgumentExprList: public Node{
-private:
-    NodePtr argumentExprList;
-    NodePtr assignmentExpr;
-
+  
+class DeclSpecifier: public StringNode{
 public:
-    ArgumentExprList(NodePtr _argumentExprList, NodePtr _assignmentExpr)
-        :argumentExprList(_argumentExprList), assignmentExpr(_assignmentExpr){}
-        
-    virtual void print(std::ostream& dst)const override{
-        argumentExprList->print(dst);
-        dst << " ";
-        assignmentExpr->print(dst);
-    }
-    
-    virtual void printPy(std::ostream& dst)const override{}
-    
-    virtual ~ArgumentExprList()override{
-        delete argumentExprList;
-        delete assignmentExpr;
-    }
-};   
+    DeclSpecifier(const std::string* _id)
+        :StringNode(_id){}
+};    
 #endif
