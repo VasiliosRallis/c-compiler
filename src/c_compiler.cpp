@@ -1,11 +1,10 @@
 #include "ast.hpp"
 #include <string>
 #include <iostream>
-#include <vector>
 #include <fstream>
 
 int g_depth(0);
-std::vector<std::string> g_var;
+//std::string g_variables("");
 
 int main(int argc, char* argv[]){
     

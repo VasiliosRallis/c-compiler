@@ -1,0 +1,16 @@
+Token:                T_INT                 int
+Token:         T_IDENTIFIER                main
+Token:           T_LBRACKET                   (
+Token:           T_RBRACKET                   )
+Token:       T_LCURLBRACKET                   {
+Token:                T_FOR                 for
+Token:           T_LBRACKET                   (
+Token:          T_SEMICOLON                   ;
+Token:          T_SEMICOLON                   ;
+Token:           T_RBRACKET                   )
+Token:       T_LCURLBRACKET                   {
+Token:                T_INT                 int
+Token:         T_IDENTIFIER                   a
+Token:          T_SEMICOLON                   ;
+Token:       T_RCURLBRACKET                   }
+Token:       T_RCURLBRACKET                   }
