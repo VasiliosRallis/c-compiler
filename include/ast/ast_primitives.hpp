@@ -78,45 +78,6 @@ public:
 
 };
 
-class VarDeclr: public Node{
-private:
-    NodePtr varType;    
-    NodePtr identifierList;
-public:
-    VarDeclr(NodePtr _varType, NodePtr _identifierList)
-        : varType(_varType), identifierList(_identifierList) {}
-        
-    
-    //void getGlobal(){
-    //    (dynamic_cast<const Identifier*>(identifierList))->getGlobal();
-    //}
-
-    virtual void print(std::ostream& dst) const override{
-        varType->print(dst);
-        dst << " ";
-        identifierList->print(dst);
-        dst << ";";
-    }
-    
-    virtual void printPy(std::ostream& dst) const override{
-        for(int i(0); i < g_depth; ++i){
-            dst << "\t";
-        }
-        identifierList->printPy(dst); 
-        dst << "=0";
-        int l = identifierList->getLength();
-        for(int i(0); i < l-1; ++i){
-            dst << ",0";
-        }
-    }
-       
-    virtual ~VarDeclr() override{
-        delete varType;
-        delete identifierList;
-    }
-
-};
-
 class DeclrList: public Node{
 private:
 	NodePtr declrList;    
@@ -552,25 +513,36 @@ public:
 	} 
 };
 
-class Operator: public Node{
-private:
-    const std::string* oper;
+class Operator: public StringNode{
 public:
-    Operator(const std::string* _oper)
-        :oper(_oper){}
+    enum Type{
+        MUL,
+        ADD,
+        SHIFT,
+        RELATIONAL,
+        EQUALITY,
+        AND,
+        EXCLUSIVE_OR,
+        INCLUSIVE_OR,
+        LOGICAL_AND,
+        LOGICAL_OR,
+        ASSIGN
+    };  
+    Operator(const std::string* _id, Operator::Type _type)
+        :StringNode(_id), type(_type){}
         
     virtual void print(std::ostream& dst)const override{
-        dst << *oper;
+        dst << *id;
     }
     
     virtual void printPy(std::ostream& dst)const override{
-        dst << *oper;
+        dst << *id;
     }
-    
-    ~Operator(){
-        delete oper;
-     }
+
+protected:
+   Type type;
 };
+
 
 class UnaryExpr: public Node{
 private:
@@ -586,29 +558,6 @@ public:
     }
     
     virtual void printPy(std::ostream& dst)const override{}
-};
-
-class AssignmentExpr: public Node{
-private:
-    NodePtr unaryExpr;
-    NodePtr assignmentOper;
-    NodePtr assignmentExpr;
-public:
-    AssignmentExpr(NodePtr _unaryExpr, NodePtr _assignmentOper, NodePtr _assignmentExpr)
-        :unaryExpr(_unaryExpr), assignmentOper(_assignmentOper), assignmentExpr(_assignmentExpr){}
-        
-    virtual void print(std::ostream& dst)const override{
-        unaryExpr->print(dst);
-        assignmentOper->print(dst);
-        assignmentExpr->print(dst);
-    }
-    
-    virtual void printPy(std::ostream& dst) const override{
-	unaryExpr->printPy(dst);
-        assignmentOper->printPy(dst);
-        assignmentExpr->printPy(dst);
-
-	}
 };
 
 class ConditionalExpr: public Node{
@@ -635,26 +584,20 @@ public:
 class BinaryOperation: public Node{
 private:
     NodePtr operand1;
-    std::string* oper;
+    NodePtr oper;
     NodePtr operand2;
     
 public:
-    BinaryOperation(NodePtr _operand1, std::string* _oper, NodePtr _operand2)
+    BinaryOperation(NodePtr _operand1, NodePtr _oper, NodePtr _operand2)
         :operand1(_operand1), oper(_oper), operand2(_operand2){}
         
     virtual void print(std::ostream& dst)const override{
         operand1->print(dst);
-        dst << " " << *oper << " ";
+        oper->print(dst);
         operand2->print(dst);
     }
     
     virtual void printPy(std::ostream& dst)const override{}
-    
-    virtual ~BinaryOperation()override{
-        delete operand1;
-        delete oper;
-        delete operand2;
-     }
 };
 
 class CastExpr: public Node{
@@ -719,5 +662,46 @@ class DeclSpecifier: public StringNode{
 public:
     DeclSpecifier(const std::string* _id)
         :StringNode(_id){}
-};    
+};
+
+class LabeledStatement: public StringNode{
+private:
+    NodePtr p1;
+    NodePtr p2;
+    
+public:
+    LabeledStatement(const std::string* _id, NodePtr _p1, NodePtr _p2)
+        :StringNode(_id), p1(_p1), p2(_p2){}
+        
+    virtual void print(std::ostream& dst)const override{
+        dst << *id << " ";
+        if(p1 != NULL)
+            p1->print(dst);
+        dst << ":";
+        p2->print(dst);
+    }
+    
+    virtual void printPy(std::ostream& dst)const override{}
+};
+
+class JumpStatement: public StringNode{
+private:
+    const std::string* str1;
+    NodePtr p1;
+    
+public:
+    JumpStatement(const std::string * _id, const std::string* _str1, NodePtr _p1)
+        :StringNode(_id), str1(_str1), p1(_p1){}
+        
+    virtual void print(std::ostream& dst)const override{
+        dst << *id << " ";
+        if(str1 != NULL)
+            dst << *str1;
+        if(p1 != NULL)
+            p1->print(dst);
+        dst << ";";
+    }
+    
+    virtual void printPy(std::ostream& dst)const override{}
+};
 #endif

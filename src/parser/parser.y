@@ -39,11 +39,11 @@
 
 //Non-terminals declaration
 %type <node> PROGRAM EXT_DECLARATION VAR_TYPE DECLR_LIST BLOCK FUNCTION_DEF DECLARATION INIT_DECLARATOR DIRECT_DECLARATOR
-%type <node> IDENTIFIER_LIST STATEMENT_LIST INIT_DECLARATOR_LIST
-%type <node> INITIALIZER PRIMARY_EXPR STATEMENT EXPR_STATEMENT EXPR SELECTION_STATEMENT ITERATION_STATEMENT
+%type <node> STATEMENT_LIST INIT_DECLARATOR_LIST
+%type <node> PRIMARY_EXPR STATEMENT EXPR_STATEMENT EXPR SELECTION_STATEMENT ITERATION_STATEMENT
 %type <node> TYPE_QUALIFIER DECL_SPECIFIER DECL_SPECIFIER_LIST STOR_CLASS_SPEC
 %type <node> ASSIGNMENT_OPER UNARY_EXPR CONDITIONAL_EXPR ASSIGNMENT_EXPR POSTFIX_EXPR CAST_EXPR
-%type <node> LOGICAL_OR_EXPR LOGICAL_AND_EXPR INCLUSIVE_OR_EXPR EXCLUSIVE_OR_EXPR AND_EXPR EQUAL_EXPR RELATIONAL_EXPR SHIFT_EXPR ADDITIVE_EXPR MULT_EXPR ARGUMENT_EXPR_LIST
+%type <node> LOGICAL_OR_EXPR LOGICAL_AND_EXPR INCLUSIVE_OR_EXPR EXCLUSIVE_OR_EXPR AND_EXPR EQUAL_EXPR RELATIONAL_EXPR SHIFT_EXPR ADDITIVE_EXPR MULT_EXPR ARGUMENT_EXPR_LIST LABELED_STATEMENT JUMP_STATEMENT
 
 
 %type <string> T_INT_CONSTANT
@@ -54,7 +54,7 @@
 %type <string> T_EQUAL T_RIGHT_S_ASSIGN T_LEFT_S_ASSIGN T_ADD_ASSIGN T_SUB_ASSIGN T_MUL_ASSIGN T_DIV_ASSIGN T_MOD_ASSIGN T_AND_ASSIGN T_XOR_ASSIGN T_OR_ASSIGN
 %type <string> T_AMPERSAND T_EXCLAMATION T_TILDE T_INCREMENT T_DECREMENT T_LOGICAL_OR T_LOGICAL_AND T_OR T_AND T_XOR T_EQUALITY T_INEQUALITY
 %type <string> T_SMALLER T_GREATER T_GREATER_EQUAL T_SMALLER_EQUAL T_SHIFT_L T_SHIFT_R T_PLUS T_MINUS T_DIV T_MULT T_MOD UNARY_OPER
-%type <string> T_ARROW T_DOT T_SQUARE_LBRACKET T_SQUARE_RBRACKET T_LBRACKET T_RBRACKET
+%type <string> T_ARROW T_DOT T_SQUARE_LBRACKET T_SQUARE_RBRACKET T_LBRACKET T_RBRACKET T_CASE T_DEFAULT T_GOTO T_RETURN T_CONTINUE T_BREAK
 
 
 %start ROOT
@@ -103,48 +103,48 @@ ITERATION_STATEMENT: T_WHILE T_LBRACKET EXPR T_RBRACKET STATEMENT {$$ = new Whil
 EXPR: ASSIGNMENT_EXPR {$$ = $1;} //Add more
 
 ASSIGNMENT_EXPR: CONDITIONAL_EXPR {$$ = $1;}
-               | UNARY_EXPR ASSIGNMENT_OPER ASSIGNMENT_EXPR {$$ = new AssignmentExpr($1, $2, $3);}
+               | UNARY_EXPR ASSIGNMENT_OPER ASSIGNMENT_EXPR {$$ = new BinaryOperation($1, $2, $3);}
                
 CONDITIONAL_EXPR: LOGICAL_OR_EXPR {$$ = $1;}
                 | LOGICAL_OR_EXPR T_QUESTION EXPR T_COLON CONDITIONAL_EXPR {$$ = new ConditionalExpr($1, $3, $5);}
                 
 LOGICAL_OR_EXPR: LOGICAL_AND_EXPR {$$ = $1;}
-               | LOGICAL_OR_EXPR T_LOGICAL_OR LOGICAL_AND_EXPR {$$ = new BinaryOperation($1, $2, $3);}
+               | LOGICAL_OR_EXPR T_LOGICAL_OR LOGICAL_AND_EXPR {$$ = new BinaryOperation($1, new Operator($2, Operator::LOGICAL_OR), $3);}
                
 LOGICAL_AND_EXPR: INCLUSIVE_OR_EXPR {$$ = $1;}
-                | LOGICAL_AND_EXPR T_LOGICAL_AND INCLUSIVE_OR_EXPR {$$ = new BinaryOperation($1, $2, $3);}
+                | LOGICAL_AND_EXPR T_LOGICAL_AND INCLUSIVE_OR_EXPR {$$ = new BinaryOperation($1, new Operator($2, Operator::LOGICAL_AND), $3);}
                 
 INCLUSIVE_OR_EXPR: EXCLUSIVE_OR_EXPR {$$ = $1;}
-                 | INCLUSIVE_OR_EXPR T_OR EXCLUSIVE_OR_EXPR {$$ = new BinaryOperation($1, $2, $3);}
+                 | INCLUSIVE_OR_EXPR T_OR EXCLUSIVE_OR_EXPR {$$ = new BinaryOperation($1, new Operator($2, Operator::INCLUSIVE_OR), $3);}
                  
 EXCLUSIVE_OR_EXPR: AND_EXPR {$$ = $1;}
-                 | EXCLUSIVE_OR_EXPR T_XOR AND_EXPR {$$ = new BinaryOperation($1, $2, $3);}
+                 | EXCLUSIVE_OR_EXPR T_XOR AND_EXPR {$$ = new BinaryOperation($1, new Operator($2, Operator::EXCLUSIVE_OR), $3);}
                  
 AND_EXPR: EQUAL_EXPR {$$ = $1;}
-        | AND_EXPR T_AND EQUAL_EXPR {$$ = new BinaryOperation($1, $2, $3);}
+        | AND_EXPR T_AND EQUAL_EXPR {$$ = new BinaryOperation($1, new Operator($2, Operator::AND), $3);}
         
 EQUAL_EXPR: RELATIONAL_EXPR                             {$$ = $1;}
-          | EQUAL_EXPR T_EQUALITY RELATIONAL_EXPR       {$$ = new BinaryOperation($1, $2, $3);}
-          | EQUAL_EXPR T_INEQUALITY RELATIONAL_EXPR     {$$ = new BinaryOperation($1, $2, $3);}
+          | EQUAL_EXPR T_EQUALITY RELATIONAL_EXPR       {$$ = new BinaryOperation($1, new Operator($2, Operator::EQUALITY), $3);}
+          | EQUAL_EXPR T_INEQUALITY RELATIONAL_EXPR     {$$ = new BinaryOperation($1, new Operator($2, Operator::EQUALITY), $3);}
      
 RELATIONAL_EXPR: SHIFT_EXPR                                     {$$ = $1;}
-               | RELATIONAL_EXPR T_SMALLER SHIFT_EXPR           {$$ = new BinaryOperation($1, $2, $3);}
-               | RELATIONAL_EXPR T_GREATER SHIFT_EXPR           {$$ = new BinaryOperation($1, $2, $3);}
-               | RELATIONAL_EXPR T_SMALLER_EQUAL SHIFT_EXPR     {$$ = new BinaryOperation($1, $2, $3);}
-               | RELATIONAL_EXPR T_GREATER_EQUAL SHIFT_EXPR     {$$ = new BinaryOperation($1, $2, $3);}
+               | RELATIONAL_EXPR T_SMALLER SHIFT_EXPR           {$$ = new BinaryOperation($1, new Operator($2, Operator::RELATIONAL), $3);}
+               | RELATIONAL_EXPR T_GREATER SHIFT_EXPR           {$$ = new BinaryOperation($1, new Operator($2, Operator::RELATIONAL), $3);}
+               | RELATIONAL_EXPR T_SMALLER_EQUAL SHIFT_EXPR     {$$ = new BinaryOperation($1, new Operator($2, Operator::RELATIONAL), $3);}
+               | RELATIONAL_EXPR T_GREATER_EQUAL SHIFT_EXPR     {$$ = new BinaryOperation($1, new Operator($2, Operator::RELATIONAL), $3);}
                
 SHIFT_EXPR: ADDITIVE_EXPR                       {$$ = $1;}
-          | SHIFT_EXPR T_SHIFT_L ADDITIVE_EXPR  {$$ = new BinaryOperation($1, $2, $3);}
-          | SHIFT_EXPR T_SHIFT_R ADDITIVE_EXPR  {$$ = new BinaryOperation($1, $2, $3);}
+          | SHIFT_EXPR T_SHIFT_L ADDITIVE_EXPR  {$$ = new BinaryOperation($1, new Operator($2, Operator::SHIFT), $3);}
+          | SHIFT_EXPR T_SHIFT_R ADDITIVE_EXPR  {$$ = new BinaryOperation($1, new Operator($2, Operator::SHIFT), $3);}
           
 ADDITIVE_EXPR: MULT_EXPR                        {$$ = $1;}
-             | ADDITIVE_EXPR T_PLUS MULT_EXPR   {$$ = new BinaryOperation($1, $2, $3);}
-             | ADDITIVE_EXPR T_MINUS MULT_EXPR  {$$ = new BinaryOperation($1, $2, $3);}
+             | ADDITIVE_EXPR T_PLUS MULT_EXPR   {$$ = new BinaryOperation($1, new Operator($2, Operator::ADD), $3);}
+             | ADDITIVE_EXPR T_MINUS MULT_EXPR  {$$ = new BinaryOperation($1, new Operator($2, Operator::ADD), $3);}
              
 MULT_EXPR: CAST_EXPR                    {$$ = $1;}
-         | MULT_EXPR T_MULT CAST_EXPR   {$$ = new BinaryOperation($1, $2, $3);}
-         | MULT_EXPR T_DIV CAST_EXPR    {$$ = new BinaryOperation($1, $2, $3);}
-         | MULT_EXPR T_MOD CAST_EXPR    {$$ = new BinaryOperation($1, $2, $3);}
+         | MULT_EXPR T_MULT CAST_EXPR   {$$ = new BinaryOperation($1, new Operator($2, Operator::MUL), $3);}
+         | MULT_EXPR T_DIV CAST_EXPR    {$$ = new BinaryOperation($1, new Operator($2, Operator::MUL), $3);}
+         | MULT_EXPR T_MOD CAST_EXPR    {$$ = new BinaryOperation($1, new Operator($2, Operator::MUL), $3);}
                        
 UNARY_EXPR: POSTFIX_EXPR            {$$ = $1;}
           | T_INCREMENT UNARY_EXPR  {$$ = new UnaryExpr($1,$2);}
@@ -173,42 +173,27 @@ POSTFIX_EXPR: PRIMARY_EXPR {$$ = $1;}
 ARGUMENT_EXPR_LIST: ASSIGNMENT_EXPR {$$ = $1;}
                   | ARGUMENT_EXPR_LIST T_COMMA ASSIGNMENT_EXPR {$$ = new List($1, $3);}
 
-ASSIGNMENT_OPER: T_EQUAL {$$ = new Operator($1);}
-               | T_RIGHT_S_ASSIGN {$$ = new Operator($1);}
-               | T_LEFT_S_ASSIGN {$$ = new Operator($1);}
-               | T_ADD_ASSIGN {$$ = new Operator($1);}
-               | T_SUB_ASSIGN {$$ = new Operator($1);}
-               | T_MUL_ASSIGN {$$ = new Operator($1);}
-               | T_DIV_ASSIGN {$$ = new Operator($1);}
-               | T_MOD_ASSIGN {$$ = new Operator($1);}
-               | T_AND_ASSIGN {$$ = new Operator($1);}
-               | T_XOR_ASSIGN {$$ = new Operator($1);}
-               | T_OR_ASSIGN {$$ = new Operator($1);}
 
-STATEMENT_LIST : STATEMENT_LIST STATEMENT	{ $$ = new StatementList($1,$2); }
-		       | STATEMENT { $$ = $1; }
+STATEMENT_LIST : STATEMENT_LIST STATEMENT	{$$ = new StatementList($1,$2);}
+		       | STATEMENT                  {$$ = $1;}
 
-STATEMENT : BLOCK { $$ = $1; }
-	      | EXPR_STATEMENT { $$ = $1; }
+STATEMENT : LABELED_STATEMENT   {$$ = $1;}
+          | BLOCK               {$$ = $1;}
+	      | EXPR_STATEMENT      {$$ = $1;}
 	      | SELECTION_STATEMENT {$$ = $1;}
 	      | ITERATION_STATEMENT {$$ = $1;}
-
+	      | JUMP_STATEMENT      {$$ = $1;}
+	      
 EXPR_STATEMENT : EXPR T_SEMICOLON {$$ = new ExprStatement($1);}
                | T_SEMICOLON {$$ = new ExprStatement(NULL);} 
 	
 DECLR_LIST : DECLR_LIST DECLARATION	{$$ = new  DeclrList($1,$2);}	
 	       | DECLARATION		    {$$ = $1;}
 
-INITIALIZER : PRIMARY_EXPR {$$ = $1;}
-
-PRIMARY_EXPR : T_IDENTIFIER	                {$$ =  new StringNode($1);}
+PRIMARY_EXPR : T_IDENTIFIER	                {$$ = new StringNode($1);}
 		     | T_INT_CONSTANT               {$$ = new IntConst($1);}
 		     | T_STR_LIT                    {$$ = new StringNode($1);}
 		     | T_LBRACKET EXPR T_RBRACKET   {$$ = new PrimaryExpr($2);}
-
-
-IDENTIFIER_LIST: IDENTIFIER_LIST T_COMMA T_IDENTIFIER   {$$ = new List($1, new StringNode($3));}
-               | T_IDENTIFIER                           {$$ = new StringNode($1);}
                
 DECL_SPECIFIER_LIST: DECL_SPECIFIER_LIST DECL_SPECIFIER {$$ = new DeclSpecifierList($1, $2);}
                    | DECL_SPECIFIER                     {$$ = $1;}
@@ -216,6 +201,19 @@ DECL_SPECIFIER_LIST: DECL_SPECIFIER_LIST DECL_SPECIFIER {$$ = new DeclSpecifierL
 DECL_SPECIFIER: VAR_TYPE            {$$ = $1;}
               | TYPE_QUALIFIER      {$$ = $1;}
               | STOR_CLASS_SPEC     {$$ = $1;}
+              
+              
+ASSIGNMENT_OPER: T_EQUAL            {$$ = new Operator($1, Operator::ASSIGN);}
+               | T_RIGHT_S_ASSIGN   {$$ = new Operator($1, Operator::ASSIGN);}
+               | T_LEFT_S_ASSIGN    {$$ = new Operator($1, Operator::ASSIGN);}
+               | T_ADD_ASSIGN       {$$ = new Operator($1, Operator::ASSIGN);}
+               | T_SUB_ASSIGN       {$$ = new Operator($1, Operator::ASSIGN);}
+               | T_MUL_ASSIGN       {$$ = new Operator($1, Operator::ASSIGN);}
+               | T_DIV_ASSIGN       {$$ = new Operator($1, Operator::ASSIGN);}
+               | T_MOD_ASSIGN       {$$ = new Operator($1, Operator::ASSIGN);}
+               | T_AND_ASSIGN       {$$ = new Operator($1, Operator::ASSIGN);}
+               | T_XOR_ASSIGN       {$$ = new Operator($1, Operator::ASSIGN);}
+               | T_OR_ASSIGN        {$$ = new Operator($1, Operator::ASSIGN);}
 	
 VAR_TYPE : T_INT        {$$ = new DeclSpecifier($1);}
          | T_CHAR       {$$ = new DeclSpecifier($1);}
@@ -235,6 +233,16 @@ STOR_CLASS_SPEC: T_TYPEDEF  {$$ = new DeclSpecifier($1);}
                | T_STATIC   {$$ = new DeclSpecifier($1);}
                | T_AUTO     {$$ = new DeclSpecifier($1);}
                | T_REGISTER {$$ = new DeclSpecifier($1);}
+               
+LABELED_STATEMENT: T_IDENTIFIER T_COLON STATEMENT               {$$ = new LabeledStatement($1, NULL, $3);}
+                 | T_CASE CONDITIONAL_EXPR T_COLON STATEMENT    {$$ = new LabeledStatement($1, $2, $4);}
+                 | T_DEFAULT T_COLON STATEMENT                  {$$ = new LabeledStatement($1, NULL, $3);}
+                 
+JUMP_STATEMENT: T_GOTO T_IDENTIFIER T_SEMICOLON     {$$ = new JumpStatement($1, $2, NULL);}
+              | T_CONTINUE T_SEMICOLON              {$$ = new JumpStatement($1, NULL, NULL);}
+              | T_BREAK T_SEMICOLON                 {$$ = new JumpStatement($1, NULL, NULL);}
+              | T_RETURN T_SEMICOLON                {$$ = new JumpStatement($1, NULL, NULL);}
+              | T_RETURN EXPR T_SEMICOLON           {$$ = new JumpStatement($1, NULL, $2);}
 %%
 
 NodePtr g_root; // Definition of variable (to match declaration earlier)

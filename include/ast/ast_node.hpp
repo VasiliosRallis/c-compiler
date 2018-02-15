@@ -6,7 +6,7 @@
 class Node;
 
 typedef const Node* NodePtr;
-
+    
 class Node{
 public:
     virtual ~Node(){}
