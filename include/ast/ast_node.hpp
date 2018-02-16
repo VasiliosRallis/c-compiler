@@ -36,23 +36,4 @@ public:
         dst << *id;
     }
 };
-
-class List: public Node{
-protected:
-    NodePtr l;
-    NodePtr r;
-    
-public:
-    List(NodePtr _l, NodePtr _r)
-        :l(_l), r(_r){ }
-   
-   virtual void print(std::ostream& dst)const override{
-	dst << "List" ;
-        l->print(dst);
-        dst << ",";
-        r->print(dst);
-   }
-   virtual void printPy(std::ostream& dst) const override{}
-};
-
 #endif

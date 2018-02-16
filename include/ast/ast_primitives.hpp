@@ -30,7 +30,6 @@ public:
 	    }
         dst << ";";
     }
-    
     virtual void printPy(std::ostream& dst) const override{ }
 };
 
@@ -44,7 +43,7 @@ public:
     
     virtual void print(std::ostream& dst) const override{
         directDeclarator->print(dst);
-	dst << "=";      
+	    dst << "=";      
         asgnExpr->print(dst);
     }
     
@@ -237,20 +236,6 @@ public:
     }
 };
 
-class DeclSpecifierList: public List{
-public:
-    DeclSpecifierList(NodePtr _l, NodePtr _r)
-        :List(_l, _r){}
-        
-    virtual void print(std::ostream& dst) const override{
-        l->print(dst);
-        dst << " ";
-        r->print(dst);
-    }
-        
-    virtual void printPy(std::ostream& dst) const override{}
-};
-
 class ExprStatement: public Node{
 private:
     NodePtr expr;    
@@ -370,11 +355,7 @@ public:
     }
     
     virtual void printPy(std::ostream& dst) const override{}
-    
-    virtual ~WhileStatement() override{
-        delete expr;
-        delete statement;
-    }
+
 };
 
 class DoStatement: public Node{
@@ -396,11 +377,6 @@ public:
     }
     
     virtual void printPy(std::ostream& dst) const override{}
-    
-    virtual ~DoStatement() override{
-        delete statement;
-        delete expr;
-    }
 };
 
 class ForStatement: public Node{
