@@ -63,10 +63,10 @@
 
 %%
 
-ROOT : PROGRAM { g_root = $1; }
+ROOT : PROGRAM {g_root = $1;}
 
-PROGRAM : PROGRAM EXT_DECLARATION {$$ = new Program($1, $2);}
-        | EXT_DECLARATION {$$ = $1;}
+PROGRAM : PROGRAM EXT_DECLARATION   {$$ = new Program($1, $2);}
+        | EXT_DECLARATION           {$$ = $1;}
        
 EXT_DECLARATION: FUNCTION_DEF {$$ = $1;}
 		       | DECLARATION  {$$ =$1;}
@@ -74,8 +74,8 @@ EXT_DECLARATION: FUNCTION_DEF {$$ = $1;}
 DECLARATION: DECL_SPECIFIER_LIST T_SEMICOLON                      {$$ = new Declaration($1,NULL);}
            | DECL_SPECIFIER_LIST INIT_DECLARATOR_LIST T_SEMICOLON {$$ = new Declaration($1,$2);}
 
-INIT_DECLARATOR_LIST: INIT_DECLARATOR {$$ = new std::vector<NodePtr>{$1} ;}
-			| INIT_DECLARATOR_LIST T_COMMA INIT_DECLARATOR { $$ = $1 ; (*$1).push_back($3);  }
+INIT_DECLARATOR_LIST: INIT_DECLARATOR {$$ = new std::vector<NodePtr>{$1};}
+			        | INIT_DECLARATOR_LIST T_COMMA INIT_DECLARATOR { $$ = $1 ; (*$1).push_back($3);}
 
 INIT_DECLARATOR: DIRECT_DECLARATOR {$$ = $1;}
 		       | DIRECT_DECLARATOR T_EQUAL ASSIGNMENT_EXPR { $$ = new InitDeclarator($1,$3);}
@@ -95,12 +95,12 @@ SELECTION_STATEMENT: T_IF T_LBRACKET EXPR T_RBRACKET STATEMENT {$$ = new IfState
                    | T_IF T_LBRACKET EXPR T_RBRACKET STATEMENT T_ELSE STATEMENT {$$ = new IfStatement($3,$5,$7);}
                    | T_SWITCH T_LBRACKET EXPR T_RBRACKET STATEMENT {$$ = new CaseStatement($3, $5);}
                    
-ITERATION_STATEMENT: T_WHILE T_LBRACKET EXPR T_RBRACKET STATEMENT {$$ = new WhileStatement($3, $5);}
-                   | T_DO STATEMENT T_WHILE T_LBRACKET EXPR T_RBRACKET T_SEMICOLON {$$ = new DoStatement($2, $5);}
-                   | T_FOR T_LBRACKET T_SEMICOLON T_SEMICOLON T_RBRACKET STATEMENT {$$ = new ForStatement(NULL,NULL,NULL,$6);}
-                   | T_FOR T_LBRACKET EXPR T_SEMICOLON T_SEMICOLON T_RBRACKET STATEMENT {$$ = new ForStatement($3,NULL,NULL,$7);}
-                   | T_FOR T_LBRACKET EXPR T_SEMICOLON EXPR T_SEMICOLON T_RBRACKET STATEMENT {$$ = new ForStatement($3,$5,NULL,$8);}
-                   | T_FOR T_LBRACKET EXPR T_SEMICOLON EXPR T_SEMICOLON EXPR T_RBRACKET STATEMENT {$$ = new ForStatement($3,$5,$7,$9);}
+ITERATION_STATEMENT: T_WHILE T_LBRACKET EXPR T_RBRACKET STATEMENT                                   {$$ = new WhileStatement($3, $5);}
+                   | T_DO STATEMENT T_WHILE T_LBRACKET EXPR T_RBRACKET T_SEMICOLON                  {$$ = new DoStatement($2, $5);}
+                   | T_FOR T_LBRACKET T_SEMICOLON T_SEMICOLON T_RBRACKET STATEMENT                  {$$ = new ForStatement(NULL,NULL,NULL,$6);}
+                   | T_FOR T_LBRACKET EXPR T_SEMICOLON T_SEMICOLON T_RBRACKET STATEMENT             {$$ = new ForStatement($3,NULL,NULL,$7);}
+                   | T_FOR T_LBRACKET EXPR T_SEMICOLON EXPR T_SEMICOLON T_RBRACKET STATEMENT        {$$ = new ForStatement($3,$5,NULL,$8);}
+                   | T_FOR T_LBRACKET EXPR T_SEMICOLON EXPR T_SEMICOLON EXPR T_RBRACKET STATEMENT   {$$ = new ForStatement($3,$5,$7,$9);}
 
 EXPR: ASSIGNMENT_EXPR {$$ = $1;} //Add more
 

@@ -16,29 +16,19 @@ private:
     std::vector<NodePtr>* initdeclrList;
 public:
     Declaration(NodePtr _declrspecList, std::vector<NodePtr>* _initdeclrList)
-        : declrspecList(_declrspecList), initdeclrList(_initdeclrList) {	}
+        : declrspecList(_declrspecList), initdeclrList(_initdeclrList) {}
     
     virtual void print(std::ostream& dst) const override{
         declrspecList->print(dst);
-	dst << " ";
-	if((*initdeclrList).size() != 0) {
-		for(int i=0; i< (*initdeclrList).size();i++){       
-        		((*initdeclrList)[i])-> print(dst) ;
-			if( i < (*initdeclrList).size() -1){
-				dst << "," ;
-			}
-		}
-	}
+	    dst << " ";
+		for(int i(0); i < initdeclrList->size(); ++i){       
+        	initdeclrList->at(i)->print(dst);
+			if(i < initdeclrList->size() - 1) dst << ",";
+	    }
         dst << ";";
     }
     
     virtual void printPy(std::ostream& dst) const override{ }
-       
-    virtual ~Declaration() override{
-        delete declrspecList;
-       // delete initdeclrList;
-    }
-
 };
 
 class InitDeclarator : public Node {
