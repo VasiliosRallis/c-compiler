@@ -6,7 +6,7 @@
 #include <vector>
 
 extern int g_depth;
-//extern std::string g_variables;
+extern std::vector<std::string> g_variables;
 
 //class Identifier: public Node;
 
@@ -67,6 +67,19 @@ public:
             }
         }
     }
+    
+    void addGlobal()const{
+        for(int i(0); i < initdeclrList->size(); ++i){
+            if(dynamic_cast<const StringNode*>(initdeclrList->at(i))){
+                dynamic_cast<const StringNode*>(initdeclrList->at(i))->addGlobal();
+            }
+            else if(dynamic_cast<const InitDeclarator*>(initdeclrList->at(i))){
+                //dynamic_cast<const InitDeclarator*>(initdeclrList->at(i))->addGlobal();
+            
+            }
+        }
+        
+    }      
 };
 
 
@@ -208,6 +221,26 @@ public:
                 
         }
     }
+    
+    virtual void printPyG(std::ostream& dst, int depth = 0) const{
+        for(int i(0); i < g_variables.size(); ++i){
+            for(int j(0); j < depth + 1; ++j) dst << "\t";
+            dst << "global " << g_variables.at(i) << "\n";
+        }
+        if(declrList != NULL){
+            for(int i(0); i < declrList->size(); ++i){
+                declrList->at(i)->printPy(dst, depth+1);
+                dst << "\n";
+            }
+        }
+        if(statementList != NULL){
+            for(int i(0); i < statementList->size(); ++i){
+                statementList->at(i)->printPy(dst, depth+1);
+                dst << "\n";
+            }
+                
+        }
+    }
 };
 
 class FunctionDef: public Node{
@@ -236,7 +269,7 @@ public:
         dst << ":\n";
         //for(int i(0); i < depth + 1; ++i){
            //dst << "\t";
-        block->printPy(dst);
+        static_cast<const Block*>(block)->printPyG(dst);
     }
     
 };
@@ -258,9 +291,12 @@ public:
     }
     
     virtual void printPy(std::ostream& dst, int depth = 0) const override{
-	program->printPy(dst, 0);
+    if(dynamic_cast<const Declaration*>(program)){
+        dynamic_cast<const Declaration*>(program)->addGlobal();
+    }
+	program->printPy(dst);
 	dst << "\n";
-	basicProgram->printPy(dst, 0);
+	basicProgram->printPy(dst);
     //    if(dynamic_cast<const VarDeclr*>(program)){
     //       dynamic_cast<const VarDeclr*>(program)->getGlobal(); 
     //    }

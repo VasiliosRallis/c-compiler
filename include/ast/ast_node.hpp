@@ -6,6 +6,8 @@
 #include <string>
 class Node;
 
+extern std::vector<std::string> g_variables;
+
 typedef const Node* NodePtr;
 typedef std::vector<NodePtr>* VectorPtr;
 typedef const std::string* StrPtr;
@@ -35,6 +37,11 @@ public:
     virtual void printPy(std::ostream& dst, int depth = 0)const override{
         for(int i(0); i < depth; ++i) dst << "\t";
         dst << *id;
+    }
+    
+    void addGlobal()const{
+        std::string global = *id;
+        g_variables.push_back(global);
     }
 };
 #endif
