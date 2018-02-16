@@ -33,6 +33,7 @@ public:
     }
     
     virtual void printPy(std::ostream& dst, int depth = 0)const override{
+        for(int i(0); i < depth; ++i) dst << "\t";
         dst << *id;
     }
 };

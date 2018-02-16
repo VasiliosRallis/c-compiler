@@ -83,13 +83,19 @@ for i in tests/python/in/*.c; do
     
     # Check if the parser actually exited with 0 (if it didn't the out.c will be empty which will actaully compile)
     if [[ "$?" -ne "0" ]]; then
-    echo -e "${i} \t ${RED}PASS${NC} 0/2"
+        echo -e "${i} \t ${RED}PASS${NC} 0/2"
     else
         PASSED=$(( ${PASSED}+1 ));
-        
-        
-        diff -Z -B tests/python/out/$BASENAME.py tests/python/ref/$BASENAME.py > tests/python/out/$BASENAME.diff.txt
-        if [[ "$?" -ne "0" ]]; then
+  
+        # Get the exit code of the reference python version
+        python tests/python/in/$BASENAME.py
+        REF_P_OUT=$?
+    
+        # Get the actual python exit code
+        python tests/python/out/$BASENAME.py      
+        GOT_P_OUT=$?
+    
+        if [[ $REF_P_OUT -ne $GOT_P_OUT ]]; then
             echo -e "${i} \t ${RED}PASS${NC} 1/2"
         else
             echo -e "${i} \t ${GREEN}PASS${NC} 2/2"
@@ -101,7 +107,6 @@ for i in tests/python/in/*.c; do
     CHECKED=$(( ${CHECKED}+2 ));
     
 done
-
 
 echo ""
 echo "########################################"

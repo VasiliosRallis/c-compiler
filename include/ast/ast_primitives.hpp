@@ -10,6 +10,28 @@ extern int g_depth;
 
 //class Identifier: public Node;
 
+class InitDeclarator : public Node {
+private:
+    NodePtr directDeclarator;    
+    NodePtr asgnExpr;
+public:
+    InitDeclarator(NodePtr _directDeclarator, NodePtr _asgnExpr)
+        : directDeclarator(_directDeclarator), asgnExpr(_asgnExpr) {}
+    
+    virtual void print(std::ostream& dst) const override{
+        directDeclarator->print(dst);
+	    dst << "=";      
+        asgnExpr->print(dst);
+    }
+    
+    virtual void printPy(std::ostream& dst, int depth = 0) const override{
+        directDeclarator->printPy(dst, depth);
+        dst << "=";
+        asgnExpr->printPy(dst);
+    }
+
+};
+
 class Declaration : public Node {
 private:
     VectorPtr declrspecList;    
@@ -30,31 +52,23 @@ public:
 	    }
         dst << ";";
     }
-    virtual void printPy(std::ostream& dst, int depth = 0) const override{ }
+    virtual void printPy(std::ostream& dst, int depth = 0) const override{
+        for(int i(0); i < initdeclrList->size(); ++i){
+            if(dynamic_cast<const StringNode*>(initdeclrList->at(i))){
+                initdeclrList->at(i)->printPy(dst, depth);
+                dst << "=0\n";
+            }
+            else if(dynamic_cast<const InitDeclarator*>(initdeclrList->at(i))){
+                initdeclrList->at(i)->printPy(dst, depth);
+                dst << "\n";
+            }
+            else{
+                std::cerr << "Not supported yet!" << std::endl;
+            }
+        }
+    }
 };
 
-class InitDeclarator : public Node {
-private:
-    NodePtr directDeclarator;    
-    NodePtr asgnExpr;
-public:
-    InitDeclarator(NodePtr _directDeclarator, NodePtr _asgnExpr)
-        : directDeclarator(_directDeclarator), asgnExpr(_asgnExpr) {}
-    
-    virtual void print(std::ostream& dst) const override{
-        directDeclarator->print(dst);
-	    dst << "=";      
-        asgnExpr->print(dst);
-    }
-    
-    virtual void printPy(std::ostream& dst, int depth = 0) const override{ }
-       
-    virtual ~InitDeclarator() override{
-        delete directDeclarator;
-        delete asgnExpr;
-    }
-
-};
 
 class DirectDeclarator: public Node{
 private:
@@ -72,7 +86,7 @@ public:
         dst << *s1;
         if(v1 != NULL){
             for(int i(0); i < v1->size(); ++i){
-                v1->at(i)->print(dst);
+                v1->at(i)->printPy(dst);
                 if(i < v1->size() - 1) dst << ",";
             }
         }
@@ -99,7 +113,9 @@ public:
         if(n2 != NULL) n2->print(dst);
     }
     
-    virtual void printPy(std::ostream& dst, int depth = 0)const override{}
+    virtual void printPy(std::ostream& dst, int depth = 0)const override{
+        n2->print(dst);
+    }
     
 };
 class VarInit : public Node {
@@ -178,9 +194,18 @@ public:
         }
         g_depth--;   
     */
+        if(declrList != NULL){
+            for(int i(0); i < declrList->size(); ++i){
+                declrList->at(i)->printPy(dst, depth+1);
+                dst << "\n";
+            }
+        }
         if(statementList != NULL){
-            for(int i(0); i < statementList->size(); ++i)
+            for(int i(0); i < statementList->size(); ++i){
                 statementList->at(i)->printPy(dst, depth+1);
+                dst << "\n";
+            }
+                
         }
     }
 };
@@ -211,7 +236,7 @@ public:
         dst << ":\n";
         //for(int i(0); i < depth + 1; ++i){
            //dst << "\t";
-        block->printPy(dst, depth + 1);
+        block->printPy(dst);
     }
     
 };
@@ -272,15 +297,9 @@ public:
     }
     
     virtual void printPy(std::ostream& dst, int depth = 0) const override{
-	for(int i(0); i < g_depth; ++i){
-		dst << "\t";
-	}
-	expr->printPy(dst);
+	    expr->printPy(dst, depth);
     }
     
-    virtual ~ExprStatement() override{
-        delete expr;
-    }
 };
 
 class IfStatement: public Node{
@@ -532,7 +551,12 @@ public:
         operand2->print(dst);
     }
     
-    virtual void printPy(std::ostream& dst, int depth = 0)const override{}
+    virtual void printPy(std::ostream& dst, int depth = 0)const override{
+        for(int i(0); i < depth; ++i) dst << "\t";
+        operand1->printPy(dst);
+        oper->printPy(dst);
+        operand2->printPy(dst);
+    }
 };
 
 class CastExpr: public Node{
