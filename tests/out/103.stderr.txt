@@ -1,8 +1,0 @@
-Token:                T_INT                 int
-Token:         T_IDENTIFIER                main
-Token:           T_LBRACKET                   (
-Token:           T_RBRACKET                   )
-Token:       T_LCURLBRACKET                   {
-Token:       T_LCURLBRACKET                   {
-Token:       T_RCURLBRACKET                   }
-Token:       T_RCURLBRACKET                   }

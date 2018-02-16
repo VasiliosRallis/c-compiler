@@ -1,5 +1,0 @@
-Token:                T_INT                 int
-Token:         T_IDENTIFIER                   b
-Token:              T_EQUAL                   =
-Token:       T_INT_CONSTANT                   7
-Token:          T_SEMICOLON                   ;

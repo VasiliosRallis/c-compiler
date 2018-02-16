@@ -606,7 +606,7 @@ public:
         for(int i(0); i < depth; ++i) dst << "\t";
         dst << *id << " ";
         if(str1 != NULL) dst << *str1;
-        if(p1 != NULL) p1->printPy(dst);
+        if(p1 != NULL) p1->print(dst);
     }
 };
 #endif
