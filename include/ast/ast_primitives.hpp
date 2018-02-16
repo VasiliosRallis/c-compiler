@@ -360,14 +360,14 @@ public:
     }
     
     virtual void printPy(std::ostream& dst, int depth = 0) const override{
-        for(int i(0); i < g_depth; ++i){
+        for(int i(0); i < depth; ++i){
             dst << "\t";
         }
         dst << "if(";
         expr->printPy(dst);
-        dst << ")";
+        dst << "):";
         dst << "\n";
-        statement1->printPy(dst);
+        statement1->printPy(dst, depth);
         dst << "\n";
         if(statement2 != NULL){
             for(int i(0); i < g_depth; ++i){
