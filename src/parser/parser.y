@@ -40,11 +40,11 @@
 
 //Non-terminals declaration
 %type <node> PROGRAM EXT_DECLARATION VAR_TYPE BLOCK FUNCTION_DEF DECLARATION INIT_DECLARATOR DIRECT_DECLARATOR
-%type <node> PRIMARY_EXPR STATEMENT EXPR_STATEMENT EXPR SELECTION_STATEMENT ITERATION_STATEMENT
+%type <node> PRIMARY_EXPR STATEMENT EXPR_STATEMENT EXPR SELECTION_STATEMENT ITERATION_STATEMENT PARAMETER_DECL
 %type <node> TYPE_QUALIFIER DECL_SPECIFIER STOR_CLASS_SPEC
 %type <node> ASSIGNMENT_OPER UNARY_EXPR CONDITIONAL_EXPR ASSIGNMENT_EXPR POSTFIX_EXPR CAST_EXPR
 %type <node> LOGICAL_OR_EXPR LOGICAL_AND_EXPR INCLUSIVE_OR_EXPR EXCLUSIVE_OR_EXPR AND_EXPR EQUAL_EXPR RELATIONAL_EXPR SHIFT_EXPR ADDITIVE_EXPR MULT_EXPR LABELED_STATEMENT JUMP_STATEMENT
-%type <nodeVector> INIT_DECLARATOR_LIST STATEMENT_LIST DECLR_LIST DECL_SPECIFIER_LIST ARGUMENT_EXPR_LIST
+%type <nodeVector> INIT_DECLARATOR_LIST STATEMENT_LIST DECLR_LIST DECL_SPECIFIER_LIST ARGUMENT_EXPR_LIST IDENTIFIER_LIST PARAMETER_LIST
 
 
 %type <string> T_INT_CONSTANT
@@ -79,9 +79,16 @@ INIT_DECLARATOR_LIST: INIT_DECLARATOR                               {$$ = new st
 INIT_DECLARATOR: DIRECT_DECLARATOR                          {$$ = $1;}
 		       | DIRECT_DECLARATOR T_EQUAL ASSIGNMENT_EXPR  {$$ = new InitDeclarator($1,$3);}
 
-DIRECT_DECLARATOR: T_IDENTIFIER                             {$$ = new StringNode($1);}
-		         | DIRECT_DECLARATOR T_LBRACKET T_RBRACKET  {$$ = new FunctionDeclaration($1);}
+DIRECT_DECLARATOR: T_IDENTIFIER                                             {$$ = new StringNode($1);}
+		         | DIRECT_DECLARATOR T_LBRACKET T_RBRACKET                  {$$ = new DirectDeclarator($1, $2, NULL, $3);}
+		         | DIRECT_DECLARATOR T_LBRACKET IDENTIFIER_LIST T_RBRACKET  {$$ = new DirectDeclarator($1, $2, $3, $4);}
+		         | DIRECT_DECLARATOR T_LBRACKET PARAMETER_LIST T_RBRACKET   {$$ = new DirectDeclarator($1, $2, $3, $4);}
+		         
+PARAMETER_LIST: PARAMETER_DECL                          {$$ = new std::vector<NodePtr>{$1};}
+              | PARAMETER_LIST T_COMMA PARAMETER_DECL   {$$ = $1; (*$1).push_back($3);}
 		
+PARAMETER_DECL: DECL_SPECIFIER                   {$$ = new ParameterDeclaration($1, NULL);}
+              | DECL_SPECIFIER DIRECT_DECLARATOR {$$ = new ParameterDeclaration($1, $2);}
 
 FUNCTION_DEF : DECL_SPECIFIER_LIST DIRECT_DECLARATOR BLOCK {$$ = new FunctionDef($1,$2,$3);}
 
@@ -190,6 +197,9 @@ EXPR_STATEMENT : EXPR T_SEMICOLON {$$ = new ExprStatement($1);}
 	
 DECLR_LIST : DECLARATION	                {$$ = new std::vector<NodePtr>{$1};}	
 	       | DECLR_LIST DECLARATION		    {$$ = $1; (*$1).push_back($2);}
+	       
+IDENTIFIER_LIST: T_IDENTIFIER                           {$$ = new std::vector<NodePtr>{new StringNode($1)};}
+               | IDENTIFIER_LIST T_COMMA T_IDENTIFIER    {$$ = $1; (*$1).push_back(new StringNode($3));}
 
 PRIMARY_EXPR : T_IDENTIFIER	                {$$ = new StringNode($1);}
 		     | T_INT_CONSTANT               {$$ = new IntConst($1);}

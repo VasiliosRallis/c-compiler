@@ -56,24 +56,52 @@ public:
 
 };
 
-class FunctionDeclaration : public Node {
+class DirectDeclarator: public Node{
 private:
-    NodePtr directDeclarator;    
-public:
-    FunctionDeclaration(NodePtr _directDeclarator)
-        : directDeclarator(_directDeclarator) {}
-    
-    virtual void print(std::ostream& dst) const override{
-        directDeclarator->print(dst);
-	dst << "()";      
-    }
-    
-    virtual void printPy(std::ostream& dst, int depth = 0) const override{
-        directDeclarator->printPy(dst); 
-    }
+    NodePtr n1;
+    StrPtr s1;
+    VectorPtr v1;
+    StrPtr s2;
 
+public:
+    DirectDeclarator(NodePtr _n1, StrPtr _s1, VectorPtr _v1, StrPtr _s2)
+        :n1(_n1), s1(_s1), v1(_v1), s2(_s2){}
+        
+    virtual void print(std::ostream& dst)const override{
+        n1->print(dst);
+        dst << *s1;
+        if(v1 != NULL){
+            for(int i(0); i < v1->size(); ++i){
+                v1->at(i)->print(dst);
+                if(i < v1->size() - 1) dst << ",";
+            }
+        }
+        dst << *s2;
+    }
+    
+    virtual void printPy(std::ostream& dst, int depth = 0)const override{
+        print(dst);
+    }
 };
 
+class ParameterDeclaration: public Node{
+private:
+    NodePtr n1;
+    NodePtr n2;
+
+public:
+    ParameterDeclaration(NodePtr _n1, NodePtr _n2)
+        :n1(_n1), n2(_n2){}
+    
+    virtual void print(std::ostream& dst)const override{
+        n1->print(dst);
+        dst << " ";
+        if(n2 != NULL) n2->print(dst);
+    }
+    
+    virtual void printPy(std::ostream& dst, int depth = 0)const override{}
+    
+};
 class VarInit : public Node {
 private :
 	NodePtr varType;
@@ -180,7 +208,7 @@ public:
     virtual void printPy(std::ostream& dst, int depth = 0) const override{    
 	    dst << "def ";
         directDeclarator->printPy(dst);
-        dst << "():\n";
+        dst << ":\n";
         //for(int i(0); i < depth + 1; ++i){
            //dst << "\t";
         block->printPy(dst, depth + 1);
