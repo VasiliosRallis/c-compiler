@@ -3,6 +3,7 @@
 
 #include <string>
 #include <iostream>
+#include <vector>
 
 extern int g_depth;
 //extern std::string g_variables;
@@ -12,16 +13,21 @@ extern int g_depth;
 class Declaration : public Node {
 private:
     NodePtr declrspecList;    
-    NodePtr initdeclrList;
+    std::vector<NodePtr>* initdeclrList;
 public:
-    Declaration(NodePtr _declrspecList, NodePtr _initdeclrList)
-        : declrspecList(_declrspecList), initdeclrList(_initdeclrList) {}
+    Declaration(NodePtr _declrspecList, std::vector<NodePtr>* _initdeclrList)
+        : declrspecList(_declrspecList), initdeclrList(_initdeclrList) {	}
     
     virtual void print(std::ostream& dst) const override{
         declrspecList->print(dst);
 	dst << " ";
-	if(initdeclrList != NULL) {       
-        	initdeclrList->print(dst);
+	if((*initdeclrList).size() != 0) {
+		for(int i=0; i< (*initdeclrList).size();i++){       
+        		((*initdeclrList)[i])-> print(dst) ;
+			if( i < (*initdeclrList).size() -1){
+				dst << "," ;
+			}
+		}
 	}
         dst << ";";
     }
@@ -30,7 +36,7 @@ public:
        
     virtual ~Declaration() override{
         delete declrspecList;
-        delete initdeclrList;
+       // delete initdeclrList;
     }
 
 };

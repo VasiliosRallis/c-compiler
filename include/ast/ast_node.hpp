@@ -41,9 +41,10 @@ protected:
     
 public:
     List(NodePtr _l, NodePtr _r)
-        :l(_l), r(_r){}
+        :l(_l), r(_r){ }
    
    virtual void print(std::ostream& dst)const override{
+	dst << "List" ;
         l->print(dst);
         dst << ",";
         r->print(dst);

@@ -1,6 +1,6 @@
 %code requires{
   #include "ast.hpp"
-  
+  #include <vector>
   #include <cassert>
   
   extern NodePtr g_root; // A way of getting the AST out global defined in maths_parser.tab.cpp from bison
@@ -20,6 +20,7 @@
 %union{
   NodePtr node;
   std::string *string;
+  std::vector<NodePtr>* ptrToVector;
 }
 
 //Keywords
@@ -39,11 +40,12 @@
 
 //Non-terminals declaration
 %type <node> PROGRAM EXT_DECLARATION VAR_TYPE DECLR_LIST BLOCK FUNCTION_DEF DECLARATION INIT_DECLARATOR DIRECT_DECLARATOR
-%type <node> STATEMENT_LIST INIT_DECLARATOR_LIST
+%type <node> STATEMENT_LIST 
 %type <node> PRIMARY_EXPR STATEMENT EXPR_STATEMENT EXPR SELECTION_STATEMENT ITERATION_STATEMENT
 %type <node> TYPE_QUALIFIER DECL_SPECIFIER DECL_SPECIFIER_LIST STOR_CLASS_SPEC
 %type <node> ASSIGNMENT_OPER UNARY_EXPR CONDITIONAL_EXPR ASSIGNMENT_EXPR POSTFIX_EXPR CAST_EXPR
 %type <node> LOGICAL_OR_EXPR LOGICAL_AND_EXPR INCLUSIVE_OR_EXPR EXCLUSIVE_OR_EXPR AND_EXPR EQUAL_EXPR RELATIONAL_EXPR SHIFT_EXPR ADDITIVE_EXPR MULT_EXPR ARGUMENT_EXPR_LIST LABELED_STATEMENT JUMP_STATEMENT
+%type <ptrToVector> INIT_DECLARATOR_LIST
 
 
 %type <string> T_INT_CONSTANT
@@ -72,8 +74,8 @@ EXT_DECLARATION: FUNCTION_DEF {$$ = $1;}
 DECLARATION: DECL_SPECIFIER_LIST T_SEMICOLON                      {$$ = new Declaration($1,NULL);}
            | DECL_SPECIFIER_LIST INIT_DECLARATOR_LIST T_SEMICOLON {$$ = new Declaration($1,$2);}
 
-INIT_DECLARATOR_LIST: INIT_DECLARATOR {$$ = $1;}
-			        | INIT_DECLARATOR_LIST T_COMMA INIT_DECLARATOR { $$ = new List($1,$3); }
+INIT_DECLARATOR_LIST: INIT_DECLARATOR {$$ = new std::vector<NodePtr>{$1} ;}
+			| INIT_DECLARATOR_LIST T_COMMA INIT_DECLARATOR { $$ = $1 ; (*$1).push_back($3);  }
 
 INIT_DECLARATOR: DIRECT_DECLARATOR {$$ = $1;}
 		       | DIRECT_DECLARATOR T_EQUAL ASSIGNMENT_EXPR { $$ = new InitDeclarator($1,$3);}
