@@ -48,10 +48,7 @@ Output format
 
 The output format will be a Python3equivalent to the input C.
 
-We'll explore exactly how this works in a lecture, so that
-people understand the equivalences between C and Python constructs,
-and work up a set of patterns to handle different input constructs.
-We'll also look at how to test the output.
+The full set of patterns required is described [here](c_translator_templates.md).
 
 As an example, we would translate the input program:
 
@@ -85,6 +82,15 @@ def f(x):
    else:
        return x
 ```
+
+Formative submission
+--------------------
+
+For the formative submission on 20th of Feb, the goal is to get
+as much of the parser and AST working as you can, as then it is
+possible to critique your AST and overall approach. If you have
+some code-gen working, then so much the better, but parsing and
+then representing programs as a data-structure is the main objective.
 
 Pre-Processor
 -------------

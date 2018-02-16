@@ -42,7 +42,7 @@ Ubuntu 16.04 VM as configured in the attached Vagrantfile. If there is any confl
 then the VM has precedence.
 
 Associated with all deliverables is [a time-tracking/project management component](management.md) (10%).
-This will be updated as you go along, but the final version is due on Fri 27th March at 22:00, then
+This will be updated as you go along, but the final version is due on Fri 30th March at 22:00, then
 will be assessed orally at the start of Summer term.
 
 
@@ -104,7 +104,7 @@ the opportunity to submit hashes at three levels:
   up until a day before the deadline (Mon 26th Mar).
 
 - Tertiary: the final fallback, which is scaled by 0.8x. Can be
-  submitted up until two days before the deadline (Sun 27th Mar).
+  submitted up until two days before the deadline (Sun 25th Mar).
   
 Each level can be updated as much as you like up until each respective
 cut-off. You could just rotate things through as each new hash gets
