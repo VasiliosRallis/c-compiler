@@ -30,7 +30,7 @@ public:
 	    }
         dst << ";";
     }
-    virtual void printPy(std::ostream& dst) const override{ }
+    virtual void printPy(std::ostream& dst, int depth = 0) const override{ }
 };
 
 class InitDeclarator : public Node {
@@ -47,7 +47,7 @@ public:
         asgnExpr->print(dst);
     }
     
-    virtual void printPy(std::ostream& dst) const override{ }
+    virtual void printPy(std::ostream& dst, int depth = 0) const override{ }
        
     virtual ~InitDeclarator() override{
         delete directDeclarator;
@@ -68,10 +68,8 @@ public:
 	dst << "()";      
     }
     
-    virtual void printPy(std::ostream& dst) const override{ }
-       
-    virtual ~FunctionDeclaration() override{
-        delete directDeclarator;
+    virtual void printPy(std::ostream& dst, int depth = 0) const override{
+        directDeclarator->printPy(dst); 
     }
 
 };
@@ -95,7 +93,7 @@ public:
 		dst << ";";
     }
     
-    virtual void printPy(std::ostream& dst) const override{
+    virtual void printPy(std::ostream& dst, int depth = 0) const override{
         for(int i(0); i < g_depth; ++i){
             dst << "\t";
         }
@@ -139,7 +137,7 @@ public:
 	    dst << "}";
     }
     
-    virtual void printPy(std::ostream& dst) const override{
+    virtual void printPy(std::ostream& dst, int depth = 0) const override{
     /*
         g_depth++;
         if(declrList  != NULL){
@@ -152,6 +150,10 @@ public:
         }
         g_depth--;   
     */
+        if(statementList != NULL){
+            for(int i(0); i < statementList->size(); ++i)
+                statementList->at(i)->printPy(dst, depth+1);
+        }
     }
 };
 
@@ -175,19 +177,13 @@ public:
 	    block->print(dst);
     }
     
-    virtual void printPy(std::ostream& dst) const override{    
-	 dst << "def ";
+    virtual void printPy(std::ostream& dst, int depth = 0) const override{    
+	    dst << "def ";
         directDeclarator->printPy(dst);
         dst << "():\n";
-       /* for(int i(0); i < g_depth + 1; ++i){
-           dst << "\t";
-        }*/
-        //if(g_variables != ""){
-        //    dst << "global ";
-        //    dst << g_variables;
-        //}
-        
-        block->printPy(dst);
+        //for(int i(0); i < depth + 1; ++i){
+           //dst << "\t";
+        block->printPy(dst, depth + 1);
     }
     
 };
@@ -208,18 +204,13 @@ public:
 	    basicProgram->print(dst);
     }
     
-    virtual void printPy(std::ostream& dst) const override{
-	program->printPy(dst);
+    virtual void printPy(std::ostream& dst, int depth = 0) const override{
+	program->printPy(dst, 0);
 	dst << "\n";
-	basicProgram->printPy(dst);
+	basicProgram->printPy(dst, 0);
     //    if(dynamic_cast<const VarDeclr*>(program)){
     //       dynamic_cast<const VarDeclr*>(program)->getGlobal(); 
     //    }
-    }
-    
-    virtual ~Program() override{
-        delete program;
-        delete basicProgram;
     }
 };
 
@@ -231,7 +222,7 @@ public:
     virtual void print(std::ostream& dst) const override{
         dst << std::stoi((*id));
     }
-    virtual void printPy(std::ostream& dst) const override{
+    virtual void printPy(std::ostream& dst, int depth = 0) const override{
         dst << std::stoi((*id));
     }
 };
@@ -252,7 +243,7 @@ public:
         }
     }
     
-    virtual void printPy(std::ostream& dst) const override{
+    virtual void printPy(std::ostream& dst, int depth = 0) const override{
 	for(int i(0); i < g_depth; ++i){
 		dst << "\t";
 	}
@@ -285,7 +276,7 @@ public:
         }
     }
     
-    virtual void printPy(std::ostream& dst) const override{
+    virtual void printPy(std::ostream& dst, int depth = 0) const override{
         for(int i(0); i < g_depth; ++i){
             dst << "\t";
         }
@@ -304,13 +295,6 @@ public:
             statement2->printPy(dst);
        }
    }
-        
-    
-    virtual ~IfStatement() override{
-        delete expr;
-        delete statement1;
-        delete statement2;
-    }
 };
 
 class CaseStatement: public Node{
@@ -329,7 +313,7 @@ public:
         statement->print(dst);
     }
     
-    virtual void printPy(std::ostream& dst) const override{}
+    virtual void printPy(std::ostream& dst, int depth = 0) const override{}
     
     virtual ~CaseStatement() override{
         delete expr;
@@ -354,7 +338,7 @@ public:
         statement->print(dst);
     }
     
-    virtual void printPy(std::ostream& dst) const override{}
+    virtual void printPy(std::ostream& dst, int depth = 0) const override{}
 
 };
 
@@ -376,7 +360,7 @@ public:
         dst << ");";
     }
     
-    virtual void printPy(std::ostream& dst) const override{}
+    virtual void printPy(std::ostream& dst, int depth = 0) const override{}
 };
 
 class ForStatement: public Node{
@@ -407,7 +391,7 @@ public:
         statement->print(dst);
     }
     
-    virtual void printPy(std::ostream& dst) const override{}
+    virtual void printPy(std::ostream& dst, int depth = 0) const override{}
     
     virtual ~ForStatement() override{
         delete expr1;
@@ -431,7 +415,7 @@ public:
         dst << ")";
     }
     
-    virtual void printPy(std::ostream& dst) const override{
+    virtual void printPy(std::ostream& dst, int depth = 0) const override{
 	expr -> printPy(dst);	
 	} 
 };
@@ -458,7 +442,7 @@ public:
         dst << *id;
     }
     
-    virtual void printPy(std::ostream& dst)const override{
+    virtual void printPy(std::ostream& dst, int depth = 0)const override{
         dst << *id;
     }
 
@@ -480,7 +464,7 @@ public:
         postfixExpr->print(dst);
     }
     
-    virtual void printPy(std::ostream& dst)const override{}
+    virtual void printPy(std::ostream& dst, int depth = 0)const override{}
 };
 
 class ConditionalExpr: public Node{
@@ -500,7 +484,7 @@ public:
         dst << " : ";
         conditionalExpr->print(dst);
     }
-    virtual void printPy(std::ostream& dst)const override{}
+    virtual void printPy(std::ostream& dst, int depth = 0)const override{}
 };
 
 
@@ -520,7 +504,7 @@ public:
         operand2->print(dst);
     }
     
-    virtual void printPy(std::ostream& dst)const override{}
+    virtual void printPy(std::ostream& dst, int depth = 0)const override{}
 };
 
 class CastExpr: public Node{
@@ -539,7 +523,7 @@ public:
         unaryExpr->print(dst);
     }
    
-   virtual void printPy(std::ostream& dst)const override{}
+   virtual void printPy(std::ostream& dst, int depth = 0)const override{}
    
    virtual ~CastExpr()override{
         delete typeName;
@@ -574,7 +558,7 @@ public:
         }
     }
     
-    virtual void printPy(std::ostream& dst)const override{}
+    virtual void printPy(std::ostream& dst, int depth = 0)const override{}
 };
   
 class DeclSpecifier: public StringNode{
@@ -599,7 +583,7 @@ public:
         p2->print(dst);
     }
     
-    virtual void printPy(std::ostream& dst)const override{}
+    virtual void printPy(std::ostream& dst, int depth = 0)const override{}
 };
 
 class JumpStatement: public StringNode{
@@ -618,6 +602,11 @@ public:
         dst << ";";
     }
     
-    virtual void printPy(std::ostream& dst)const override{}
+    virtual void printPy(std::ostream& dst, int depth = 0)const override{
+        for(int i(0); i < depth; ++i) dst << "\t";
+        dst << *id << " ";
+        if(str1 != NULL) dst << *str1;
+        if(p1 != NULL) p1->printPy(dst);
+    }
 };
 #endif

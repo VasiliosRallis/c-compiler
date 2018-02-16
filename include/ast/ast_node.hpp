@@ -15,7 +15,7 @@ public:
     virtual ~Node(){}
 
     virtual void print(std::ostream& dst) const =0;
-    virtual void printPy(std::ostream& dst) const=0;
+    virtual void printPy(std::ostream& dst, int depth = 0)const{};
     virtual int getLength()const{return -1;}
 
 };
@@ -32,7 +32,7 @@ public:
         dst << *id;
     }
     
-    virtual void printPy(std::ostream& dst)const override{
+    virtual void printPy(std::ostream& dst, int depth = 0)const override{
         dst << *id;
     }
 };

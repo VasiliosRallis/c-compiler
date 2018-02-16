@@ -12,7 +12,15 @@ int main(int argc, char* argv[]){
         if(std::string(argv[1]) == "--translate"){
             NodePtr ast = parseAST(argv[2]);
             std::ofstream output(argv[4]);
-            ast->printPy(output);
+            ast->printPy(output, 0);
+            
+            //Standard end
+            output << "\n\n# Boilerplat \n";
+            output << "if __name__ == \"__main__\":\n";
+            output << "\timport sys\n";
+            output << "\tret=main()\n";
+            output << "\tsys.exit(ret)\n";
+
         }
         else if(std::string(argv[1]) == "--parse"){
             NodePtr ast = parseAST(argv[2]);

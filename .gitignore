@@ -5,3 +5,4 @@ bin/*
 *.tab.*
 tests/c/out
 tests/python/out
+tmp/
