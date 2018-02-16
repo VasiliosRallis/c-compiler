@@ -19,8 +19,8 @@
 // AST node.
 %union{
   NodePtr node;
-  std::string *string;
-  std::vector<NodePtr>* ptrToVector;
+  StrPtr string;
+  VectorPtr nodeVector;
 }
 
 //Keywords
@@ -39,13 +39,12 @@
 %token T_ARROW T_DOT T_SQUARE_LBRACKET T_SQUARE_RBRACKET
 
 //Non-terminals declaration
-%type <node> PROGRAM EXT_DECLARATION VAR_TYPE DECLR_LIST BLOCK FUNCTION_DEF DECLARATION INIT_DECLARATOR DIRECT_DECLARATOR
-%type <node> STATEMENT_LIST 
+%type <node> PROGRAM EXT_DECLARATION VAR_TYPE BLOCK FUNCTION_DEF DECLARATION INIT_DECLARATOR DIRECT_DECLARATOR
 %type <node> PRIMARY_EXPR STATEMENT EXPR_STATEMENT EXPR SELECTION_STATEMENT ITERATION_STATEMENT
-%type <node> TYPE_QUALIFIER DECL_SPECIFIER DECL_SPECIFIER_LIST STOR_CLASS_SPEC
+%type <node> TYPE_QUALIFIER DECL_SPECIFIER STOR_CLASS_SPEC
 %type <node> ASSIGNMENT_OPER UNARY_EXPR CONDITIONAL_EXPR ASSIGNMENT_EXPR POSTFIX_EXPR CAST_EXPR
-%type <node> LOGICAL_OR_EXPR LOGICAL_AND_EXPR INCLUSIVE_OR_EXPR EXCLUSIVE_OR_EXPR AND_EXPR EQUAL_EXPR RELATIONAL_EXPR SHIFT_EXPR ADDITIVE_EXPR MULT_EXPR ARGUMENT_EXPR_LIST LABELED_STATEMENT JUMP_STATEMENT
-%type <ptrToVector> INIT_DECLARATOR_LIST
+%type <node> LOGICAL_OR_EXPR LOGICAL_AND_EXPR INCLUSIVE_OR_EXPR EXCLUSIVE_OR_EXPR AND_EXPR EQUAL_EXPR RELATIONAL_EXPR SHIFT_EXPR ADDITIVE_EXPR MULT_EXPR LABELED_STATEMENT JUMP_STATEMENT
+%type <nodeVector> INIT_DECLARATOR_LIST STATEMENT_LIST DECLR_LIST DECL_SPECIFIER_LIST ARGUMENT_EXPR_LIST
 
 
 %type <string> T_INT_CONSTANT
@@ -74,22 +73,22 @@ EXT_DECLARATION: FUNCTION_DEF {$$ = $1;}
 DECLARATION: DECL_SPECIFIER_LIST T_SEMICOLON                      {$$ = new Declaration($1,NULL);}
            | DECL_SPECIFIER_LIST INIT_DECLARATOR_LIST T_SEMICOLON {$$ = new Declaration($1,$2);}
 
-INIT_DECLARATOR_LIST: INIT_DECLARATOR {$$ = new std::vector<NodePtr>{$1};}
-			        | INIT_DECLARATOR_LIST T_COMMA INIT_DECLARATOR { $$ = $1 ; (*$1).push_back($3);}
+INIT_DECLARATOR_LIST: INIT_DECLARATOR                               {$$ = new std::vector<NodePtr>{$1};}
+			        | INIT_DECLARATOR_LIST T_COMMA INIT_DECLARATOR  {$$ = $1 ; (*$1).push_back($3);}
 
-INIT_DECLARATOR: DIRECT_DECLARATOR {$$ = $1;}
-		       | DIRECT_DECLARATOR T_EQUAL ASSIGNMENT_EXPR { $$ = new InitDeclarator($1,$3);}
+INIT_DECLARATOR: DIRECT_DECLARATOR                          {$$ = $1;}
+		       | DIRECT_DECLARATOR T_EQUAL ASSIGNMENT_EXPR  {$$ = new InitDeclarator($1,$3);}
 
-DIRECT_DECLARATOR: T_IDENTIFIER {$$ = new StringNode($1);}
-		         | DIRECT_DECLARATOR T_LBRACKET T_RBRACKET { $$ = new FunctionDeclaration($1);}
+DIRECT_DECLARATOR: T_IDENTIFIER                             {$$ = new StringNode($1);}
+		         | DIRECT_DECLARATOR T_LBRACKET T_RBRACKET  {$$ = new FunctionDeclaration($1);}
 		
 
 FUNCTION_DEF : DECL_SPECIFIER_LIST DIRECT_DECLARATOR BLOCK {$$ = new FunctionDef($1,$2,$3);}
 
-BLOCK : T_LCURLBRACKET STATEMENT_LIST T_RCURLBRACKET { $$ = new Block(NULL,$2); }
-	  | T_LCURLBRACKET DECLR_LIST T_RCURLBRACKET { $$ = new Block($2); }
-	  | T_LCURLBRACKET DECLR_LIST STATEMENT_LIST T_RCURLBRACKET { $$ = new Block($2,$3) ; }
-      | T_LCURLBRACKET T_RCURLBRACKET {$$ = new Block();}
+BLOCK : T_LCURLBRACKET STATEMENT_LIST T_RCURLBRACKET            {$$ = new Block(NULL, $2);}
+	  | T_LCURLBRACKET DECLR_LIST T_RCURLBRACKET                {$$ = new Block($2, NULL);}
+	  | T_LCURLBRACKET DECLR_LIST STATEMENT_LIST T_RCURLBRACKET {$$ = new Block($2,$3);}
+      | T_LCURLBRACKET T_RCURLBRACKET                           {$$ = new Block(NULL, NULL);}
       
 SELECTION_STATEMENT: T_IF T_LBRACKET EXPR T_RBRACKET STATEMENT {$$ = new IfStatement($3, $5);}
                    | T_IF T_LBRACKET EXPR T_RBRACKET STATEMENT T_ELSE STATEMENT {$$ = new IfStatement($3,$5,$7);}
@@ -163,21 +162,21 @@ UNARY_OPER: T_AMPERSAND     {$$ = $1;}
 CAST_EXPR: UNARY_EXPR {$$ = $1;}
          | T_LBRACKET VAR_TYPE T_RBRACKET CAST_EXPR {$$ = new CastExpr($2, $4);} //Temporary use VarType instead of TYPE_NAME
           
-POSTFIX_EXPR: PRIMARY_EXPR {$$ = $1;}
-            | POSTFIX_EXPR T_SQUARE_LBRACKET EXPR T_SQUARE_RBRACKET {$$ = new PostfixExpr($1, $2, $3, $4);}
+POSTFIX_EXPR: PRIMARY_EXPR                                          {$$ = $1;}
+            | POSTFIX_EXPR T_SQUARE_LBRACKET EXPR T_SQUARE_RBRACKET {$$ = new PostfixExpr($1, $2, new std::vector<NodePtr>{$3}, $4);}
             | POSTFIX_EXPR T_LBRACKET ARGUMENT_EXPR_LIST T_RBRACKET {$$ = new PostfixExpr($1, $2, $3, $4);}
-            | POSTFIX_EXPR T_LBRACKET T_RBRACKET {$$ = new PostfixExpr($1, $2, NULL, $3);}
-            | POSTFIX_EXPR T_DOT T_IDENTIFIER {$$ = new PostfixExpr($1, $2, new StringNode($3), NULL);}
-            | POSTFIX_EXPR T_ARROW T_IDENTIFIER {$$ = new PostfixExpr($1, $2, new StringNode($3), NULL);}
-            | POSTFIX_EXPR T_INCREMENT {$$ = new PostfixExpr($1, NULL, NULL, NULL);}
-            | POSTFIX_EXPR T_DECREMENT {$$ = new PostfixExpr($1, NULL, NULL, NULL);}
+            | POSTFIX_EXPR T_LBRACKET T_RBRACKET                    {$$ = new PostfixExpr($1, $2, NULL, $3);}
+            | POSTFIX_EXPR T_DOT T_IDENTIFIER                       {$$ = new PostfixExpr($1, $2, NULL, $3);}
+            | POSTFIX_EXPR T_ARROW T_IDENTIFIER                     {$$ = new PostfixExpr($1, $2, NULL, $3);}
+            | POSTFIX_EXPR T_INCREMENT                              {$$ = new PostfixExpr($1, $2, NULL, NULL);}
+            | POSTFIX_EXPR T_DECREMENT                              {$$ = new PostfixExpr($1, $2, NULL, NULL);}
             
-ARGUMENT_EXPR_LIST: ASSIGNMENT_EXPR {$$ = $1;}
-                  | ARGUMENT_EXPR_LIST T_COMMA ASSIGNMENT_EXPR {$$ = new List($1, $3);}
+ARGUMENT_EXPR_LIST: ASSIGNMENT_EXPR                            {$$ = new std::vector<NodePtr>{$1};}
+                  | ARGUMENT_EXPR_LIST T_COMMA ASSIGNMENT_EXPR {$$ = $1; (*$1).push_back($3);}
 
 
-STATEMENT_LIST : STATEMENT_LIST STATEMENT	{$$ = new StatementList($1,$2);}
-		       | STATEMENT                  {$$ = $1;}
+STATEMENT_LIST : STATEMENT	                {$$ = new std::vector<NodePtr>{$1};}
+		       | STATEMENT_LIST STATEMENT   {$$ = $1; (*$1).push_back($2);}
 
 STATEMENT : LABELED_STATEMENT   {$$ = $1;}
           | BLOCK               {$$ = $1;}
@@ -189,16 +188,16 @@ STATEMENT : LABELED_STATEMENT   {$$ = $1;}
 EXPR_STATEMENT : EXPR T_SEMICOLON {$$ = new ExprStatement($1);}
                | T_SEMICOLON {$$ = new ExprStatement(NULL);} 
 	
-DECLR_LIST : DECLR_LIST DECLARATION	{$$ = new  DeclrList($1,$2);}	
-	       | DECLARATION		    {$$ = $1;}
+DECLR_LIST : DECLARATION	                {$$ = new std::vector<NodePtr>{$1};}	
+	       | DECLR_LIST DECLARATION		    {$$ = $1; (*$1).push_back($2);}
 
 PRIMARY_EXPR : T_IDENTIFIER	                {$$ = new StringNode($1);}
 		     | T_INT_CONSTANT               {$$ = new IntConst($1);}
 		     | T_STR_LIT                    {$$ = new StringNode($1);}
 		     | T_LBRACKET EXPR T_RBRACKET   {$$ = new PrimaryExpr($2);}
                
-DECL_SPECIFIER_LIST: DECL_SPECIFIER_LIST DECL_SPECIFIER {$$ = new DeclSpecifierList($1, $2);}
-                   | DECL_SPECIFIER                     {$$ = $1;}
+DECL_SPECIFIER_LIST: DECL_SPECIFIER                     {$$ = new std::vector<NodePtr>{$1};}
+                   | DECL_SPECIFIER_LIST DECL_SPECIFIER {$$ = $1; (*$1).push_back($2);}
                    
 DECL_SPECIFIER: VAR_TYPE            {$$ = $1;}
               | TYPE_QUALIFIER      {$$ = $1;}

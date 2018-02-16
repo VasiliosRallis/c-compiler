@@ -12,15 +12,18 @@ extern int g_depth;
 
 class Declaration : public Node {
 private:
-    NodePtr declrspecList;    
-    std::vector<NodePtr>* initdeclrList;
+    VectorPtr declrspecList;    
+    VectorPtr initdeclrList;
 public:
-    Declaration(NodePtr _declrspecList, std::vector<NodePtr>* _initdeclrList)
+    Declaration(VectorPtr _declrspecList, VectorPtr _initdeclrList)
         : declrspecList(_declrspecList), initdeclrList(_initdeclrList) {}
     
     virtual void print(std::ostream& dst) const override{
-        declrspecList->print(dst);
-	    dst << " ";
+        for(int i(0); i < declrspecList->size(); ++i){
+            declrspecList->at(i)->print(dst);
+            dst << " ";
+        }
+	    
 		for(int i(0); i < initdeclrList->size(); ++i){       
         	initdeclrList->at(i)->print(dst);
 			if(i < initdeclrList->size() - 1) dst << ",";
@@ -74,50 +77,6 @@ public:
 
 };
 
-class DeclrList: public Node{
-private:
-	NodePtr declrList;    
-	NodePtr varDeclr;
-    
-public:
-    DeclrList(NodePtr _declrList, NodePtr _varDeclr)
-        : declrList(_declrList), varDeclr(_varDeclr) {}
-
-    virtual void print(std::ostream& dst) const override{
-        declrList->print(dst);
-	    varDeclr ->print(dst);
-    }
-    
-    virtual void printPy(std::ostream& dst) const override{
-        declrList->printPy(dst);
-        dst << "\n";
-        varDeclr->printPy(dst);
-    }
-    
-    virtual ~DeclrList() override{
-        delete declrList;
-        delete varDeclr;
-    }
-
-};
-
-class StatementList: public List{
-public:
-    StatementList(NodePtr _l, NodePtr _r)
-        :List(l, r){};
-
-    virtual void print(std::ostream& dst) const override{
-        l->print(dst);
-	    r->print(dst);
-    }
-    
-    virtual void printPy(std::ostream& dst) const override{
-        l->printPy(dst);
-        dst << "\n";
-        r->printPy(dst);
-    }
-};
-
 class VarInit : public Node {
 private :
 	NodePtr varType;
@@ -160,28 +119,29 @@ public:
 
 class Block: public Node{
 private:
-	NodePtr declrList;
-	NodePtr statementList;    
+	VectorPtr declrList;
+	VectorPtr statementList;    
     
 public:
-    Block(NodePtr _declrList = NULL , NodePtr _statementList = NULL)
+    Block(VectorPtr _declrList, VectorPtr _statementList)
         : declrList(_declrList), statementList(_statementList) {}
     virtual void print(std::ostream& dst) const override{
 	    dst << "{";
-	    
 	    if(declrList != NULL){
-            declrList->print(dst);
+            for(int i(0); i < declrList->size(); ++i){
+                declrList->at(i)->print(dst);
+      	    }
       	}
-      	
 	    if(statementList != NULL){
-            statementList->print(dst);
-      	}
-
+            for(int i(0); i < statementList->size(); ++i){
+                statementList->at(i)->print(dst);
+        	}
+        }
 	    dst << "}";
     }
     
-
     virtual void printPy(std::ostream& dst) const override{
+    /*
         g_depth++;
         if(declrList  != NULL){
             declrList->printPy(dst);
@@ -192,29 +152,26 @@ public:
             dst << "\n";
         }
         g_depth--;   
+    */
     }
-    
-    virtual ~Block() override{
-        delete declrList;
-        delete statementList;
-    }
-
 };
 
 class FunctionDef: public Node{
 private:
-	NodePtr varType;
+	VectorPtr declrSpecList;
 	NodePtr directDeclarator;   
 	NodePtr block;
     
 public:
-    FunctionDef(NodePtr _varType, NodePtr _directDeclarator, NodePtr _block)
-        : varType(_varType), directDeclarator(_directDeclarator), block(_block) {}
+    FunctionDef(VectorPtr _declrSpecList, NodePtr _directDeclarator, NodePtr _block)
+        : declrSpecList(_declrSpecList), directDeclarator(_directDeclarator), block(_block) {}
         
 
     virtual void print(std::ostream& dst) const override{
-	    varType->print(dst);
-        dst << " ";
+        for(int i(0); i < declrSpecList->size(); ++i){
+            declrSpecList->at(i)->print(dst);
+            dst << " ";
+        }
         directDeclarator->print(dst);
 	    block->print(dst);
     }
@@ -232,12 +189,6 @@ public:
         //}
         
         block->printPy(dst);
-    }
-    
-    virtual ~FunctionDef() override{
-        delete varType;
-        delete directDeclarator;
-        delete block;
     }
     
 };
@@ -275,7 +226,7 @@ public:
 
 class IntConst: public StringNode{
 public:
-    IntConst(const std::string* _id)
+    IntConst(StrPtr _id)
         :StringNode(_id){}
         
     virtual void print(std::ostream& dst) const override{
@@ -524,7 +475,7 @@ public:
         LOGICAL_OR,
         ASSIGN
     };  
-    Operator(const std::string* _id, Operator::Type _type)
+    Operator(StrPtr _id, Operator::Type _type)
         :StringNode(_id), type(_type){}
         
     virtual void print(std::ostream& dst)const override{
@@ -542,10 +493,10 @@ protected:
 
 class UnaryExpr: public Node{
 private:
-    const std::string* oper;
+    StrPtr oper;
     NodePtr postfixExpr;
 public:
-    UnaryExpr(const std::string* _oper, NodePtr _postfixExpr)
+    UnaryExpr(StrPtr _oper, NodePtr _postfixExpr)
         :oper(_oper), postfixExpr(_postfixExpr){}
         
     virtual void print(std::ostream& dst) const override{
@@ -623,21 +574,24 @@ public:
 class PostfixExpr: public Node{
 private:
     NodePtr primaryExpr;
-    const std::string* oper1;
-    NodePtr operand;
-    const std::string* oper2;
+    StrPtr oper1;
+    VectorPtr argumentExprList;
+    StrPtr oper2;
     
 public:
-    PostfixExpr(NodePtr _primaryExpr, const std::string* _oper1, NodePtr _operand, const std::string* _oper2)
-        :primaryExpr(_primaryExpr), oper1(_oper1), operand(_operand), oper2(_oper2){}
+    PostfixExpr(NodePtr _primaryExpr, StrPtr _oper1, VectorPtr _argumentExprList, StrPtr _oper2)
+        :primaryExpr(_primaryExpr), oper1(_oper1), argumentExprList(_argumentExprList), oper2(_oper2){}
         
     virtual void print(std::ostream& dst)const override{
         primaryExpr->print(dst);
         if(oper1 != NULL){
             dst << *oper1;
         }
-        if(operand != NULL){
-            operand->print(dst);
+        if(argumentExprList != NULL){
+            for(int i(0); i < argumentExprList->size(); ++i){
+                argumentExprList->at(i)->print(dst);
+                if(i < argumentExprList->size() - 1) dst << ",";
+            }
         }
         if(oper2 != NULL){
             dst << *oper2;
@@ -645,18 +599,11 @@ public:
     }
     
     virtual void printPy(std::ostream& dst)const override{}
-    
-    virtual ~PostfixExpr()override{
-        delete primaryExpr;
-        delete oper1;
-        delete operand;
-        delete oper2;
-    }
 };
   
 class DeclSpecifier: public StringNode{
 public:
-    DeclSpecifier(const std::string* _id)
+    DeclSpecifier(StrPtr _id)
         :StringNode(_id){}
 };
 
@@ -666,13 +613,12 @@ private:
     NodePtr p2;
     
 public:
-    LabeledStatement(const std::string* _id, NodePtr _p1, NodePtr _p2)
+    LabeledStatement(StrPtr _id, NodePtr _p1, NodePtr _p2)
         :StringNode(_id), p1(_p1), p2(_p2){}
         
     virtual void print(std::ostream& dst)const override{
         dst << *id << " ";
-        if(p1 != NULL)
-            p1->print(dst);
+        if(p1 != NULL) p1->print(dst);
         dst << ":";
         p2->print(dst);
     }
@@ -682,19 +628,17 @@ public:
 
 class JumpStatement: public StringNode{
 private:
-    const std::string* str1;
+    StrPtr str1;
     NodePtr p1;
     
 public:
-    JumpStatement(const std::string * _id, const std::string* _str1, NodePtr _p1)
+    JumpStatement(StrPtr _id, StrPtr _str1, NodePtr _p1)
         :StringNode(_id), str1(_str1), p1(_p1){}
         
     virtual void print(std::ostream& dst)const override{
         dst << *id << " ";
-        if(str1 != NULL)
-            dst << *str1;
-        if(p1 != NULL)
-            p1->print(dst);
+        if(str1 != NULL) dst << *str1;
+        if(p1 != NULL) p1->print(dst);
         dst << ";";
     }
     

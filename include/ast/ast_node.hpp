@@ -2,10 +2,13 @@
 #define ast_expression_hpp
 
 #include <iostream>
-
+#include <vector>
+#include <string>
 class Node;
 
 typedef const Node* NodePtr;
+typedef std::vector<NodePtr>* VectorPtr;
+typedef const std::string* StrPtr;
     
 class Node{
 public:
