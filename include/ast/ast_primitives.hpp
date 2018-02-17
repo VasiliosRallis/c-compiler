@@ -41,19 +41,22 @@ public:
         : declrspecList(_declrspecList), initdeclrList(_initdeclrList) {}
     
     virtual void print(std::ostream& dst) const override{
-        for(int i(0); i < declrspecList->size(); ++i){
-            declrspecList->at(i)->print(dst);
-            dst << " ";
-        }
+	if(initdeclrList!=NULL){        
+		for(int i(0); i < declrspecList->size(); ++i){
+        	    	declrspecList->at(i)->print(dst);
+        	    	dst << " ";
+        	}
 	    
 		for(int i(0); i < initdeclrList->size(); ++i){       
-        	initdeclrList->at(i)->print(dst);
+        		initdeclrList->at(i)->print(dst);
 			if(i < initdeclrList->size() - 1) dst << ",";
-	    }
+	    	}
+	}
         dst << ";";
     }
     virtual void printPy(std::ostream& dst, int depth = 0) const override{
-        for(int i(0); i < initdeclrList->size(); ++i){
+	// Check if its null ? Does int; have a valid translation to python?        
+	for(int i(0); i < initdeclrList->size(); ++i){
             if(dynamic_cast<const StringNode*>(initdeclrList->at(i))){
                 initdeclrList->at(i)->printPy(dst, depth);
                 dst << "=0\n";
