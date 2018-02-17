@@ -44,4 +44,8 @@ public:
         g_variables.push_back(global);
     }
 };
+
+class Expr: public Node{};
+class Statement: public Node{};
+
 #endif

@@ -7,8 +7,6 @@
 
 extern std::vector<std::string> g_variables;
 
-//class Identifier: public Node;
-
 class InitDeclarator : public Node {
 private:
     NodePtr directDeclarator;    
@@ -197,18 +195,6 @@ public:
     }
     
     virtual void printPy(std::ostream& dst, int depth = 0) const override{
-    /*
-        g_depth++;
-        if(declrList  != NULL){
-            declrList->printPy(dst);
-            dst << "\n";
-        }
-        if(statementList != NULL){
-            statementList->printPy(dst);
-            dst << "\n";
-        }
-        g_depth--;   
-    */
         if(declrList != NULL){
             for(int i(0); i < declrList->size(); ++i){
                 declrList->at(i)->printPy(dst, depth);
@@ -220,7 +206,6 @@ public:
                 statementList->at(i)->printPy(dst, depth);
                 dst << "\n";
             }
-                
         }
     }
     
@@ -269,13 +254,9 @@ public:
 	    dst << "def ";
         directDeclarator->printPy(dst);
         dst << ":\n";
-        //for(int i(0); i < depth + 1; ++i){
-           //dst << "\t";
         static_cast<const Block*>(block)->printPyG(dst,depth+1);
     }
-    
 };
-
 
 class Program: public Node{
 private:
@@ -293,15 +274,12 @@ public:
     }
     
     virtual void printPy(std::ostream& dst, int depth = 0) const override{
-    if(dynamic_cast<const Declaration*>(program)){
-        dynamic_cast<const Declaration*>(program)->addGlobal();
-    }
-	program->printPy(dst);
-	dst << "\n";
-	basicProgram->printPy(dst);
-    //    if(dynamic_cast<const VarDeclr*>(program)){
-    //       dynamic_cast<const VarDeclr*>(program)->getGlobal(); 
-    //    }
+        if(dynamic_cast<const Declaration*>(program)){
+            dynamic_cast<const Declaration*>(program)->addGlobal();
+        }
+	    program->printPy(dst);
+	    dst << "\n";
+	    basicProgram->printPy(dst);
     }
 };
 
@@ -316,202 +294,6 @@ public:
     virtual void printPy(std::ostream& dst, int depth = 0) const override{
         dst << std::stoi((*id));
     }
-};
-
-class ExprStatement: public Node{
-private:
-    NodePtr expr;    
-public:
-    ExprStatement(NodePtr _expr)
-        :expr(_expr){}
-        
-    virtual void print(std::ostream& dst) const override{
-        if(expr != NULL){
-            expr->print(dst);
-            dst << ";";
-        }else{
-            dst << ";";
-        }
-    }
-    
-    virtual void printPy(std::ostream& dst, int depth = 0) const override{
-	    expr->printPy(dst, depth);
-    }
-    
-};
-
-class IfStatement: public Node{
-private:
-    NodePtr expr;
-    NodePtr statement1;
-    NodePtr statement2;
-    
-public:
-    IfStatement(NodePtr _expr, NodePtr _statement1, NodePtr _statement2 = NULL)
-        :expr(_expr), statement1(_statement1), statement2(_statement2){}
-        
-    virtual void print(std::ostream& dst) const override{
-        dst << "if(";
-        expr->print(dst);
-        dst << ")";
-        statement1->print(dst);
-        if(statement2 != NULL){
-            dst << "else ";
-            statement2->print(dst);
-        }
-    }
-    
-    virtual void printPy(std::ostream& dst, int depth = 0) const override{
-        for(int i(0); i < depth; ++i){
-            dst << "\t";
-        }
-        dst << "if(";
-        expr->printPy(dst);
-        dst << "):";
-        dst << "\n";
-        statement1->printPy(dst, depth+1);
-        dst << "\n";
-        if(statement2 != NULL){
-            for(int i(0); i <depth; ++i){
-                dst << "\t";
-            }
-            dst << "else:";
-            dst << "\n";
-            statement2->printPy(dst,depth+1);
-       }
-   }
-};
-
-class CaseStatement: public Node{
-private:
-    NodePtr expr;
-    NodePtr statement;
-    
-public:
-    CaseStatement(NodePtr _expr, NodePtr _statement)
-        :expr(_expr), statement(_statement){}
-        
-    virtual void print(std::ostream& dst) const override{
-        dst << "switch(";
-        expr->print(dst);
-        dst << ")";
-        statement->print(dst);
-    }
-    
-    virtual void printPy(std::ostream& dst, int depth = 0) const override{}
-    
-    virtual ~CaseStatement() override{
-        delete expr;
-        delete statement;
-    }
-};
-
-class WhileStatement: public Node{
-private:
-    NodePtr expr;
-    NodePtr statement;
-    
-public:
-    WhileStatement(NodePtr _expr, NodePtr _statement)
-        :expr(_expr), statement(_statement){}
-        
-        
-    virtual void print(std::ostream& dst) const override{
-        dst << "while(";
-        expr->print(dst);
-        dst << ")";
-        statement->print(dst);
-    }
-    
-    virtual void printPy(std::ostream& dst, int depth = 0) const override{
-        for(int i =0; i < depth; i++){
-            dst << "\t" ;
-        }
-        dst<<"while (";
-        expr -> printPy(dst);
-        dst << "):\n";
-        statement->printPy(dst,depth+1); 
-
-    }
-
-};
-
-class DoStatement: public Node{
-private:
-    NodePtr statement;
-    NodePtr expr;
-    
-public:
-    DoStatement(NodePtr _statement, NodePtr _expr)
-        :statement(_statement), expr(_expr){}
-        
-        
-    virtual void print(std::ostream& dst) const override{
-        dst << "do ";
-        statement->print(dst);
-        dst << "while(";
-        expr->print(dst);
-        dst << ");";
-    }
-    
-    virtual void printPy(std::ostream& dst, int depth = 0) const override{}
-};
-
-class ForStatement: public Node{
-private:
-    NodePtr expr1;
-    NodePtr expr2;
-    NodePtr expr3;
-    NodePtr statement;
-    
-public:
-    ForStatement(NodePtr _expr1, NodePtr _expr2, NodePtr _expr3, NodePtr _statement)
-        :expr1(_expr1), expr2(_expr2), expr3(_expr3), statement(_statement){}
-        
-    virtual void print(std::ostream& dst) const override{
-        dst << "for(";
-        if(expr1 != NULL){
-            expr1->print(dst);
-        }
-        dst << ";";
-        if(expr2 != NULL){
-            expr2->print(dst);
-        }
-        dst << ";";
-        if(expr3 != NULL){
-            expr3->print(dst);
-        }
-        dst << ")";
-        statement->print(dst);
-    }
-    
-    virtual void printPy(std::ostream& dst, int depth = 0) const override{}
-    
-    virtual ~ForStatement() override{
-        delete expr1;
-        delete expr2;
-        delete expr3;
-        delete statement;
-    }
-};
-
-class PrimaryExpr: public Node{
-private:
-    NodePtr expr;
-
-public:
-    PrimaryExpr(NodePtr _expr)
-        :expr(_expr){}
-        
-    virtual void print(std::ostream& dst)const override{
-        dst << "(";
-        expr->print(dst);
-        dst << ")";
-    }
-    
-    virtual void printPy(std::ostream& dst, int depth = 0) const override{
-	expr -> printPy(dst);	
-	} 
 };
 
 class Operator: public StringNode{
@@ -552,168 +334,4 @@ protected:
    Type type;
 };
 
-
-class UnaryExpr: public Node{
-private:
-    StrPtr oper;
-    NodePtr postfixExpr;
-public:
-    UnaryExpr(StrPtr _oper, NodePtr _postfixExpr)
-        :oper(_oper), postfixExpr(_postfixExpr){}
-        
-    virtual void print(std::ostream& dst) const override{
-        dst << *oper;
-        postfixExpr->print(dst);
-    }
-    
-    virtual void printPy(std::ostream& dst, int depth = 0)const override{}
-};
-
-class ConditionalExpr: public Node{
-private:
-    NodePtr logicalOrExpr;
-    NodePtr expr;
-    NodePtr conditionalExpr;
-
-public:
-    ConditionalExpr(NodePtr _logicalOrExpr, NodePtr _expr, NodePtr _conditionalExpr)
-        :logicalOrExpr(_logicalOrExpr), expr(_expr), conditionalExpr(_conditionalExpr){}
-        
-    virtual void print(std::ostream& dst)const override{
-        logicalOrExpr->print(dst);
-        dst << " ? ";
-        expr->print(dst);
-        dst << " : ";
-        conditionalExpr->print(dst);
-    }
-    virtual void printPy(std::ostream& dst, int depth = 0)const override{}
-};
-
-
-class BinaryOperation: public Node{
-private:
-    NodePtr operand1;
-    NodePtr oper;
-    NodePtr operand2;
-    
-public:
-    BinaryOperation(NodePtr _operand1, NodePtr _oper, NodePtr _operand2)
-        :operand1(_operand1), oper(_oper), operand2(_operand2){}
-        
-    virtual void print(std::ostream& dst)const override{
-        operand1->print(dst);
-        oper->print(dst);
-        operand2->print(dst);
-    }
-    
-    virtual void printPy(std::ostream& dst, int depth = 0)const override{
-        for(int i(0); i < depth; ++i) dst << "\t";
-        operand1->printPy(dst);
-        oper->printPy(dst);
-        operand2->printPy(dst);
-    }
-};
-
-class CastExpr: public Node{
-private:
-    NodePtr typeName;
-    NodePtr unaryExpr;
-    
-public:
-    CastExpr(NodePtr _typeName, NodePtr _unaryExpr)
-        :typeName(_typeName), unaryExpr(_unaryExpr){}
-        
-    virtual void print(std::ostream& dst)const override{
-        dst << "(";
-        typeName->print(dst);
-        dst << ")";
-        unaryExpr->print(dst);
-    }
-   
-   virtual void printPy(std::ostream& dst, int depth = 0)const override{}
-   
-   virtual ~CastExpr()override{
-        delete typeName;
-        delete unaryExpr;
-   }
-};
-
-class PostfixExpr: public Node{
-private:
-    NodePtr primaryExpr;
-    StrPtr oper1;
-    VectorPtr argumentExprList;
-    StrPtr oper2;
-    
-public:
-    PostfixExpr(NodePtr _primaryExpr, StrPtr _oper1, VectorPtr _argumentExprList, StrPtr _oper2)
-        :primaryExpr(_primaryExpr), oper1(_oper1), argumentExprList(_argumentExprList), oper2(_oper2){}
-        
-    virtual void print(std::ostream& dst)const override{
-        primaryExpr->print(dst);
-        if(oper1 != NULL){
-            dst << *oper1;
-        }
-        if(argumentExprList != NULL){
-            for(int i(0); i < argumentExprList->size(); ++i){
-                argumentExprList->at(i)->print(dst);
-                if(i < argumentExprList->size() - 1) dst << ",";
-            }
-        }
-        if(oper2 != NULL){
-            dst << *oper2;
-        }
-    }
-    
-    virtual void printPy(std::ostream& dst, int depth = 0)const override{}
-};
-  
-class DeclSpecifier: public StringNode{
-public:
-    DeclSpecifier(StrPtr _id)
-        :StringNode(_id){}
-};
-
-class LabeledStatement: public StringNode{
-private:
-    NodePtr p1;
-    NodePtr p2;
-    
-public:
-    LabeledStatement(StrPtr _id, NodePtr _p1, NodePtr _p2)
-        :StringNode(_id), p1(_p1), p2(_p2){}
-        
-    virtual void print(std::ostream& dst)const override{
-        dst << *id << " ";
-        if(p1 != NULL) p1->print(dst);
-        dst << ":";
-        p2->print(dst);
-    }
-    
-    virtual void printPy(std::ostream& dst, int depth = 0)const override{}
-};
-
-class JumpStatement: public StringNode{
-private:
-    StrPtr str1;
-    NodePtr p1;
-    
-public:
-    JumpStatement(StrPtr _id, StrPtr _str1, NodePtr _p1)
-        :StringNode(_id), str1(_str1), p1(_p1){}
-        
-    virtual void print(std::ostream& dst)const override{
-        dst << *id << " ";
-        if(str1 != NULL) dst << *str1;
-        if(p1 != NULL) p1->print(dst);
-        dst << ";";
-    }
-    
-    virtual void printPy(std::ostream& dst, int depth = 0)const override{
-        for(int i(0); i < depth; ++i) dst << "\t";
-        dst << *id << " ";
-        if(str1 != NULL) dst << *str1;
-        if(p1 != NULL) p1->print(dst);
-    }
-};
 #endif

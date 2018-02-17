@@ -74,7 +74,7 @@ DECLARATION: DECL_SPECIFIER_LIST T_SEMICOLON                      {$$ = new Decl
            | DECL_SPECIFIER_LIST INIT_DECLARATOR_LIST T_SEMICOLON {$$ = new Declaration($1,$2);}
 
 INIT_DECLARATOR_LIST: INIT_DECLARATOR                               {$$ = new std::vector<NodePtr>{$1};}
-			        | INIT_DECLARATOR_LIST T_COMMA INIT_DECLARATOR  {$$ = $1 ; (*$1).push_back($3);}
+			        | INIT_DECLARATOR_LIST T_COMMA INIT_DECLARATOR  {$$ = $1 ; $1->push_back($3);}
 
 INIT_DECLARATOR: DIRECT_DECLARATOR                          {$$ = $1;}
 		       | DIRECT_DECLARATOR T_EQUAL ASSIGNMENT_EXPR  {$$ = new InitDeclarator($1,$3);}
@@ -85,7 +85,7 @@ DIRECT_DECLARATOR: T_IDENTIFIER                                             {$$ 
 		         | DIRECT_DECLARATOR T_LBRACKET PARAMETER_LIST T_RBRACKET   {$$ = new DirectDeclarator($1, $2, $3, $4);}
 		         
 PARAMETER_LIST: PARAMETER_DECL                          {$$ = new std::vector<NodePtr>{$1};}
-              | PARAMETER_LIST T_COMMA PARAMETER_DECL   {$$ = $1; (*$1).push_back($3);}
+              | PARAMETER_LIST T_COMMA PARAMETER_DECL   {$$ = $1; $1->push_back($3);}
 		
 PARAMETER_DECL: DECL_SPECIFIER                   {$$ = new ParameterDeclaration($1, NULL);}
               | DECL_SPECIFIER DIRECT_DECLARATOR {$$ = new ParameterDeclaration($1, $2);}
@@ -153,6 +153,9 @@ MULT_EXPR: CAST_EXPR                    {$$ = $1;}
          | MULT_EXPR T_MULT CAST_EXPR   {$$ = new BinaryOperation($1, new Operator($2, Operator::MUL), $3);}
          | MULT_EXPR T_DIV CAST_EXPR    {$$ = new BinaryOperation($1, new Operator($2, Operator::MUL), $3);}
          | MULT_EXPR T_MOD CAST_EXPR    {$$ = new BinaryOperation($1, new Operator($2, Operator::MUL), $3);}
+         
+CAST_EXPR: UNARY_EXPR {$$ = $1;}
+         | T_LBRACKET VAR_TYPE T_RBRACKET CAST_EXPR {$$ = new CastExpr($2, $4);} //Temporary use VarType instead of TYPE_NAME
                        
 UNARY_EXPR: POSTFIX_EXPR            {$$ = $1;}
           | T_INCREMENT UNARY_EXPR  {$$ = new UnaryExpr($1,$2);}
@@ -166,8 +169,6 @@ UNARY_OPER: T_AMPERSAND     {$$ = $1;}
           | T_TILDE         {$$ = $1;}
           | T_EXCLAMATION   {$$ = $1;}
           
-CAST_EXPR: UNARY_EXPR {$$ = $1;}
-         | T_LBRACKET VAR_TYPE T_RBRACKET CAST_EXPR {$$ = new CastExpr($2, $4);} //Temporary use VarType instead of TYPE_NAME
           
 POSTFIX_EXPR: PRIMARY_EXPR                                          {$$ = $1;}
             | POSTFIX_EXPR T_SQUARE_LBRACKET EXPR T_SQUARE_RBRACKET {$$ = new PostfixExpr($1, $2, new std::vector<NodePtr>{$3}, $4);}
@@ -179,11 +180,11 @@ POSTFIX_EXPR: PRIMARY_EXPR                                          {$$ = $1;}
             | POSTFIX_EXPR T_DECREMENT                              {$$ = new PostfixExpr($1, $2, NULL, NULL);}
             
 ARGUMENT_EXPR_LIST: ASSIGNMENT_EXPR                            {$$ = new std::vector<NodePtr>{$1};}
-                  | ARGUMENT_EXPR_LIST T_COMMA ASSIGNMENT_EXPR {$$ = $1; (*$1).push_back($3);}
+                  | ARGUMENT_EXPR_LIST T_COMMA ASSIGNMENT_EXPR {$$ = $1; $1->push_back($3);}
 
 
 STATEMENT_LIST : STATEMENT	                {$$ = new std::vector<NodePtr>{$1};}
-		       | STATEMENT_LIST STATEMENT   {$$ = $1; (*$1).push_back($2);}
+		       | STATEMENT_LIST STATEMENT   {$$ = $1; $1->push_back($2);}
 
 STATEMENT : LABELED_STATEMENT   {$$ = $1;}
           | BLOCK               {$$ = $1;}
@@ -196,10 +197,10 @@ EXPR_STATEMENT : EXPR T_SEMICOLON {$$ = new ExprStatement($1);}
                | T_SEMICOLON {$$ = new ExprStatement(NULL);} 
 	
 DECLR_LIST : DECLARATION	                {$$ = new std::vector<NodePtr>{$1};}	
-	       | DECLR_LIST DECLARATION		    {$$ = $1; (*$1).push_back($2);}
+	       | DECLR_LIST DECLARATION		    {$$ = $1; $1->push_back($2);}
 	       
 IDENTIFIER_LIST: T_IDENTIFIER                           {$$ = new std::vector<NodePtr>{new StringNode($1)};}
-               | IDENTIFIER_LIST T_COMMA T_IDENTIFIER    {$$ = $1; (*$1).push_back(new StringNode($3));}
+               | IDENTIFIER_LIST T_COMMA T_IDENTIFIER    {$$ = $1; $1->push_back(new StringNode($3));}
 
 PRIMARY_EXPR : T_IDENTIFIER	                {$$ = new StringNode($1);}
 		     | T_INT_CONSTANT               {$$ = new IntConst($1);}
@@ -207,7 +208,7 @@ PRIMARY_EXPR : T_IDENTIFIER	                {$$ = new StringNode($1);}
 		     | T_LBRACKET EXPR T_RBRACKET   {$$ = new PrimaryExpr($2);}
                
 DECL_SPECIFIER_LIST: DECL_SPECIFIER                     {$$ = new std::vector<NodePtr>{$1};}
-                   | DECL_SPECIFIER_LIST DECL_SPECIFIER {$$ = $1; (*$1).push_back($2);}
+                   | DECL_SPECIFIER_LIST DECL_SPECIFIER {$$ = $1; $1->push_back($2);}
                    
 DECL_SPECIFIER: VAR_TYPE            {$$ = $1;}
               | TYPE_QUALIFIER      {$$ = $1;}
