@@ -1,9 +1,9 @@
-Week,    DateRange,          PlannedEffort,  ActualEffort,  OtherDeadlines,Targeted MilestonesID
+Week,    DateRange,          PlannedEffort,  ActualEffort,  OtherDeadlines,Targeted Milestones 
 4, 29th Jan -  4th Feb,12,12,LexLab,3-4
-5,  5th Feb - 11th Feb,10,10,,5-6
-6, 12th Feb - 18th Feb,8,              ,Networks_CommsLabOral_Database1_ParsingLab,7
-7, 19th Feb - 25th Feb,16,              ,Parsing to Python(Formative),8-9
-8, 26th Feb -  4th Mar,12,              ,Database2_CodeGenLab_LexersTest,10-11
-9,  5th Mar - 11th Mar,16,              ,TestonParsers,12-13
-10, 12th Mar - 18th Mar,16,              ,MathsCW_Test on CodeGen,14-15
-11, 19th Mar - 27th Mar,11,,,16-17
+5,  5th Feb - 11th Feb,11,10,,5-6
+6, 12th Feb - 18th Feb,21,23,Networks_CommsLabOral_Database1_ParsingLab,7-9
+7, 19th Feb - 25th Feb,15,              ,Parsing to Python(Formative),10-12
+8, 26th Feb -  4th Mar,16,              ,Database2_CodeGenLab_LexersTest,13-14
+9,  5th Mar - 11th Mar,16,              ,TestonParsers,15-16
+10, 12th Mar - 18th Mar,11,              ,MathsCW_Test on CodeGen,17-18
+11, 19th Mar - 27th Mar,0,,,
