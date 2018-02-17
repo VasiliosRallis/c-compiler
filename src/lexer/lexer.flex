@@ -206,6 +206,8 @@ return 		    {yylval.string = new std::string(yytext); return reportToken(T_RETU
 {IDENTIFIER}	{yylval.string = new std::string(yytext); return reportToken(T_IDENTIFIER, yytext);}
 {STR_LIT}       {yylval.string = new std::string(yytext); return reportToken(T_STR_LIT, yytext);}
 
+#.*             {  } //remove preprocessed information
+
 .|[\n] 			{ }
 
 

@@ -5,7 +5,6 @@
 #include <iostream>
 #include <vector>
 
-extern int g_depth;
 extern std::vector<std::string> g_variables;
 
 //class Identifier: public Node;
@@ -154,7 +153,7 @@ public:
     }
     
     virtual void printPy(std::ostream& dst, int depth = 0) const override{
-        for(int i(0); i < g_depth; ++i){
+        for(int i(0); i < depth; ++i){
             dst << "\t";
         }
         idlist->printPy(dst);
@@ -212,13 +211,13 @@ public:
     */
         if(declrList != NULL){
             for(int i(0); i < declrList->size(); ++i){
-                declrList->at(i)->printPy(dst, depth+1);
+                declrList->at(i)->printPy(dst, depth);
                 dst << "\n";
             }
         }
         if(statementList != NULL){
             for(int i(0); i < statementList->size(); ++i){
-                statementList->at(i)->printPy(dst, depth+1);
+                statementList->at(i)->printPy(dst, depth);
                 dst << "\n";
             }
                 
@@ -227,18 +226,18 @@ public:
     
     virtual void printPyG(std::ostream& dst, int depth = 0) const{
         for(int i(0); i < g_variables.size(); ++i){
-            for(int j(0); j < depth + 1; ++j) dst << "\t";
+            for(int j(0); j < depth ; ++j) dst << "\t";
             dst << "global " << g_variables.at(i) << "\n";
         }
         if(declrList != NULL){
             for(int i(0); i < declrList->size(); ++i){
-                declrList->at(i)->printPy(dst, depth+1);
+                declrList->at(i)->printPy(dst, depth);
                 dst << "\n";
             }
         }
         if(statementList != NULL){
             for(int i(0); i < statementList->size(); ++i){
-                statementList->at(i)->printPy(dst, depth+1);
+                statementList->at(i)->printPy(dst, depth);
                 dst << "\n";
             }
                 
@@ -272,7 +271,7 @@ public:
         dst << ":\n";
         //for(int i(0); i < depth + 1; ++i){
            //dst << "\t";
-        static_cast<const Block*>(block)->printPyG(dst);
+        static_cast<const Block*>(block)->printPyG(dst,depth+1);
     }
     
 };
@@ -370,15 +369,15 @@ public:
         expr->printPy(dst);
         dst << "):";
         dst << "\n";
-        statement1->printPy(dst, depth);
+        statement1->printPy(dst, depth+1);
         dst << "\n";
         if(statement2 != NULL){
-            for(int i(0); i < g_depth; ++i){
+            for(int i(0); i <depth; ++i){
                 dst << "\t";
             }
             dst << "else:";
             dst << "\n";
-            statement2->printPy(dst);
+            statement2->printPy(dst,depth+1);
        }
    }
 };
@@ -424,7 +423,16 @@ public:
         statement->print(dst);
     }
     
-    virtual void printPy(std::ostream& dst, int depth = 0) const override{}
+    virtual void printPy(std::ostream& dst, int depth = 0) const override{
+        for(int i =0; i < depth; i++){
+            dst << "\t" ;
+        }
+        dst<<"while (";
+        expr -> printPy(dst);
+        dst << "):\n";
+        statement->printPy(dst,depth+1); 
+
+    }
 
 };
 
@@ -529,7 +537,15 @@ public:
     }
     
     virtual void printPy(std::ostream& dst, int depth = 0)const override{
-        dst << *id;
+        if(type == LOGICAL_AND){
+            dst << " and ";
+        }
+        else if (type == LOGICAL_OR){
+            dst <<" or " ;
+        }
+        else{
+            dst << *id ;
+        }
     }
 
 protected:

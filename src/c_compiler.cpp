@@ -4,7 +4,6 @@
 #include <fstream>
 #include <vector>
 
-int g_depth(0);
 std::vector<std::string> g_variables;
 
 int main(int argc, char* argv[]){
