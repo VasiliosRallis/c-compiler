@@ -1,5 +1,5 @@
-x=4;
-z=7;
+x=4
+z=7
 
 def f() :
     global x
