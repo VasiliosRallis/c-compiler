@@ -74,7 +74,7 @@ public:
                 dynamic_cast<const StringNode*>(initdeclrList->at(i))->addGlobal();
             }
             else if(dynamic_cast<const InitDeclarator*>(initdeclrList->at(i))){
-                //dynamic_cast<const InitDeclarator*>(initdeclrList->at(i))->addGlobal();
+               // dynamic_cast<const InitDeclarator*>(initdeclrList->at(i))->addGlobal();
             
             }
         }
