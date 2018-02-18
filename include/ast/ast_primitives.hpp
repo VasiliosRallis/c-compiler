@@ -4,6 +4,7 @@
 #include <string>
 #include <iostream>
 #include <vector>
+#include <sstream>
 
 extern std::vector<std::string> g_variables;
 
@@ -130,45 +131,6 @@ public:
         n2->print(dst);
     }
     
-};
-class VarInit : public Node {
-private :
-	NodePtr varType;
-	NodePtr idlist;
-	NodePtr initializer;
-
-public:
-	VarInit(NodePtr _varType, NodePtr _idlist, NodePtr _initializer)
-	: varType(_varType) , idlist(_idlist) , initializer(_initializer) {}
-	
-	virtual void print(std::ostream& dst) const override{
-		varType->print(dst);
-		dst << " ";
-		idlist ->print(dst);
-		dst << " = ";
-		initializer -> print(dst);
-		dst << ";";
-    }
-    
-    virtual void printPy(std::ostream& dst, int depth = 0) const override{
-        for(int i(0); i < depth; ++i){
-            dst << "\t";
-        }
-        idlist->printPy(dst);
-        dst << "=";
-        initializer->printPy(dst);
-        int l = idlist->getLength();
-        for(int i(0); i < l-1; ++i){
-            dst << ",";
-            initializer->printPy(dst);
-        }
-    }
-    
-    virtual ~VarInit() override{
-        delete varType;
-        delete idlist;
-	delete initializer;
-    }
 };
 
 class Block: public Node{

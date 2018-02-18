@@ -1,17 +1,34 @@
-MilestoneID,             Dependencies, EstimatedEffort, Lead,  Completed, Description,
-DeriveManagementPlan,nil,2,yhl15,        this   ,Derive rough plan of project and complete milestones.csv and schedule.csv,
-BasicCLexer,             LexingLab,3,vgr16,dc5e78739a4ef1346f6064c36f1c402d08e2bafb,Consider structure of C lexer and begin lexing simple C code I.e int main return 0 and most basic data types and keywords,
-BasicCParser,BasicCLexer,6,yhl15,d8d5394c135d452407548aa8544416fc369775bc,Take Lexed Tokens as input directly through to the end of Parsing and produce an AST and print this AST,
-Script_Tests_Lexer_parser,BasicCParser,2,vgr16,dba5f4b9dcf3f3e01ea7bda8cd3e20c8dc34c30f,Write script for testbench to automate tests to allow more expressions of code to be parsed accurately without destroying whats working,
-Grammar_Hierarchy,BasicCParser,8,vgr16,388af8f99ff563efcc877570bcfbb71e5a67ad5e,"Consider and implement a neater and more accurate grammar hierarchy, expand it with more test cases to verify",
-Expand_Lexicals_Grammar,Grammar_Hierarchy,8,yhl15,,"Use somewhat well designed hierarchy to introduce more tokens and parse them correctly,",
-NearCompletedCParser,Expand_Lexicals_Grammar,8,vgr16,,Have our parser Parse almost all the statements thats valid in c89 and compiling it against actual c code,
-CtoPythonParser,NearCompletedCparser,8,yhl15,,Use Existing Lexer and parser to convert AST to python code,
-TestCtoPythonParser,CtoPythonParser,6,vgr16,,Test C to python Parser and run it against testbench,
-PlanCodeGenStructure,CodeGenLab,6,yhl15,,Plan Structure for Code Gen from AST to Mips Asm and have basic design layout,
-StartCodeGen,PlanCodeGenStructure,8,vgr16,,Have codegen working for 30% of functionality,
-DecentCodegen,StartCodeGen,8,yhl15,,Have codegen working for 50% of functionality,
-WellWorkingCodegen,DecentCodegen,8,vgr16,,Codegen should work for 80% of functionality to be implemented,
-Testsuiteforcomplier,StartCodeGen,8,yhl15,,Implement structure for testsuite and test the codegen with it simultaneously while developing codegen,
-TestsuiteandCodegen,Testsuiteforcompiler,8,vgr16,,,Develop Codegen and testsuite hand in hand to attain maximum functionality of our compiler
-TieLooseEnds,TestsuiteandCodegen,3,vgr16,,Tie up loose ends and edge cases if any,
+MilestoneID,                Dependencies,           EstimatedEffort,    Lead,       Completed,                                  Description
+DeriveManagementPlan,       nil,                    2,                  yhl15,      this   ,                                    Derive rough plan of project and complete milestones.csv and schedule.csv
+
+BasicCLexer,                LexingLab,              3,                  vgr16,      dc5e78739a4ef1346f6064c36f1c402d08e2bafb,   Consider structure of C lexer and begin lexing simple C code and most basic data types and keywords
+
+BasicCParser,               BasicCLexer,            6,                  yhl15,      d8d5394c135d452407548aa8544416fc369775bc,   Take Lexed Tokens as input directly through to the end of Parsing and produce an AST and print this AST
+
+Script_Tests_Lexer_parser,  BasicCParser,           2,                  vgr16,      dba5f4b9dcf3f3e01ea7bda8cd3e20c8dc34c30f,   Write script for testbench to automate tests to allow more expressions of code to be parsed accurately without destroying whats working
+
+Grammar_Hierarchy,          BasicCParser,           8,                  vgr16,      388af8f99ff563efcc877570bcfbb71e5a67ad5e,   Consider and implement a neater and more accurate grammar hierarchy, expand it with more test cases to verify
+
+Expand_Lexicals_Grammar,    Grammar_Hierarchy,      8,                  yhl15,      92f829f389913afc42a345f699dbfc7607fa7d21,   Use somewhat well designed hierarchy to introduce more tokens and parse them correctly
+
+DecentPythonTranslator,     Expand_Lexicals_Grammar,7,                  yhl15,      beac046e4e3686e6ef6bb23371a4eec38734d66f,   Go through AST from parsing stage to translate from to python, have it work for 80%
+
+TestCtoPythonTranslator,    DecentPythonTranslator, 6,                  vgr16,      beac046e4e3686e6ef6bb23371a4eec38734d66f,   Develop testbench and generate tests as we aim to translate 100% of the subset of C defined in specifications
+
+CtoPythonTranslator,        TestCtoPythonTranslator,3,                  yhl15,,                                                 Translate 100% of the subset of C provided and verify with testcases completed
+
+PlanCodeGenStructure,       CodeGenLab,             4,                  yhl15,,                                                 Plan Structure for Code Gen from AST to Mips Asm and have basic design layout
+
+StartCodeGen,               PlanCodeGenStructure,   8,                  vgr16,,                                                 Have codegen working for 30% of functionality
+
+NearCompletedCParser,       StartCodeGen,           8,                  vgr16,,                                                 Have our parser Parse almost all the statements thats valid in c89 and compiling it against actual c code
+
+DecentCodegen,              NearCompletedCParser,   8,                  yhl15,,                                                 Have codegen working for 50% of functionality
+
+WellWorkingCodegen,         DecentCodegen,          8,                  vgr16,,                                                 Codegen should work for 80% of functionality to be implemented
+
+Testsuiteforcomplier,       StartCodeGen,           8,                  yhl15,,                                                 Implement structure for testsuite and test the codegen with it simultaneously while developing codegen
+
+FinishCodegen,              WellWorkingCodegen,     8,                  vgr16,,                                                 Complete codegen for mips asm by working hand in hand with the testbench for it
+
+TieLooseEnds,               FinishCodegen,          3,                  vgr16,,                                                 Tie up loose ends and edge cases if any
