@@ -21,6 +21,8 @@
   NodePtr node;
   StrPtr string;
   VectorPtr nodeVector;
+  const DirectDeclarator* dirDeclPtr;
+  const Block* block;
 }
 
 //Keywords
@@ -39,7 +41,9 @@
 %token T_ARROW T_DOT T_SQUARE_LBRACKET T_SQUARE_RBRACKET
 
 //Non-terminals declaration
-%type <node> PROGRAM EXT_DECLARATION VAR_TYPE BLOCK FUNCTION_DEF DECLARATION INIT_DECLARATOR DIRECT_DECLARATOR
+%type <node> PROGRAM EXT_DECLARATION VAR_TYPE FUNCTION_DEF DECLARATION INIT_DECLARATOR
+%type <dirDeclPtr> DIRECT_DECLARATOR
+%type <block> BLOCK
 %type <node> PRIMARY_EXPR STATEMENT EXPR_STATEMENT EXPR SELECTION_STATEMENT ITERATION_STATEMENT PARAMETER_DECL
 %type <node> TYPE_QUALIFIER DECL_SPECIFIER STOR_CLASS_SPEC
 %type <node> ASSIGNMENT_OPER UNARY_EXPR CONDITIONAL_EXPR ASSIGNMENT_EXPR POSTFIX_EXPR CAST_EXPR
@@ -76,13 +80,13 @@ DECLARATION: DECL_SPECIFIER_LIST T_SEMICOLON                      {$$ = new Decl
 INIT_DECLARATOR_LIST: INIT_DECLARATOR                               {$$ = new std::vector<NodePtr>{$1};}
 			        | INIT_DECLARATOR_LIST T_COMMA INIT_DECLARATOR  {$$ = $1 ; $1->push_back($3);}
 
-INIT_DECLARATOR: DIRECT_DECLARATOR                          {$$ = $1;}
-		       | DIRECT_DECLARATOR T_EQUAL ASSIGNMENT_EXPR  {$$ = new InitDeclarator($1,$3);}
+INIT_DECLARATOR: DIRECT_DECLARATOR                     {$$ = $1;}
+		       | T_IDENTIFIER T_EQUAL ASSIGNMENT_EXPR  {$$ = new InitDeclarator($1,$3);}
 
-DIRECT_DECLARATOR: T_IDENTIFIER                                             {$$ = new StringNode($1);}
-		         | DIRECT_DECLARATOR T_LBRACKET T_RBRACKET                  {$$ = new DirectDeclarator($1, $2, NULL, $3);}
-		         | DIRECT_DECLARATOR T_LBRACKET IDENTIFIER_LIST T_RBRACKET  {$$ = new DirectDeclarator($1, $2, $3, $4);}
-		         | DIRECT_DECLARATOR T_LBRACKET PARAMETER_LIST T_RBRACKET   {$$ = new DirectDeclarator($1, $2, $3, $4);}
+DIRECT_DECLARATOR: T_IDENTIFIER                                        {$$ = new DirectDeclarator($1, NULL, NULL, NULL);}
+		         | T_IDENTIFIER T_LBRACKET T_RBRACKET                  {$$ = new DirectDeclarator($1, $2, NULL, $3);}
+//		         | DIRECT_DECLARATOR T_LBRACKET IDENTIFIER_LIST T_RBRACKET  {$$ = new DirectDeclarator($1, $2, $3, $4);}
+		         | T_IDENTIFIER T_LBRACKET PARAMETER_LIST T_RBRACKET   {$$ = new DirectDeclarator($1, $2, $3, $4);}
 		         
 PARAMETER_LIST: PARAMETER_DECL                          {$$ = new std::vector<NodePtr>{$1};}
               | PARAMETER_LIST T_COMMA PARAMETER_DECL   {$$ = $1; $1->push_back($3);}

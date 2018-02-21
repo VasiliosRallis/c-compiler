@@ -8,31 +8,59 @@
 
 extern std::vector<std::string> g_variables;
 
-class InitDeclarator : public Node {
+class DirectDeclarator: public StringNode{
 private:
-    NodePtr directDeclarator;    
+    StrPtr s1;
+    VectorPtr v1;
+    StrPtr s2;
+
+public:
+    DirectDeclarator(StrPtr _id, StrPtr _s1, VectorPtr _v1, StrPtr _s2)
+        :StringNode(_id), s1(_s1), v1(_v1), s2(_s2){}
+        
+    virtual void print(std::ostream& dst)const override{
+        dst << *id;
+        if(s1 != NULL) dst << *s1;
+        if(v1 != NULL){
+            for(int i(0); i < v1->size(); ++i){
+                v1->at(i)->printPy(dst);
+                if(i < v1->size() - 1) dst << ",";
+            }
+        }
+        if(s2 != NULL) dst << *s2;
+    }
+    
+    virtual void printPy(std::ostream& dst, int depth = 0)const override{
+        for(int i(0); i < depth; ++i) dst << "\t";
+        print(dst);
+    }
+    
+    //virtual void printMips(std::ostream& dst) override{
+    //    n1->printMips(dst);
+    //}
+};
+
+class InitDeclarator : public StringNode{
+private:
     NodePtr asgnExpr;
 public:
-    InitDeclarator(NodePtr _directDeclarator, NodePtr _asgnExpr)
-        : directDeclarator(_directDeclarator), asgnExpr(_asgnExpr) {}
+    InitDeclarator(StrPtr _id, NodePtr _asgnExpr)
+        :StringNode(_id), asgnExpr(_asgnExpr) {}
     
     virtual void print(std::ostream& dst) const override{
-        directDeclarator->print(dst);
+        dst << *id;
 	    dst << "=";      
         asgnExpr->print(dst);
     }
     
     virtual void printPy(std::ostream& dst, int depth = 0) const override{
-        directDeclarator->printPy(dst, depth);
+        for(int i(0); i < depth; ++i) dst << "\t";
+        dst << *id;
         dst << "=";
         asgnExpr->printPy(dst);
     }
     
-    void addGlobal()const{
-        static_cast<const StringNode*>(directDeclarator)->addGlobal();
-    }
-        
-
+    
 };
 
 class Declaration : public Node {
@@ -59,19 +87,19 @@ public:
     }
     virtual void printPy(std::ostream& dst, int depth = 0) const override{
 	// Check if its null ? Does int; have a valid translation to python?        
-	for(int i(0); i < initdeclrList->size(); ++i){
-            if(dynamic_cast<const StringNode*>(initdeclrList->at(i))){
-                initdeclrList->at(i)->printPy(dst, depth);
-                dst << "=0\n";
-            }
-            else if(dynamic_cast<const InitDeclarator*>(initdeclrList->at(i))){
-                initdeclrList->at(i)->printPy(dst, depth);
-                dst << "\n";
-            }
-            else{
-                std::cerr << "Not supported yet!" << std::endl;
-            }
-        }
+	    for(int i(0); i < initdeclrList->size(); ++i){
+                if(dynamic_cast<const DirectDeclarator*>(initdeclrList->at(i))){
+                    initdeclrList->at(i)->printPy(dst, depth);
+                    dst << "=0\n";
+                }
+                else if(dynamic_cast<const InitDeclarator*>(initdeclrList->at(i))){
+                    initdeclrList->at(i)->printPy(dst, depth);
+                    dst << "\n";
+                }
+                else{
+                    std::cerr << "Not supported yet!" << std::endl;
+                }
+       }
     }
     
     void addGlobal()const{
@@ -85,35 +113,6 @@ public:
         }
         
     }      
-};
-
-
-class DirectDeclarator: public Node{
-private:
-    NodePtr n1;
-    StrPtr s1;
-    VectorPtr v1;
-    StrPtr s2;
-
-public:
-    DirectDeclarator(NodePtr _n1, StrPtr _s1, VectorPtr _v1, StrPtr _s2)
-        :n1(_n1), s1(_s1), v1(_v1), s2(_s2){}
-        
-    virtual void print(std::ostream& dst)const override{
-        n1->print(dst);
-        dst << *s1;
-        if(v1 != NULL){
-            for(int i(0); i < v1->size(); ++i){
-                v1->at(i)->printPy(dst);
-                if(i < v1->size() - 1) dst << ",";
-            }
-        }
-        dst << *s2;
-    }
-    
-    virtual void printPy(std::ostream& dst, int depth = 0)const override{
-        print(dst);
-    }
 };
 
 class ParameterDeclaration: public Node{
@@ -199,11 +198,11 @@ public:
 class FunctionDef: public Node{
 private:
 	VectorPtr declrSpecList;
-	NodePtr directDeclarator;   
-	NodePtr block;
+	const DirectDeclarator* directDeclarator;   
+	const Block* block;
     
 public:
-    FunctionDef(VectorPtr _declrSpecList, NodePtr _directDeclarator, NodePtr _block)
+    FunctionDef(VectorPtr _declrSpecList, const DirectDeclarator* _directDeclarator, const Block* _block)
         : declrSpecList(_declrSpecList), directDeclarator(_directDeclarator), block(_block) {}
         
 
@@ -220,8 +219,14 @@ public:
 	    dst << "def ";
         directDeclarator->printPy(dst);
         dst << ":\n";
-        static_cast<const Block*>(block)->printPyG(dst,depth+1);
+        block->printPyG(dst,depth+1);
     }
+    
+    //virtual void printMips(std::ostream& dst){
+   //     std::cout << ".text" << std::endl;
+   //     std::cout << ".global ";
+   //     directDeclarator->getId()
+        
 };
 
 class Program: public Node{

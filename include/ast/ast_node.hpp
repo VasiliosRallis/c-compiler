@@ -19,6 +19,7 @@ public:
     virtual void print(std::ostream& dst) const =0;
     virtual void printPy(std::ostream& dst, int depth = 0)const{};
     virtual int getLength()const{return -1;}
+    virtual void printMips(std::ostream& dst){};
 
 };
 
@@ -43,6 +44,14 @@ public:
         std::string global = *id;
         g_variables.push_back(global);
     }
+    
+    virtual void printMips(std::ostream& dst)override {
+        dst << *id;
+    }
+    
+    //std::string getId(){
+    //    return std::string(*id);
+    //}
 };
 
 class Expr: public Node{};
