@@ -225,8 +225,13 @@ public:
                     if(i < declrList->size() - 1) dst << "\n";
                 }
             }
-            if(statementList != NULL){}
-        }
+            if(statementList != NULL){
+                for(int i(0); i < statementList->size(); ++i){
+                    statementList->at(i)->printMips(dst, framePtr);
+                    if(i < statementList->size() - 1) dst << "\n";
+                }
+            }
+    }
 };
 
 class FunctionDef: public Node{

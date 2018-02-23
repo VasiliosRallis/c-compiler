@@ -47,6 +47,10 @@ public:
         std::string global = *id;
         g_variables.push_back(global);
     }
+    
+    std::string getId()const{
+        return std::string(*id);
+    }
 
 };
 

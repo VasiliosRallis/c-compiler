@@ -25,6 +25,11 @@ public:
 	        dst << "li $t0, " << id << "\n";
 	        framePtr->store(dst, "$t0", destName);
 	    }
+	    else if(dynamic_cast<const StringNode*>(expr)){
+	        std::string id = dynamic_cast<const StringNode*>(expr)->getId();
+	        framePtr->load(dst, "$t0", id);
+	        framePtr->store(dst, "$t0", destName);
+        }
     }
 };
 

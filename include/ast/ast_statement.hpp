@@ -5,10 +5,10 @@ class JumpStatement: public Statement{
 private:
     StrPtr str1;
     StrPtr str2;
-    NodePtr p1;
+    const Expr* p1;
     
 public:
-    JumpStatement(StrPtr _str1, StrPtr _str2, NodePtr _p1)
+    JumpStatement(StrPtr _str1, StrPtr _str2, const Expr* _p1)
         :str1(_str1), str2(_str2), p1(_p1){}
         
     virtual void print(std::ostream& dst)const override{
@@ -23,6 +23,22 @@ public:
         dst << *str1 << " ";
         if(str2 != NULL) dst << *str2;
         if(p1 != NULL) p1->print(dst);
+    }
+    
+    virtual void printMips(std::ostream& dst, Frame* framePtr = NULL)const override{
+        if(*str1 == "return"){
+            if(p1 != NULL){
+                //Request expression to evaluate itself
+                std::string destName = makeName();
+                p1->printMipsE(dst, destName, framePtr);
+                framePtr->load(dst, "$v0", destName);
+            }else{
+                //Have to find out what is the specification for v0 when the function returns void
+                //For now, I will return 0
+                dst << "move $v0, $zero\n";
+            }
+            framePtr->clean(dst);
+        }
     }
 };
 
