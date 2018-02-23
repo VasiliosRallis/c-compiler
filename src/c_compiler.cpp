@@ -27,10 +27,19 @@ int main(int argc, char* argv[]){
             std::ofstream output(argv[4]);
             ast->print(output);
         }
+        
+        else if( (std::string(argv[1]) == "-S") && (std::string(argv[3]) == "-o") ){
+            NodePtr ast = parseAST(argv[2]);
+            std::ofstream output(argv[4]);
+            ast->printMips(output);
+        }
         else{
             std::cout << "ERROR: Flag missing" << std::endl;
         }
     }
-    
+    else {
+        std::cout << "ERROR: Missing Arguments, require 4 arguments" << std::endl;
+    }
+
     return 0;
 }

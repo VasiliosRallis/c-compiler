@@ -222,11 +222,13 @@ public:
         block->printPyG(dst,depth+1);
     }
     
-    //virtual void printMips(std::ostream& dst){
-   //     std::cout << ".text" << std::endl;
-   //     std::cout << ".global ";
-   //     directDeclarator->getId()
+    virtual void printMips(std::ostream& dst) const{
+        dst << "\t.text" << std::endl;
+        dst << "\t.globl ";
+        dst <<directDeclarator->getId() << std::endl;
         
+        dst << directDeclarator->getId() << ":" << std:: endl;        
+   }     
 };
 
 class Program: public Node{
