@@ -27,6 +27,7 @@ int main(int argc, char* argv[]){
             std::ofstream output(argv[4]);
             ast->print(output);
         }
+        
         else if(std::string(argv[1]) == "-S"){
             NodePtr ast = parseAST(argv[2]);
             std::ofstream output(argv[4]);
@@ -37,6 +38,9 @@ int main(int argc, char* argv[]){
             std::cout << "ERROR: Flag missing" << std::endl;
         }
     }
-    
+    else {
+        std::cout << "ERROR: Missing Arguments, require 4 arguments" << std::endl;
+    }
+
     return 0;
 }

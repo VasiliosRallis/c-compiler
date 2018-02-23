@@ -7,3 +7,6 @@ tests/c/out
 tests/python/out
 tests/out
 tmp/
+*.s
+*.exe
+tests/assemble/out

@@ -257,8 +257,8 @@ public:
     }
     
     virtual void printMips(std::ostream& dst, Frame* framePtr = NULL)const override{
-        dst << ".text\n";
-        dst << ".global ";
+        dst << "\t.text\n";
+        dst << "\t.global ";
         dst << directDeclarator->getId() << "\n";
         dst << directDeclarator->getId() << ":\n";
         
@@ -268,8 +268,7 @@ public:
         
         dst << "li $v0, 2\n";
         frame.clean(dst);
-    }
-        
+    }    
 };
 
 class Program: public Node{

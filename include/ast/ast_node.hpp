@@ -47,7 +47,7 @@ public:
         std::string global = *id;
         g_variables.push_back(global);
     }
-    
+
 };
 
 class Expr: public Node{
