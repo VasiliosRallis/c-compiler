@@ -27,6 +27,12 @@ int main(int argc, char* argv[]){
             std::ofstream output(argv[4]);
             ast->print(output);
         }
+        else if(std::string(argv[1]) == "--compile"){
+            NodePtr ast = parseAST(argv[2]);
+            std::ofstream output(argv[4]);
+            output << ".set noreorder\n";
+            ast->printMips(output);
+        }
         else{
             std::cout << "ERROR: Flag missing" << std::endl;
         }
