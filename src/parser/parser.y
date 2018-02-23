@@ -23,6 +23,7 @@
   VectorPtr nodeVector;
   const DirectDeclarator* dirDeclPtr;
   const Block* block;
+  const Expr* expr;
 }
 
 //Keywords
@@ -44,13 +45,14 @@
 %type <node> PROGRAM EXT_DECLARATION VAR_TYPE FUNCTION_DEF DECLARATION INIT_DECLARATOR
 %type <dirDeclPtr> DIRECT_DECLARATOR
 %type <block> BLOCK
-%type <node> PRIMARY_EXPR STATEMENT EXPR_STATEMENT EXPR SELECTION_STATEMENT ITERATION_STATEMENT PARAMETER_DECL
+%type <node> STATEMENT EXPR_STATEMENT EXPR SELECTION_STATEMENT ITERATION_STATEMENT PARAMETER_DECL
 %type <node> TYPE_QUALIFIER DECL_SPECIFIER STOR_CLASS_SPEC
-%type <node> ASSIGNMENT_OPER UNARY_EXPR CONDITIONAL_EXPR ASSIGNMENT_EXPR POSTFIX_EXPR CAST_EXPR
-%type <node> LOGICAL_OR_EXPR LOGICAL_AND_EXPR INCLUSIVE_OR_EXPR EXCLUSIVE_OR_EXPR AND_EXPR EQUAL_EXPR RELATIONAL_EXPR SHIFT_EXPR ADDITIVE_EXPR MULT_EXPR LABELED_STATEMENT JUMP_STATEMENT
+%type <node> ASSIGNMENT_OPER
+%type <node>  LABELED_STATEMENT JUMP_STATEMENT
 %type <nodeVector> INIT_DECLARATOR_LIST STATEMENT_LIST DECLR_LIST DECL_SPECIFIER_LIST ARGUMENT_EXPR_LIST PARAMETER_LIST
 //%type <nodeVector> IDENTIFIER_LIST
-
+%type <expr> ASSIGNMENT_EXPR CONDITIONAL_EXPR UNARY_EXPR POSTFIX_EXPR CAST_EXPR LOGICAL_OR_EXPR LOGICAL_AND_EXPR PRIMARY_EXPR 
+%type <expr> INCLUSIVE_OR_EXPR EXCLUSIVE_OR_EXPR AND_EXPR EQUAL_EXPR RELATIONAL_EXPR SHIFT_EXPR ADDITIVE_EXPR MULT_EXPR 
 
 %type <string> T_INT_CONSTANT
 %type <string> T_IDENTIFIER T_STR_LIT
@@ -208,9 +210,9 @@ DECLR_LIST : DECLARATION	                {$$ = new std::vector<NodePtr>{$1};}
 //IDENTIFIER_LIST: T_IDENTIFIER                           {$$ = new std::vector<NodePtr>{new StringNode($1)};}
 //               | IDENTIFIER_LIST T_COMMA T_IDENTIFIER    {$$ = $1; $1->push_back(new StringNode($3));}
 
-PRIMARY_EXPR : T_IDENTIFIER	                {$$ = new StringNode($1);}
-		     | T_INT_CONSTANT               {$$ = new IntConst($1);}
-		     | T_STR_LIT                    {$$ = new StringNode($1);}
+PRIMARY_EXPR : T_IDENTIFIER	                {$$ = new PrimaryExpr(new StringNode($1));}
+		     | T_INT_CONSTANT               {$$ = new PrimaryExpr(new IntConst($1));}
+		     | T_STR_LIT                    {$$ = new PrimaryExpr(new StringNode($1));}
 		     | T_LBRACKET EXPR T_RBRACKET   {$$ = new PrimaryExpr($2);}
                
 DECL_SPECIFIER_LIST: DECL_SPECIFIER                     {$$ = new std::vector<NodePtr>{$1};}

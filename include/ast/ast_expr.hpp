@@ -3,7 +3,7 @@
 
 class PrimaryExpr: public Expr{
 private:
-    NodePtr expr;
+    NodePtr expr; //This can be everything a stringConst an intConst (might lead to future issues)
 
 public:
     PrimaryExpr(NodePtr _expr)
@@ -16,7 +16,7 @@ public:
     }
     
     virtual void printPy(std::ostream& dst, int depth = 0) const override{
-	expr -> printPy(dst);	
+	    expr -> printPy(dst);	
 	} 
 };
 

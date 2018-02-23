@@ -37,9 +37,10 @@ public:
         print(dst);
     }
     
-    //virtual void printMips(std::ostream& dst) override{
-    //    n1->printMips(dst);
-    //}
+    virtual void printMips(std::ostream& dst, Frame* framePtr)const override{
+        //Set the default value for an unitialized variable to zero
+        framePtr->store(dst, "$zero", *id);
+    }
     
     std::string getId()const{
         return std::string(*id);
@@ -48,9 +49,9 @@ public:
 
 class InitDeclarator : public StringNode{
 private:
-    NodePtr asgnExpr;
+    const Expr* asgnExpr;
 public:
-    InitDeclarator(StrPtr _id, NodePtr _asgnExpr)
+    InitDeclarator(StrPtr _id, const Expr* _asgnExpr)
         :StringNode(_id), asgnExpr(_asgnExpr) {}
     
     virtual void print(std::ostream& dst) const override{
@@ -66,7 +67,16 @@ public:
         asgnExpr->printPy(dst);
     }
     
-    
+    virtual void printMips(std::ostream& dst, Frame* framePtr)const override{
+        //Generate a unique name
+        std::string destName = makeName();
+        //Ask the expression to evaluate itself and store its value in the frame, with destName as it's identifier
+        asgnExpr->printMipsE(dst, destName, framePtr);
+        //Temporary store the identifier in $t1
+        framePtr->load(dst, "$t1", destName);
+        //Store it in the frame
+        framePtr->store(dst, "$t1", *id);
+    }
 };
 
 class Declaration : public Node {
@@ -78,17 +88,17 @@ public:
         : declrspecList(_declrspecList), initdeclrList(_initdeclrList) {}
     
     virtual void print(std::ostream& dst) const override{
-	if(initdeclrList!=NULL){        
-		for(int i(0); i < declrspecList->size(); ++i){
-        	    	declrspecList->at(i)->print(dst);
-        	    	dst << " ";
-        	}
-	    
-		for(int i(0); i < initdeclrList->size(); ++i){       
-        		initdeclrList->at(i)->print(dst);
-			if(i < initdeclrList->size() - 1) dst << ",";
-	    	}
-	}
+	    if(initdeclrList!=NULL){        
+		    for(int i(0); i < declrspecList->size(); ++i){
+            	    	declrspecList->at(i)->print(dst);
+            	    	dst << " ";
+            	}
+	        
+		    for(int i(0); i < initdeclrList->size(); ++i){       
+            		initdeclrList->at(i)->print(dst);
+			    if(i < initdeclrList->size() - 1) dst << ",";
+	        	}
+	    }
         dst << ";";
     }
     virtual void printPy(std::ostream& dst, int depth = 0) const override{
@@ -117,9 +127,16 @@ public:
                dynamic_cast<const InitDeclarator*>(initdeclrList->at(i))->addGlobal();
             }
         }
-        
     }
-          
+    
+    void printMips(std::ostream& dst, Frame* framePtr = NULL)const override{
+        if(initdeclrList != NULL){
+            for(int i(0); i < initdeclrList->size(); ++i){
+                initdeclrList->at(i)->printMips(dst, framePtr);
+                if (i < initdeclrList->size() - 1) dst << "\n";
+            }
+        }
+    }
 };
 
 class ParameterDeclaration: public Node{
@@ -200,6 +217,16 @@ public:
                 
         }
     }
+    
+    virtual void printMips(std::ostream& dst, Frame* framePtr = NULL)const override{
+            if(declrList != NULL){
+                for(int i(0); i < declrList->size(); ++i){
+                    declrList->at(i)->printMips(dst, framePtr);
+                    if(i < declrList->size() - 1) dst << "\n";
+                }
+            }
+            if(statementList != NULL){}
+        }
 };
 
 class FunctionDef: public Node{
@@ -229,7 +256,7 @@ public:
         block->printPyG(dst,depth+1);
     }
     
-    virtual void printMips(std::ostream& dst)const override{
+    virtual void printMips(std::ostream& dst, Frame* framePtr = NULL)const override{
         dst << ".text\n";
         dst << ".global ";
         dst << directDeclarator->getId() << "\n";
@@ -237,10 +264,9 @@ public:
         
         Frame frame(dst);
       
-        block->printMips(dst);
-        //temp
-        dst << "li $v0, 2\n";
+        block->printMips(dst, &frame);
         
+        dst << "li $v0, 2\n";
         frame.clean(dst);
     }
         

@@ -1,0 +1,9 @@
+Token:                T_INT                 int
+Token:         T_IDENTIFIER                main
+Token:           T_LBRACKET                   (
+Token:           T_RBRACKET                   )
+Token:       T_LCURLBRACKET                   {
+Token:             T_RETURN              return
+Token:       T_INT_CONSTANT                   5
+Token:          T_SEMICOLON                   ;
+Token:       T_RCURLBRACKET                   }
