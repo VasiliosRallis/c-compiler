@@ -105,8 +105,11 @@ for i in tests/python/in/*.c; do
     fi
     
     CHECKED=$(( ${CHECKED}+2 ));
-    
 done
+
+echo ""
+echo "Running compiler to assembly tests"
+echo "========================================"
 
 echo ""
 echo "########################################"

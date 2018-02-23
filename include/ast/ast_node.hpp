@@ -19,7 +19,8 @@ public:
     virtual void print(std::ostream& dst) const =0;
     virtual void printPy(std::ostream& dst, int depth = 0)const{};
     virtual int getLength()const{return -1;}
-    virtual void printMips(std::ostream& dst) const {};
+
+    virtual void printMips(std::ostream& dst)const{};
 
 };
 
@@ -45,9 +46,11 @@ public:
         g_variables.push_back(global);
     }
     
-    /*virtual void printMips(std::ostream& dst)const override {
+/*
+    virtual void printMips(std::ostream& dst)const override {
         dst << *id;
-    }*/
+    }
+*/
     
     std::string getId()const{
         return (*id);

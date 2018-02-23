@@ -6,6 +6,8 @@
 #include <vector>
 #include <sstream>
 
+#include "compiler/frame.hpp"
+
 extern std::vector<std::string> g_variables;
 
 class DirectDeclarator: public StringNode{
@@ -38,6 +40,10 @@ public:
     //virtual void printMips(std::ostream& dst) override{
     //    n1->printMips(dst);
     //}
+    
+    std::string getId()const{
+        return std::string(*id);
+    }
 };
 
 class InitDeclarator : public StringNode{
@@ -112,7 +118,8 @@ public:
             }
         }
         
-    }      
+    }
+          
 };
 
 class ParameterDeclaration: public Node{
@@ -222,13 +229,20 @@ public:
         block->printPyG(dst,depth+1);
     }
     
-    virtual void printMips(std::ostream& dst) const{
-        dst << "\t.text" << std::endl;
-        dst << "\t.globl ";
-        dst <<directDeclarator->getId() << std::endl;
+    virtual void printMips(std::ostream& dst)const override{
+        dst << "\t.text\n";
+        dst << "\t.global ";
+        dst << directDeclarator->getId() << "\n";
+        dst << directDeclarator->getId() << ":\n";
         
-        dst << directDeclarator->getId() << ":" << std:: endl;        
-   }     
+        Frame frame(dst);
+      
+        block->printMips(dst);
+        //temp
+        dst << "li $v0, 2\n";
+        
+        frame.clean(dst);
+    }    
 };
 
 class Program: public Node{

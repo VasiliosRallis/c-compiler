@@ -31,6 +31,7 @@ int main(int argc, char* argv[]){
         else if( (std::string(argv[1]) == "-S") && (std::string(argv[3]) == "-o") ){
             NodePtr ast = parseAST(argv[2]);
             std::ofstream output(argv[4]);
+            output << ".set noreorder\n";
             ast->printMips(output);
         }
         else{
