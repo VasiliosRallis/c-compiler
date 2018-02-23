@@ -17,7 +17,15 @@ public:
     
     virtual void printPy(std::ostream& dst, int depth = 0) const override{
 	    expr -> printPy(dst);	
-	} 
+	}
+	
+	virtual void printMipsE(std::ostream& dst, const std::string& destName, Frame* framePtr = NULL)const override{
+	    if(dynamic_cast<const IntConst*>(expr)){
+	        int id = dynamic_cast<const IntConst*>(expr)->getId();
+	        dst << "li $t0, " << id << "\n";
+	        framePtr->store(dst, "$t0", destName);
+	    }
+    }
 };
 
 class UnaryExpr: public Expr{

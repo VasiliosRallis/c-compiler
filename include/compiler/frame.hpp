@@ -39,13 +39,12 @@ public:
         freeWords += n;
     }   
     
-    void load(std::ostream& dst, std::string reg, std::string varName)const{
+    void load(std::ostream& dst, const std::string reg, const std::string varName)const{
         dst << "lw " << reg << ", " << frameMap.at(varName) << "($fp)\n";
     }
     
-    void store(std::ostream& dst, std::string reg, std::string varName){
+    void store(std::ostream& dst, const std::string reg, const std::string varName){
         if(freeWords == 0) addWords(dst, 1);
-        
         frameMap.insert({varName, nextFreeAddr});
         nextFreeAddr -= 4;
         freeWords--;

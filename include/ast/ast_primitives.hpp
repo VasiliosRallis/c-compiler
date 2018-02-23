@@ -73,9 +73,9 @@ public:
         //Ask the expression to evaluate itself and store its value in the frame, with destName as it's identifier
         asgnExpr->printMipsE(dst, destName, framePtr);
         //Temporary store the identifier in $t1
-        framePtr->load(dst, "$t1", destName);
+        framePtr->load(dst, "$t0", destName);
         //Store it in the frame
-        framePtr->store(dst, "$t1", *id);
+        framePtr->store(dst, "$t0", *id);
     }
 };
 
@@ -308,6 +308,10 @@ public:
     }
     virtual void printPy(std::ostream& dst, int depth = 0) const override{
         dst << std::stoi((*id));
+    }
+    
+    int getId()const{
+        return std::stoi(*id);
     }
 };
 
