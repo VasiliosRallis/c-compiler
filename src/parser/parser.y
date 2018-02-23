@@ -75,31 +75,32 @@ PROGRAM : PROGRAM EXT_DECLARATION   {$$ = new Program($1, $2);}
 EXT_DECLARATION: FUNCTION_DEF {$$ = $1;}
 		       | DECLARATION  {$$ =$1;}
 
-DECLARATION: DECL_SPECIFIER_LIST T_SEMICOLON                      {$$ = new Declaration($1,NULL);}
-           | DECL_SPECIFIER_LIST INIT_DECLARATOR_LIST T_SEMICOLON {$$ = new Declaration($1,$2);}
+DECLARATION: DECL_SPECIFIER_LIST T_SEMICOLON                      {$$ = new Declaration($1,NULL);}        // We probably dont want : int ; , int int;
+           | DECL_SPECIFIER_LIST INIT_DECLARATOR_LIST T_SEMICOLON {$$ = new Declaration($1,$2);}          // And this as well : int int x;
 
-INIT_DECLARATOR_LIST: INIT_DECLARATOR                               {$$ = new std::vector<NodePtr>{$1};}
-			        | INIT_DECLARATOR_LIST T_COMMA INIT_DECLARATOR  {$$ = $1 ; $1->push_back($3);}
+INIT_DECLARATOR_LIST: INIT_DECLARATOR                               {$$ = new std::vector<NodePtr>{$1};}  // int x;
+			        | INIT_DECLARATOR_LIST T_COMMA INIT_DECLARATOR  {$$ = $1 ; $1->push_back($3);}        // int x, y=5;
 
-INIT_DECLARATOR: DIRECT_DECLARATOR                     {$$ = $1;}
-		       | T_IDENTIFIER T_EQUAL ASSIGNMENT_EXPR  {$$ = new InitDeclarator($1,$3);}
+INIT_DECLARATOR: DIRECT_DECLARATOR                     {$$ = $1;}                                   // int x;
+		       | T_IDENTIFIER T_EQUAL ASSIGNMENT_EXPR  {$$ = new InitDeclarator($1,$3);}            // int x =5
 
-DIRECT_DECLARATOR: T_IDENTIFIER                                        {$$ = new DirectDeclarator($1, NULL, NULL, NULL);}
-		         | T_IDENTIFIER T_LBRACKET T_RBRACKET                  {$$ = new DirectDeclarator($1, $2, NULL, $3);}
-//		         | DIRECT_DECLARATOR T_LBRACKET IDENTIFIER_LIST T_RBRACKET  {$$ = new DirectDeclarator($1, $2, $3, $4);}
-		         | T_IDENTIFIER T_LBRACKET PARAMETER_LIST T_RBRACKET   {$$ = new DirectDeclarator($1, $2, $3, $4);}
+DIRECT_DECLARATOR: T_IDENTIFIER                                        {$$ = new DirectDeclarator($1, NULL, NULL, NULL);} 
+		         | T_IDENTIFIER T_LBRACKET T_RBRACKET                  {$$ = new DirectDeclarator($1, $2, NULL, $3);}// function declaration : int f() ;
+//		         | DIRECT_DECLARATOR T_LBRACKET IDENTIFIER_LIST T_RBRACKET  {$$ = new DirectDeclarator($1, $2, $3, $4);} // Not sure if need this int f(a,b);
+		         | T_IDENTIFIER T_LBRACKET PARAMETER_LIST T_RBRACKET   {$$ = new DirectDeclarator($1, $2, $3, $4);} // function declaration : int f(int a, int b) ;
 		         
-PARAMETER_LIST: PARAMETER_DECL                          {$$ = new std::vector<NodePtr>{$1};}
-              | PARAMETER_LIST T_COMMA PARAMETER_DECL   {$$ = $1; $1->push_back($3);}
+PARAMETER_LIST: PARAMETER_DECL                          {$$ = new std::vector<NodePtr>{$1};}    // 
+              | PARAMETER_LIST T_COMMA PARAMETER_DECL   {$$ = $1; $1->push_back($3);}           // Inside brackets of ( int x, int y)
 		
-PARAMETER_DECL: DECL_SPECIFIER                   {$$ = new ParameterDeclaration($1, NULL);}
-              | DECL_SPECIFIER DIRECT_DECLARATOR {$$ = new ParameterDeclaration($1, $2);}
+PARAMETER_DECL: DECL_SPECIFIER                   {$$ = new ParameterDeclaration($1, NULL);}     // NOT SURE IF WE WANT THIS : Inside brackets of ( int )
+              | DECL_SPECIFIER DIRECT_DECLARATOR {$$ = new ParameterDeclaration($1, $2);}       // Inside brackets of (int x)
 
-FUNCTION_DEF : DECL_SPECIFIER_LIST DIRECT_DECLARATOR BLOCK {$$ = new FunctionDef($1,$2,$3);}
+FUNCTION_DEF : DECL_SPECIFIER_LIST DIRECT_DECLARATOR BLOCK {$$ = new FunctionDef($1,$2,$3);}    // Function Definition : int x() { } or int x(int a,intb) { }
+                                                                                                // NOT SURE IF we want DECL_SPEC LIST and also int x { }
 
 BLOCK : T_LCURLBRACKET STATEMENT_LIST T_RCURLBRACKET            {$$ = new Block(NULL, $2);}
-	  | T_LCURLBRACKET DECLR_LIST T_RCURLBRACKET                {$$ = new Block($2, NULL);}
-	  | T_LCURLBRACKET DECLR_LIST STATEMENT_LIST T_RCURLBRACKET {$$ = new Block($2,$3);}
+	  | T_LCURLBRACKET DECLR_LIST T_RCURLBRACKET                {$$ = new Block($2, NULL);}     // DO we want internal declaration to be done same way as external declaration
+	  | T_LCURLBRACKET DECLR_LIST STATEMENT_LIST T_RCURLBRACKET {$$ = new Block($2,$3);}        // We are relying on declaration for both now
       | T_LCURLBRACKET T_RCURLBRACKET                           {$$ = new Block(NULL, NULL);}
       
 SELECTION_STATEMENT: T_IF T_LBRACKET EXPR T_RBRACKET STATEMENT {$$ = new IfStatement($3, $5);}
