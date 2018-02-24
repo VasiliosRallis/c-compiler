@@ -55,7 +55,12 @@ public:
     
     void store(std::ostream& dst, const std::string reg, const std::string varName){
         if(freeWords == 0) addWords(dst, frameMap.size());
-        frameMap.insert({varName, nextFreeAddr});
+        bool ok = frameMap.insert({varName, nextFreeAddr}).second;
+        if(!ok){
+            frameMap.erase(varName);
+            frameMap.insert({varName, nextFreeAddr});
+        }
+            
         nextFreeAddr -= 4;
         freeWords--;
         

@@ -125,7 +125,7 @@ for i in tests/assemble/in/*.c; do
   
         # Compile the .c file and get the golden exit code
         gcc -std=c89 -w tests/assemble/in/$BASENAME.c -o tests/assemble/in/$BASENAME.exe
-        if [[ "$?" -ne 0 ]]; then
+        if [[ "$?" -ne "0" ]]; then
             rm tests/assemble/in/*.exe
             echo ""
             echo "ERROR: test ${BASENAME} is wrong!"
@@ -143,7 +143,7 @@ for i in tests/assemble/in/*.c; do
             # Compare exit codes
             GOT_EXIT=$?
             if [[ $REF_EXIT -ne $GOT_EXIT ]]; then
-                echo -e "${i} \t ${RED}PASS${NC} 1/2"
+                echo -e "${i} \t ${RED}PASS${NC} 1/2 \t REF_EXIT=${REF_EXIT} GOT_EXIT = ${GOT_EXIT}"
             else
                 echo -e "${i} \t ${GREEN}PASS${NC} 2/2"
                 PASSED=$(( ${PASSED}+1 ));

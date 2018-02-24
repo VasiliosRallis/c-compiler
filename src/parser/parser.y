@@ -24,6 +24,7 @@
   const DirectDeclarator* dirDeclPtr;
   const Block* block;
   const Expr* expr;
+  const Operator* oper;
 }
 
 //Keywords
@@ -47,7 +48,7 @@
 %type <block> BLOCK
 %type <node> STATEMENT EXPR_STATEMENT SELECTION_STATEMENT ITERATION_STATEMENT PARAMETER_DECL
 %type <node> TYPE_QUALIFIER DECL_SPECIFIER STOR_CLASS_SPEC
-%type <node> ASSIGNMENT_OPER
+%type <oper> ASSIGNMENT_OPER
 %type <node>  LABELED_STATEMENT JUMP_STATEMENT
 %type <nodeVector> INIT_DECLARATOR_LIST STATEMENT_LIST DECLR_LIST DECL_SPECIFIER_LIST ARGUMENT_EXPR_LIST PARAMETER_LIST
 //%type <nodeVector> IDENTIFIER_LIST

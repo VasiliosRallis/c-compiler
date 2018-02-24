@@ -231,7 +231,6 @@ public:
                     if(i < statementList->size() - 1) dst << "\n";
                 }
             }
-            framePtr->clean(dst);
     }
 };
 
@@ -263,14 +262,18 @@ public:
     }
     
     virtual void printMips(std::ostream& dst, Frame* framePtr = NULL)const override{
+        dst << "\t.set noreorder\n";        
         dst << "\t.text\n";
-        dst << "\t.global ";
+        dst << "\t.align 2 \n";
+        dst << "\t.globl ";
         dst << directDeclarator->getId() << "\n";
         dst << directDeclarator->getId() << ":\n";
         
         Frame frame(dst);
       
         block->printMips(dst, &frame);
+        
+        frame.clean(dst);
     }    
 };
 
@@ -351,6 +354,8 @@ public:
             dst << *id ;
         }
     }
+
+    
 
 protected:
    Type type;

@@ -44,13 +44,13 @@ public:
 
 class ForStatement: public Statement{
 private:
-    NodePtr expr1;
-    NodePtr expr2;
-    NodePtr expr3;
+    const Expr* expr1;
+    const Expr* expr2;
+    const Expr* expr3;
     NodePtr statement;
     
 public:
-    ForStatement(NodePtr _expr1, NodePtr _expr2, NodePtr _expr3, NodePtr _statement)
+    ForStatement(const Expr* _expr1, const Expr* _expr2, const Expr* _expr3, NodePtr _statement)
         :expr1(_expr1), expr2(_expr2), expr3(_expr3), statement(_statement){}
         
     virtual void print(std::ostream& dst) const override{
@@ -72,12 +72,30 @@ public:
     
     virtual void printPy(std::ostream& dst, int depth = 0) const override{}
     
-    virtual ~ForStatement() override{
-        delete expr1;
-        delete expr2;
-        delete expr3;
-        delete statement;
-    }
+    virtual void printMips(std::ostream& dst, Frame* framePtr = NULL)const override{
+        Frame newFrame = *framePtr;
+        std::string COND = makeName("COND");
+        std::string START = makeName("START");
+        std::string e1 = makeName();
+        std::string e2 = makeName();
+        std::string e3 = makeName();        
+        
+        expr1->printMipsE(dst, e1, &newFrame);
+        dst << "b $" << COND << std::endl;       
+        dst << "nop" << std::endl;
+        
+        dst << "$" << START << ":" << std::endl;
+        statement->printMips(dst, &newFrame);
+        expr3->printMipsE(dst, e3, &newFrame);
+        
+        dst << "$" << COND << ":" << std::endl;
+        expr2->printMipsE(dst,e2, &newFrame);
+        newFrame.load(dst, "$t0", e2);
+
+        dst<<"bne $0, $t0, $" << START << std::endl;
+        dst << "nop" << std::endl;
+    }   
+ 
 };
 
 class DoStatement: public Statement{
@@ -157,12 +175,12 @@ public:
 
 class IfStatement: public Statement{
 private:
-    NodePtr expr;
+    const Expr* expr;
     NodePtr statement1;
     NodePtr statement2;
     
 public:
-    IfStatement(NodePtr _expr, NodePtr _statement1, NodePtr _statement2 = NULL)
+    IfStatement(const Expr* _expr, NodePtr _statement1, NodePtr _statement2 = NULL)
         :expr(_expr), statement1(_statement1), statement2(_statement2){}
         
     virtual void print(std::ostream& dst) const override{
@@ -195,13 +213,38 @@ public:
             statement2->printPy(dst,depth+1);
        }
    }
+
+     virtual void printMips(std::ostream& dst, Frame* framePtr = NULL)const override{
+        Frame newFrame = *framePtr;
+        
+        std::string destName = makeName();
+        std::string ELSE = makeName(std::string("ELSE"));
+        std::string END = makeName(std::string("END"));        
+        expr->printMipsE(dst, destName, &newFrame);
+        
+        newFrame.load(dst,"$t0" , destName);
+        dst<<"beq $t0, $0, $"<< ELSE << std::endl;
+        dst << "nop " << std::endl;
+
+        statement1 ->printMips(dst, &newFrame);
+        dst << "b $" << END << std::endl ;
+        dst <<"nop" << std::endl;
+        
+        dst << "$" << ELSE << ":" <<std::endl;
+        statement2 ->printMips(dst,&newFrame);
+        
+        dst << "$" << END << ":" << std::endl;             
+        
+     }
+
+    
 };
 
 class ExprStatement: public Statement{
 private:
-    NodePtr expr;    
+    const Expr* expr;    
 public:
-    ExprStatement(NodePtr _expr)
+    ExprStatement(const Expr* _expr)
         :expr(_expr){}
         
     virtual void print(std::ostream& dst) const override{
@@ -215,6 +258,11 @@ public:
     
     virtual void printPy(std::ostream& dst, int depth = 0) const override{
 	    expr->printPy(dst, depth);
+    }
+    
+    virtual void printMips(std::ostream& dst, Frame* framePtr = NULL)const override{
+        std::string destName = makeName();        
+        expr->printMipsE(dst,destName,framePtr);
     }
     
 };
