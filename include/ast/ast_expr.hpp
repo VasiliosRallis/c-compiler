@@ -146,7 +146,7 @@ public:
             if(dynamic_cast<const PrimaryExpr*>(operand1)){
                 std::string id = dynamic_cast<const PrimaryExpr*>(operand1)->getId();
                 framePtr->store(dst, "$t1", id);
-                framePtr->store(dst, "$t1", destName);
+                dst << "move $t2, $t1\n";
             }else{
                 std::cerr << "Left operand of assignment expr was not a PrimaryExpr\n";
            }

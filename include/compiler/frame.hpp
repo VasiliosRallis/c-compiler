@@ -25,7 +25,7 @@ private:
     
     //This unordered man holds the identifier name which can be the actual name in the c program (e.g. int x; we would
     //store an indetifier a. The int is that address of the frame relative to the $fp
-    std::unordered_map<std::string, int> frameMap;
+    std::vector<std::unordered_map<std::string, int> > scopeMap;
     
     
     void addWords(std::ostream& dst, int n){
@@ -36,9 +36,12 @@ private:
 public:
     Frame(std::ostream& dst){
     
+        std::unordered_map<std::string, int> temp;
+        scopeMap.push_back(temp);
+        
         //Allocate the minumum frame
-        frameMap.insert({"oldFramePointer", 8});
-        frameMap.insert({"returnAddr", 4});
+        scopeMap.front().insert({"oldFramePointer", 8});
+        scopeMap.front().insert({"returnAddr", 4});
         
         freeWords = 0;
         nextFreeAddr = 0;
@@ -50,21 +53,28 @@ public:
     }
     
     void load(std::ostream& dst, const std::string reg, const std::string varName)const{
-        dst << "lw " << reg << ", " << frameMap.at(varName) << "($fp)\n";
+        dst << "lw " << reg << ", " << scopeMap.back().at(varName) << "($fp)\n";
     }
     
     void store(std::ostream& dst, const std::string reg, const std::string varName){
-        if(freeWords == 0) addWords(dst, frameMap.size());
-        bool ok = frameMap.insert({varName, nextFreeAddr}).second;
-        if(!ok){
-            frameMap.erase(varName);
-            frameMap.insert({varName, nextFreeAddr});
-        }
-            
-        nextFreeAddr -= 4;
-        freeWords--;
-        
-        dst << "sw " << reg << ", " << frameMap.at(varName) << "($fp)\n";
+        if(freeWords == 0) addWords(dst, scopeMap.back().size());
+        bool ok = scopeMap.back().insert({varName, nextFreeAddr}).second;
+        if(ok){
+            nextFreeAddr -= 4;
+            freeWords--;
+        }else{
+            //We want to replace the value in the stack and not create a new one
+        }    
+            dst << "sw " << reg << ", " << scopeMap.back().at(varName) << "($fp)\n";
+    }
+    
+    void newScope(){
+        std::unordered_map<std::string, int> temp = scopeMap.back();
+        scopeMap.push_back(temp);
+    }
+    
+    void deleteScope(){
+        scopeMap.pop_back();
     }
        
     void clean(std::ostream& dst)const{

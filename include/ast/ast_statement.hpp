@@ -73,27 +73,28 @@ public:
     virtual void printPy(std::ostream& dst, int depth = 0) const override{}
     
     virtual void printMips(std::ostream& dst, Frame* framePtr = NULL)const override{
-        Frame newFrame = *framePtr;
+        framePtr->newScope();
         std::string COND = makeName("COND");
         std::string START = makeName("START");
         std::string e1 = makeName();
         std::string e2 = makeName();
         std::string e3 = makeName();        
         
-        expr1->printMipsE(dst, e1, &newFrame);
+        expr1->printMipsE(dst,e1,framePtr);
         dst << "b $" << COND << std::endl;       
         dst << "nop" << std::endl;
         
         dst << "$" << START << ":" << std::endl;
-        statement->printMips(dst, &newFrame);
-        expr3->printMipsE(dst, e3, &newFrame);
+        statement->printMips(dst, framePtr);
+        expr3->printMipsE(dst, e3, framePtr);
         
         dst << "$" << COND << ":" << std::endl;
-        expr2->printMipsE(dst,e2, &newFrame);
-        newFrame.load(dst, "$t3", e2);
+        expr2->printMipsE(dst,e2, framePtr);
+        framePtr->load(dst, "$t3", e2);
 
-        dst<<"beq $0, $t3, $" << START << std::endl;
+        dst<<"bne $0, $t3, $" << START << std::endl;
         dst << "nop" << std::endl;
+        framePtr->deleteScope();
     }   
  
 };
@@ -215,28 +216,29 @@ public:
    }
 
      virtual void printMips(std::ostream& dst, Frame* framePtr = NULL)const override{
-        Frame newFrame = *framePtr;
+        framePtr->newScope();
         
         std::string destName = makeName();
         std::string ELSE = makeName(std::string("ELSE"));
         std::string END = makeName(std::string("END"));        
-        expr->printMipsE(dst, destName, &newFrame);
+        expr->printMipsE(dst, destName, framePtr);
         
-        newFrame.load(dst,"$t0" , destName);
+        framePtr->load(dst,"$t0" , destName);
         dst<<"beq $t0, $0, $"<< ELSE << std::endl;
         dst << "nop " << std::endl;
 
-        statement1 ->printMips(dst, &newFrame);
+        statement1 ->printMips(dst, framePtr);
         dst << "b $" << END << std::endl ;
         dst <<"nop" << std::endl;
 
         dst << "$" << ELSE << ":" <<std::endl;        
         if(statement2 != NULL){
-            statement2 ->printMips(dst,&newFrame);
+            statement2 ->printMips(dst, framePtr);
         }
 
         dst << "$" << END << ":" << std::endl;             
         
+        framePtr->deleteScope();
      }
 
     

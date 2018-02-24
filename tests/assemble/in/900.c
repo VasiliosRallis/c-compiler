@@ -1,7 +1,7 @@
-int main() {
-    int i =1;
-    for( i; i != 5; i+1){
-        i = i+1;
+int main(){
+    int a = 1;
+    for(0; a!= 10; 0){
+        a = a + 1;
     }
-    return i;   
+    return 15;
 }
