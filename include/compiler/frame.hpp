@@ -56,7 +56,7 @@ public:
         dst << "lw " << reg << ", " << scopeMap.back().at(varName) << "($fp)\n";
     }
     
-    void store(std::ostream& dst, const std::string reg, const std::string varName){
+    void store(std::ostream& dst, const std::string reg, const std::string varName, bool force = false){
         if(freeWords == 0) addWords(dst, scopeMap.back().size());
         bool ok = scopeMap.back().insert({varName, nextFreeAddr}).second;
         if(ok){
@@ -64,6 +64,12 @@ public:
             freeWords--;
         }else{
             //We want to replace the value in the stack and not create a new one
+            if(force){
+                scopeMap.back().erase(varName);
+                scopeMap.back().insert({varName, nextFreeAddr});
+                nextFreeAddr -= 4;
+                freeWords--;
+            }
         }    
             dst << "sw " << reg << ", " << scopeMap.back().at(varName) << "($fp)\n";
     }

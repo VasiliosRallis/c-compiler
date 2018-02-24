@@ -75,7 +75,7 @@ public:
         //Temporary store the identifier in $t1
         framePtr->load(dst, "$t0", destName);
         //Store it in the frame
-        framePtr->store(dst, "$t0", *id);
+        framePtr->store(dst, "$t0", *id, true);
     }
 };
 

@@ -3,5 +3,5 @@ int main(){
     for(0; a!= 10; 0){
         a = a + 1;
     }
-    return 15;
+    return a;
 }
