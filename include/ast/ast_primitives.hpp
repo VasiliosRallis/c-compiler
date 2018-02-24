@@ -231,6 +231,7 @@ public:
                     if(i < statementList->size() - 1) dst << "\n";
                 }
             }
+            framePtr->clean(dst);
     }
 };
 
@@ -270,9 +271,6 @@ public:
         Frame frame(dst);
       
         block->printMips(dst, &frame);
-        
-        dst << "li $v0, 2\n";
-        frame.clean(dst);
     }    
 };
 

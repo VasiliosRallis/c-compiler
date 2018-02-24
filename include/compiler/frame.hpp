@@ -11,16 +11,32 @@ static std::string makeName(const std::string& base = "temp"){
     return "__" + base + "__" + std::to_string(gUniqueIndex);
 }
 
+
+//This class will simulate the stack frame of each function when it's called
 class Frame{
 private:
+    //freeWords will idicate how many un allocated words are available in the frame
+    //e.g. If you do addiu $sp, $sp -12 and you allocate $sp+8 you onl have one free frame left ($sp + 4)
+    //This is beacause I'm assuming that we cant write to $sp + 0
     int freeWords;
+    //nextFreeAddr will indicate the next free address that we can write to
+    //This is an address relative to the $fp which remains constant throught the lifetime of the function
     int nextFreeAddr;
+    
+    //This unordered man holds the identifier name which can be the actual name in the c program (e.g. int x; we would
+    //store an indetifier a. The int is that address of the frame relative to the $fp
     std::unordered_map<std::string, int> frameMap;
     
+    
+    void addWords(std::ostream& dst, int n){
+        int bytes = n*4;
+        dst << "addiu $sp, $sp, -" << bytes << "\n";
+        freeWords += n;
+    }  
 public:
     Frame(std::ostream& dst){
+    
         //Allocate the minumum frame
-       
         frameMap.insert({"oldFramePointer", 8});
         frameMap.insert({"returnAddr", 4});
         
@@ -33,18 +49,12 @@ public:
         dst << "move $fp, $sp\n";
     }
     
-    void addWords(std::ostream& dst, int n){
-        int bytes = n*4;
-        dst << "addiu $sp, $sp, -" << bytes << "\n";
-        freeWords += n;
-    }   
-    
     void load(std::ostream& dst, const std::string reg, const std::string varName)const{
         dst << "lw " << reg << ", " << frameMap.at(varName) << "($fp)\n";
     }
     
     void store(std::ostream& dst, const std::string reg, const std::string varName){
-        if(freeWords == 0) addWords(dst, 1);
+        if(freeWords == 0) addWords(dst, frameMap.size());
         frameMap.insert({varName, nextFreeAddr});
         nextFreeAddr -= 4;
         freeWords--;
