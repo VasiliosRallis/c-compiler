@@ -34,6 +34,19 @@ public:
             dynamic_cast<const Expr*>(expr)->printMipsE(dst,destName,framePtr);        
         }
     }
+    
+    std::string getId()const{
+        if(dynamic_cast<const StringNode*>(expr)){
+            std::string id = dynamic_cast<const StringNode*>(expr) ->getId() ;
+            return id;
+        }   
+        else{
+            std::cerr << "Tried to call getId on PrimaryExpr that wasnt stringNode" << std::endl;
+            return "error" ;   
+        } 
+    
+    }
+    
 };
 
 class UnaryExpr: public Expr{
@@ -130,12 +143,12 @@ public:
             dst << "sltu $t2, $0, $t2" << std::endl;    
         }
         else if(oper->getId() == "="){
-            if(dynamic_cast<const StringNode*>(operand1)){
-                std::string id = dynamic_cast<const StringNode*>(operand1)->getId();
+            if(dynamic_cast<const PrimaryExpr*>(operand1)){
+                std::string id = dynamic_cast<const PrimaryExpr*>(operand1)->getId();
                 framePtr->store(dst, "$t1", id);
                 framePtr->store(dst, "$t1", destName);
             }else{
-                std::cerr << "Left operand of assignment expr was not a StringNode\n";
+                std::cerr << "Left operand of assignment expr was not a PrimaryExpr\n";
            }
         }
 

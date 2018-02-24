@@ -1,9 +1,7 @@
 int main() {
-    int a=3;
-    int i =0;
+    int i =1;
     for( i; i != 5; i+1){
-        a = a+i;
         i = i+1;
     }
-    return a;   
+    return i;   
 }

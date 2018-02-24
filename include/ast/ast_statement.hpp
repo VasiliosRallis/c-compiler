@@ -90,9 +90,9 @@ public:
         
         dst << "$" << COND << ":" << std::endl;
         expr2->printMipsE(dst,e2, &newFrame);
-        newFrame.load(dst, "$t0", e2);
+        newFrame.load(dst, "$t3", e2);
 
-        dst<<"bne $0, $t0, $" << START << std::endl;
+        dst<<"beq $0, $t3, $" << START << std::endl;
         dst << "nop" << std::endl;
     }   
  
@@ -229,10 +229,12 @@ public:
         statement1 ->printMips(dst, &newFrame);
         dst << "b $" << END << std::endl ;
         dst <<"nop" << std::endl;
-        
-        dst << "$" << ELSE << ":" <<std::endl;
-        statement2 ->printMips(dst,&newFrame);
-        
+
+        dst << "$" << ELSE << ":" <<std::endl;        
+        if(statement2 != NULL){
+            statement2 ->printMips(dst,&newFrame);
+        }
+
         dst << "$" << END << ":" << std::endl;             
         
      }
