@@ -25,6 +25,7 @@
   const Block* block;
   const Expr* expr;
   const Operator* oper;
+  const ExprStatement* exprStatement;
 }
 
 //Keywords
@@ -46,7 +47,7 @@
 %type <node> PROGRAM EXT_DECLARATION VAR_TYPE FUNCTION_DEF DECLARATION INIT_DECLARATOR
 %type <dirDeclPtr> DIRECT_DECLARATOR
 %type <block> BLOCK
-%type <node> STATEMENT EXPR_STATEMENT SELECTION_STATEMENT ITERATION_STATEMENT PARAMETER_DECL
+%type <node> STATEMENT SELECTION_STATEMENT ITERATION_STATEMENT PARAMETER_DECL
 %type <node> TYPE_QUALIFIER DECL_SPECIFIER STOR_CLASS_SPEC
 %type <oper> ASSIGNMENT_OPER
 %type <node>  LABELED_STATEMENT JUMP_STATEMENT
@@ -54,6 +55,7 @@
 //%type <nodeVector> IDENTIFIER_LIST
 %type <expr> ASSIGNMENT_EXPR CONDITIONAL_EXPR UNARY_EXPR POSTFIX_EXPR CAST_EXPR LOGICAL_OR_EXPR LOGICAL_AND_EXPR PRIMARY_EXPR 
 %type <expr> INCLUSIVE_OR_EXPR EXCLUSIVE_OR_EXPR AND_EXPR EQUAL_EXPR RELATIONAL_EXPR SHIFT_EXPR ADDITIVE_EXPR MULT_EXPR EXPR
+%type <exprStatement> EXPR_STATEMENT
 
 %type <string> T_INT_CONSTANT
 %type <string> T_IDENTIFIER T_STR_LIT
@@ -112,11 +114,9 @@ SELECTION_STATEMENT: T_IF T_LBRACKET EXPR T_RBRACKET STATEMENT {$$ = new IfState
                    
 ITERATION_STATEMENT: T_WHILE T_LBRACKET EXPR T_RBRACKET STATEMENT                                   {$$ = new WhileStatement($3, $5);}
                    | T_DO STATEMENT T_WHILE T_LBRACKET EXPR T_RBRACKET T_SEMICOLON                  {$$ = new DoStatement($2, $5);}
-                   | T_FOR T_LBRACKET T_SEMICOLON T_SEMICOLON T_RBRACKET STATEMENT                  {$$ = new ForStatement(NULL,NULL,NULL,$6);}
-                   | T_FOR T_LBRACKET EXPR T_SEMICOLON T_SEMICOLON T_RBRACKET STATEMENT             {$$ = new ForStatement($3,NULL,NULL,$7);}
-                   | T_FOR T_LBRACKET EXPR T_SEMICOLON EXPR T_SEMICOLON T_RBRACKET STATEMENT        {$$ = new ForStatement($3,$5,NULL,$8);}
-                   | T_FOR T_LBRACKET EXPR T_SEMICOLON EXPR T_SEMICOLON EXPR T_RBRACKET STATEMENT   {$$ = new ForStatement($3,$5,$7,$9);}
-
+                   | T_FOR T_LBRACKET EXPR_STATEMENT EXPR_STATEMENT T_RBRACKET STATEMENT            {$$ = new ForStatement($3, $4, NULL, $6);}
+                   | T_FOR T_LBRACKET EXPR_STATEMENT EXPR_STATEMENT EXPR T_RBRACKET STATEMENT       {$$ = new ForStatement($3, $4, $5, $7);}
+                   
 EXPR: ASSIGNMENT_EXPR {$$ = $1;} //Add more
 
 ASSIGNMENT_EXPR: CONDITIONAL_EXPR {$$ = $1;}

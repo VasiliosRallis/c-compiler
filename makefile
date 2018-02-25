@@ -32,4 +32,3 @@ clean :
 	-rm src/parser/*.tab.*
 	-rm -r tests/c/out
 	-rm -r tests/python/out
-

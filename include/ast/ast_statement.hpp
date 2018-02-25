@@ -1,6 +1,40 @@
 #ifndef ast_statement_hpp
 #define ast_statement_hpp
 
+class ExprStatement: public Statement{
+private:
+    const Expr* expr;    
+public:
+    ExprStatement(const Expr* _expr)
+        :expr(_expr){}
+        
+    virtual void print(std::ostream& dst) const override{
+        if(expr != NULL){
+            expr->print(dst);
+            dst << ";";
+        }else{
+            dst << ";";
+        }
+    }
+    
+    virtual void printPy(std::ostream& dst, int depth = 0) const override{
+	    if(expr != NULL) expr->printPy(dst, depth);
+    }
+    
+    virtual void printMips(std::ostream& dst, Frame* framePtr = NULL)const override{
+        if(expr != NULL){
+            std::string destName = makeName();        
+            expr->printMipsE(dst,destName,framePtr);
+        }
+    }
+    
+    //Expr Statement will also have a printMipsE function...
+    void printMipsE(std::ostream& dst, std::string& destName, Frame* framePtr = NULL)const{
+        if (expr !=NULL) expr->printMipsE(dst, destName, framePtr);
+    }
+    
+};
+
 class JumpStatement: public Statement{
 private:
     StrPtr str1;
@@ -44,56 +78,54 @@ public:
 
 class ForStatement: public Statement{
 private:
-    const Expr* expr1;
-    const Expr* expr2;
-    const Expr* expr3;
-    NodePtr statement;
+    const ExprStatement* state1;
+    const ExprStatement* state2;
+    const Expr* expr;
+    NodePtr state3;
     
 public:
-    ForStatement(const Expr* _expr1, const Expr* _expr2, const Expr* _expr3, NodePtr _statement)
-        :expr1(_expr1), expr2(_expr2), expr3(_expr3), statement(_statement){}
+    ForStatement(const ExprStatement* _state1, const ExprStatement* _state2, const Expr* _expr, NodePtr _state3)
+        :state1(_state1), state2(_state2), expr(_expr), state3(_state3){}
         
     virtual void print(std::ostream& dst) const override{
         dst << "for(";
-        if(expr1 != NULL){
-            expr1->print(dst);
-        }
-        dst << ";";
-        if(expr2 != NULL){
-            expr2->print(dst);
-        }
-        dst << ";";
-        if(expr3 != NULL){
-            expr3->print(dst);
+        state1->print(dst);
+        state2->print(dst);
+        if(expr != NULL){
+            expr->print(dst);
         }
         dst << ")";
-        statement->print(dst);
+        state3->print(dst);
     }
     
     virtual void printPy(std::ostream& dst, int depth = 0) const override{}
     
     virtual void printMips(std::ostream& dst, Frame* framePtr = NULL)const override{
         framePtr->newScope();
+        dst << "###### START OF FOR LOOP ######\n";
+        
         std::string COND = makeName("COND");
         std::string START = makeName("START");
-        std::string e1 = makeName();
-        std::string e2 = makeName();
-        std::string e3 = makeName();        
+        std::string condition = makeName("condition");
+        std::string exprName = makeName();        
         
-        expr1->printMipsE(dst,e1,framePtr);
+        state1->printMips(dst,framePtr);
         dst << "b $" << COND << std::endl;       
         dst << "nop" << std::endl;
         
         dst << "$" << START << ":" << std::endl;
-        statement->printMips(dst, framePtr);
-        expr3->printMipsE(dst, e3, framePtr);
+        state3->printMips(dst, framePtr);
+        
+        if(expr != NULL) expr->printMipsE(dst, exprName, framePtr);
         
         dst << "$" << COND << ":" << std::endl;
-        expr2->printMipsE(dst,e2, framePtr);
-        framePtr->load(dst, "$t3", e2);
+        state2->printMipsE(dst, condition, framePtr);
+        framePtr->load(dst, "$t0", condition);
 
-        dst<<"bne $0, $t3, $" << START << std::endl;
+        dst<<"bne $0, $t0, $" << START << std::endl;
         dst << "nop" << std::endl;
+   
+        dst << "###### END OF FOR LOOP ######";
         framePtr->deleteScope();
     }   
  
@@ -122,11 +154,11 @@ public:
 
 class WhileStatement: public Statement{
 private:
-    NodePtr expr;
+    const Expr* expr;
     NodePtr statement;
     
 public:
-    WhileStatement(NodePtr _expr, NodePtr _statement)
+    WhileStatement(const Expr* _expr, NodePtr _statement)
         :expr(_expr), statement(_statement){}
         
         
@@ -147,6 +179,29 @@ public:
         statement->printPy(dst,depth+1); 
 
     }
+    
+    virtual void printMips(std::ostream& dst, Frame* framePtr = NULL)const override{
+        framePtr->newScope();
+        dst << "###### START OF WHILE LOOP ######\n";
+        std::string COND = makeName("COND");
+        std::string START = makeName("START");
+        std::string condition = makeName("condition");
+        
+        dst << "b $" << COND << std::endl;       
+        dst << "nop" << std::endl;
+        
+        dst << "$" << START << ":" << std::endl;
+        statement->printMips(dst, framePtr);
+        
+        dst << "$" << COND << ":" << std::endl;
+        expr->printMipsE(dst, condition, framePtr);
+        framePtr->load(dst, "$t0", condition);
+        dst<<"bne $0, $t0, $" << START << std::endl;
+        dst << "nop" << std::endl;
+        
+        dst << "###### END OF WHILE LOOP ######";
+        framePtr->deleteScope();
+    }    
 
 };
 
@@ -241,33 +296,6 @@ public:
         framePtr->deleteScope();
      }
 
-    
-};
-
-class ExprStatement: public Statement{
-private:
-    const Expr* expr;    
-public:
-    ExprStatement(const Expr* _expr)
-        :expr(_expr){}
-        
-    virtual void print(std::ostream& dst) const override{
-        if(expr != NULL){
-            expr->print(dst);
-            dst << ";";
-        }else{
-            dst << ";";
-        }
-    }
-    
-    virtual void printPy(std::ostream& dst, int depth = 0) const override{
-	    expr->printPy(dst, depth);
-    }
-    
-    virtual void printMips(std::ostream& dst, Frame* framePtr = NULL)const override{
-        std::string destName = makeName();        
-        expr->printMipsE(dst,destName,framePtr);
-    }
     
 };
 
