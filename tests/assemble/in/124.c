@@ -1,11 +1,11 @@
 int main(){
     int a = 2;
-    int b = -5;    
+    int b = 2;    
     if(a >= b){
-        return b;
+        return 1;
     }
     else{
-        return a;
+        return 2;
     }
 
 }
