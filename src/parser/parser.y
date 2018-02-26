@@ -167,9 +167,9 @@ CAST_EXPR: UNARY_EXPR {$$ = $1;}
          | T_LBRACKET VAR_TYPE T_RBRACKET CAST_EXPR {$$ = new CastExpr($2, $4);} //Temporary use VarType instead of TYPE_NAME
                        
 UNARY_EXPR: POSTFIX_EXPR            {$$ = $1;}
-          | T_INCREMENT UNARY_EXPR  {$$ = new UnaryExpr($1,$2);}
-          | T_DECREMENT UNARY_EXPR  {$$ = new UnaryExpr($1,$2);}
-          | UNARY_OPER CAST_EXPR    {$$ = new UnaryExpr($1,$2);} //Add more
+          | T_INCREMENT POSTFIX_EXPR  {$$ = new UnaryExpr($1,$2);}
+          | T_DECREMENT POSTFIX_EXPR  {$$ = new UnaryExpr($1,$2);}
+          | UNARY_OPER POSTFIX_EXPR    {$$ = new UnaryExpr($1,$2);} //Add more
 
 UNARY_OPER: T_AMPERSAND     {$$ = $1;}
           | T_MULT          {$$ = $1;}

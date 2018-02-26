@@ -35,6 +35,23 @@ public:
         }
     }
     
+    void printMipsENegate(std::ostream& dst, const std::string& destName, Frame* framePtr = NULL)const{
+	    if(dynamic_cast<const IntConst*>(expr)){
+	        int id = dynamic_cast<const IntConst*>(expr)->getId();
+	        dst << "li $t0, -" << id << "\n";
+	        framePtr->store(dst, "$t0", destName);
+	    }
+	    else if(dynamic_cast<const StringNode*>(expr)){
+	        std::string id = dynamic_cast<const StringNode*>(expr)->getId();
+	        framePtr->load(dst, "$t0", id);
+            dst << "sub $t0, $0, $t0" << std::endl;     //Negate variable value stored in $t0
+	        framePtr->store(dst, "$t0", destName);
+        }
+        else if (dynamic_cast<const Expr*>(expr)){
+            dynamic_cast<const Expr*>(expr)->printMipsE(dst,destName,framePtr);        
+        }
+    }
+    
     std::string getId()const{
         if(dynamic_cast<const StringNode*>(expr)){
             std::string id = dynamic_cast<const StringNode*>(expr) ->getId() ;
@@ -52,9 +69,9 @@ public:
 class UnaryExpr: public Expr{
 private:
     StrPtr oper;
-    NodePtr postfixExpr;
+    const Expr* postfixExpr;
 public:
-    UnaryExpr(StrPtr _oper, NodePtr _postfixExpr)
+    UnaryExpr(StrPtr _oper, const Expr* _postfixExpr)
         :oper(_oper), postfixExpr(_postfixExpr){}
         
     virtual void print(std::ostream& dst) const override{
@@ -62,7 +79,16 @@ public:
         postfixExpr->print(dst);
     }
     
-    virtual void printPy(std::ostream& dst, int depth = 0)const override{}
+    virtual void printPy(std::ostream& dst, int depth = 0)const override{
+        dst << *oper;
+        postfixExpr->printPy(dst);        
+    }
+    
+    virtual void printMipsE(std::ostream& dst, const std::string& destName, Frame* framePtr = NULL)const override{
+        if(*oper == "-"){            
+            postfixExpr->printMipsENegate(dst,destName,framePtr);
+        }
+    }
 };
 
 class ConditionalExpr: public Expr{
@@ -141,6 +167,17 @@ public:
         else if (oper->getId() == "!=") {
             dst << "xor $t2, $t0, $t1" << std::endl;
             dst << "sltu $t2, $0, $t2" << std::endl;    
+        }
+        else if (oper->getId() == "<") {
+            dst << " slt $t2, $t0, $t1" << std::endl;
+        }
+        else if (oper->getId() == "<=") {
+            dst << " slt $t2, $t0, $t1" << std::endl; // if t0<t1, t2 is 1
+
+            dst << "xor $t3, $t0, $t1" << std::endl;
+            dst << "sltu $t3, $t3, 1" << std::endl;     // if t0 == t1, t3 is 0 and slt makes t3 = 1
+
+            dst << "or $t2, $t2, $t3" << std::endl;     // either one is true means <= is true
         }
         else if(oper->getId() == "="){
             if(dynamic_cast<const PrimaryExpr*>(operand1)){

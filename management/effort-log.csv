@@ -3,5 +3,8 @@ Date,		    Effort,		Developers,	    Milestones
 04/02/2018,	    10,		    yhl15;vgr16,	BasicCParser;DeriveManagementPlan
 07/02/2018,     2,          vgr16,          Script_Tests_Lexer_parser
 10/02/2018,     8,          vgr16;yhl15,    Grammar_Hieracrchy
-15/02/2018,     8,          vgr16;yhl15,    Expand_Lexicals_Grammar
+15/02/2018,     10,         vgr16;yhl15,    Expand_Lexicals_Grammar
 17/02/2018,     13,         vgr16;yhl15,    DecentPythonTranslator;TestCtoPythonTranslator
+23/02/2018,     7,          yhl15;vgr16,    CtoPythonTranslator;PlanCodeGenStructure
+24/02/2018,     4,          yhl15;vgr16,    Testsuiteforcomplier
+25/02/2018,     8,          yhl15;vgr16,    StartCodeGen
