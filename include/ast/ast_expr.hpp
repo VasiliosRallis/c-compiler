@@ -169,10 +169,10 @@ public:
             dst << "sltu $t2, $0, $t2" << std::endl;    
         }
         else if (oper->getId() == "<") {
-            dst << " slt $t2, $t0, $t1" << std::endl;
+            dst << "slt $t2, $t0, $t1" << std::endl;
         }
         else if (oper->getId() == "<=") {
-            dst << " slt $t2, $t0, $t1" << std::endl; // if t0<t1, t2 is 1
+            dst << "slt $t2, $t0, $t1" << std::endl; // if t0<t1, t2 is 1
 
             dst << "xor $t3, $t0, $t1" << std::endl;
             dst << "sltu $t3, $t3, 1" << std::endl;     // if t0 == t1, t3 is 0 and slt makes t3 = 1
@@ -180,15 +180,21 @@ public:
             dst << "or $t2, $t2, $t3" << std::endl;     // either one is true means <= is true
         }
         else if (oper->getId() == ">") {
-            dst << " slt $t2, $t1, $t0" << std::endl;
+            dst << "slt $t2, $t1, $t0" << std::endl;
         }
         else if (oper->getId() == ">=") {
-            dst << " slt $t2, $t1, $t0" << std::endl; // if t0>t1, t1<t0 and thus t2 is 1
+            dst << "slt $t2, $t1, $t0" << std::endl; // if t0>t1, t1<t0 and thus t2 is 1
 
             dst << "xor $t3, $t0, $t1" << std::endl;
             dst << "sltu $t3, $t3, 1" << std::endl;     // if t0 == t1, t3 is 0 and slt makes t3 = 1
 
             dst << "or $t2, $t2, $t3" << std::endl;     // either one is true means >= is true
+        }
+        else if (oper->getId() == "<<") {
+            dst << "sllv $t2, $t0, $t1" << std::endl;
+        }
+        else if (oper->getId() == ">>") {
+            dst << "srav $t2, $t0, $t1" << std::endl;   // if unsigned we have to use srlv instead
         }
         else if(oper->getId() == "="){
             if(dynamic_cast<const PrimaryExpr*>(operand1)){
