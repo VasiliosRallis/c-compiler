@@ -6,72 +6,11 @@
 #include <vector>
 #include <sstream>
 
-#include "compiler/frame.hpp"
+#include "ast_real/ast/node.hpp"
+#include "ast_real/compiler/frame.hpp"
+#include "ast_real/ast/directDeclarator.hpp"
 
 extern std::vector<std::string> g_variables;
-
-class ParameterDeclaration: public Node{
-private:
-    NodePtr n1;
-    NodePtr n2;
-
-public:
-    ParameterDeclaration(NodePtr _n1, NodePtr _n2)
-        :n1(_n1), n2(_n2){}
-    
-    virtual void print(std::ostream& dst)const override{
-        n1->print(dst);
-        dst << " ";
-        if(n2 != NULL) n2->print(dst);
-    }
-    
-    virtual void printPy(std::ostream& dst, int depth = 0)const override{
-        n2->print(dst);
-    }
-    
-};
-
-class DirectDeclarator: public StringNode{
-private:
-    StrPtr s1;
-    const std::vector<const ParameterDeclaration*>* v1;
-    StrPtr s2;
-
-public:
-    DirectDeclarator(StrPtr _id, StrPtr _s1, const std::vector<const ParameterDeclaration*>* _v1, StrPtr _s2)
-        :StringNode(_id), s1(_s1), v1(_v1), s2(_s2){}
-        
-    virtual void print(std::ostream& dst)const override{
-        dst << *id;
-        if(s1 != NULL) dst << *s1;
-        if(v1 != NULL){
-            for(int i(0); i < v1->size(); ++i){
-                v1->at(i)->printPy(dst);
-                if(i < v1->size() - 1) dst << ",";
-            }
-        }
-        if(s2 != NULL) dst << *s2;
-    }
-    
-    virtual void printPy(std::ostream& dst, int depth = 0)const override{
-        for(int i(0); i < depth; ++i) dst << "\t";
-        print(dst);
-    }
-    
-    virtual void printMips(std::ostream& dst, Frame* framePtr)const override{
-        //Set the default value for an unitialized variable to zero
-        framePtr->store(dst, "$zero", *id);
-    }
-    
-    std::string getId()const{
-        return std::string(*id);
-    }
-    
-    const std::vector<const ParameterDeclaration*>* getParameterList()const{
-        return v1;
-    }
-    
-};
 
 class InitDeclarator : public StringNode{
 private:

@@ -4,6 +4,9 @@
 #include <unordered_map>
 #include <string>
 #include <iostream>
+#include <vector>
+
+#include "ast_real/compiler/argTranslator.hpp"
 
 class DirectDeclarator;
 
@@ -22,6 +25,8 @@ private:
     std::vector<std::unordered_map<std::string, int> > scopeMap;
     
     void addWords(std::ostream& dst, int n);
+    
+    ArgTranslator argTranslator;
     
 public:
     Frame(std::ostream& dst, const DirectDeclarator* directDeclarator);

@@ -5,7 +5,9 @@
 #include <iostream>
 #include <string>
 
-#include "ast/stringNode.hpp"
+#include "ast_real/ast/node.hpp"
+#include "ast_real/ast/stringNode.hpp"
+#include "ast_real/ast/parameterDeclaration.hpp"
 
 class ParameterDeclaration;
 
