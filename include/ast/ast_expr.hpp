@@ -52,7 +52,7 @@ public:
         }
     }
     
-    std::string getId()const{
+    virtual std::string getId()const override{
         if(dynamic_cast<const StringNode*>(expr)){
             std::string id = dynamic_cast<const StringNode*>(expr) ->getId() ;
             return id;
@@ -232,13 +232,13 @@ public:
 
 class PostfixExpr: public Expr{
 private:
-    NodePtr primaryExpr;
+    const Expr* primaryExpr;
     StrPtr oper1;
     VectorPtr argumentExprList;
     StrPtr oper2;
     
 public:
-    PostfixExpr(NodePtr _primaryExpr, StrPtr _oper1, VectorPtr _argumentExprList, StrPtr _oper2)
+    PostfixExpr(const Expr* _primaryExpr, StrPtr _oper1, VectorPtr _argumentExprList, StrPtr _oper2)
         :primaryExpr(_primaryExpr), oper1(_oper1), argumentExprList(_argumentExprList), oper2(_oper2){}
         
     virtual void print(std::ostream& dst)const override{
@@ -258,6 +258,18 @@ public:
     }
     
     virtual void printPy(std::ostream& dst, int depth = 0)const override{}
+    
+    virtual void printMipsE(std::ostream& dst, const std::string& destName, Frame* framePtr = NULL)const{
+        //Check if is is a function call
+        if(*oper1 == "("){
+            //TODO: Save arguments to registers/stack;
+            dst << "jal " << primaryExpr->getId() << std::endl;
+            dst << "nop" << std::endl;
+            
+            //TODO: Think about more than one return variables
+            framePtr->store(dst, "$v0", destName);
+        }
+    }     
 };
   
 class DeclSpecifier: public StringNode{

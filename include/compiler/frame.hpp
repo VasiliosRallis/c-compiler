@@ -11,7 +11,7 @@ static std::string makeName(const std::string& base = "temp"){
     return "__" + base + "__" + std::to_string(gUniqueIndex);
 }
 
-
+class DirectDeclarator;
 //This class will simulate the stack frame of each function when it's called
 class Frame{
 private:
@@ -34,7 +34,7 @@ private:
         freeWords += n;
     }  
 public:
-    Frame(std::ostream& dst){
+    Frame(std::ostream& dst, const DirectDeclarator* directDeclarator){
     
         std::unordered_map<std::string, int> temp;
         scopeMap.push_back(temp);

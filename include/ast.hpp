@@ -6,6 +6,7 @@
 #include "ast/ast_statement.hpp"
 #include "ast/ast_expr.hpp"
 #include "compiler/frame.hpp"
+#include "compiler/argTranslator.hpp"
 
 extern NodePtr parseAST(const char* file);
 

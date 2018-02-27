@@ -26,6 +26,8 @@
   const Expr* expr;
   const Operator* oper;
   const ExprStatement* exprStatement;
+  const ParameterDeclaration* parameterDeclaration;
+  std::vector<const ParameterDeclaration*>* parameterList;
 }
 
 //Keywords
@@ -47,15 +49,17 @@
 %type <node> PROGRAM EXT_DECLARATION VAR_TYPE FUNCTION_DEF DECLARATION INIT_DECLARATOR
 %type <dirDeclPtr> DIRECT_DECLARATOR
 %type <block> BLOCK
-%type <node> STATEMENT SELECTION_STATEMENT ITERATION_STATEMENT PARAMETER_DECL
+%type <node> STATEMENT SELECTION_STATEMENT ITERATION_STATEMENT
 %type <node> TYPE_QUALIFIER DECL_SPECIFIER STOR_CLASS_SPEC
 %type <oper> ASSIGNMENT_OPER
 %type <node>  LABELED_STATEMENT JUMP_STATEMENT
-%type <nodeVector> INIT_DECLARATOR_LIST STATEMENT_LIST DECLR_LIST DECL_SPECIFIER_LIST ARGUMENT_EXPR_LIST PARAMETER_LIST
+%type <nodeVector> INIT_DECLARATOR_LIST STATEMENT_LIST DECLR_LIST DECL_SPECIFIER_LIST ARGUMENT_EXPR_LIST
 //%type <nodeVector> IDENTIFIER_LIST
-%type <expr> ASSIGNMENT_EXPR CONDITIONAL_EXPR UNARY_EXPR POSTFIX_EXPR CAST_EXPR LOGICAL_OR_EXPR LOGICAL_AND_EXPR PRIMARY_EXPR 
+%type <expr> ASSIGNMENT_EXPR CONDITIONAL_EXPR UNARY_EXPR CAST_EXPR LOGICAL_OR_EXPR LOGICAL_AND_EXPR PRIMARY_EXPR POSTFIX_EXPR
 %type <expr> INCLUSIVE_OR_EXPR EXCLUSIVE_OR_EXPR AND_EXPR EQUAL_EXPR RELATIONAL_EXPR SHIFT_EXPR ADDITIVE_EXPR MULT_EXPR EXPR
 %type <exprStatement> EXPR_STATEMENT
+%type <parameterDeclaration> PARAMETER_DECL
+%type <parameterList> PARAMETER_LIST
 
 %type <string> T_INT_CONSTANT
 %type <string> T_IDENTIFIER T_STR_LIT
@@ -94,7 +98,7 @@ DIRECT_DECLARATOR: T_IDENTIFIER                                        {$$ = new
 //		         | DIRECT_DECLARATOR T_LBRACKET IDENTIFIER_LIST T_RBRACKET  {$$ = new DirectDeclarator($1, $2, $3, $4);} // Not sure if need this int f(a,b);
 		         | T_IDENTIFIER T_LBRACKET PARAMETER_LIST T_RBRACKET   {$$ = new DirectDeclarator($1, $2, $3, $4);} // function declaration : int f(int a, int b) ;
 		         
-PARAMETER_LIST: PARAMETER_DECL                          {$$ = new std::vector<NodePtr>{$1};}    // 
+PARAMETER_LIST: PARAMETER_DECL                          {$$ = new std::vector<const ParameterDeclaration*>{$1};}    // 
               | PARAMETER_LIST T_COMMA PARAMETER_DECL   {$$ = $1; $1->push_back($3);}           // Inside brackets of ( int x, int y)
 		
 PARAMETER_DECL: DECL_SPECIFIER                   {$$ = new ParameterDeclaration($1, NULL);}     // NOT SURE IF WE WANT THIS : Inside brackets of ( int )

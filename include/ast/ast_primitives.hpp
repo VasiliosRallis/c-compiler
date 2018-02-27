@@ -10,14 +10,35 @@
 
 extern std::vector<std::string> g_variables;
 
+class ParameterDeclaration: public Node{
+private:
+    NodePtr n1;
+    NodePtr n2;
+
+public:
+    ParameterDeclaration(NodePtr _n1, NodePtr _n2)
+        :n1(_n1), n2(_n2){}
+    
+    virtual void print(std::ostream& dst)const override{
+        n1->print(dst);
+        dst << " ";
+        if(n2 != NULL) n2->print(dst);
+    }
+    
+    virtual void printPy(std::ostream& dst, int depth = 0)const override{
+        n2->print(dst);
+    }
+    
+};
+
 class DirectDeclarator: public StringNode{
 private:
     StrPtr s1;
-    VectorPtr v1;
+    const std::vector<const ParameterDeclaration*>* v1;
     StrPtr s2;
 
 public:
-    DirectDeclarator(StrPtr _id, StrPtr _s1, VectorPtr _v1, StrPtr _s2)
+    DirectDeclarator(StrPtr _id, StrPtr _s1, const std::vector<const ParameterDeclaration*>* _v1, StrPtr _s2)
         :StringNode(_id), s1(_s1), v1(_v1), s2(_s2){}
         
     virtual void print(std::ostream& dst)const override{
@@ -45,6 +66,11 @@ public:
     std::string getId()const{
         return std::string(*id);
     }
+    
+    const std::vector<const ParameterDeclaration*>* getParameterList()const{
+        return v1;
+    }
+    
 };
 
 class InitDeclarator : public StringNode{
@@ -137,27 +163,6 @@ public:
             }
         }
     }
-};
-
-class ParameterDeclaration: public Node{
-private:
-    NodePtr n1;
-    NodePtr n2;
-
-public:
-    ParameterDeclaration(NodePtr _n1, NodePtr _n2)
-        :n1(_n1), n2(_n2){}
-    
-    virtual void print(std::ostream& dst)const override{
-        n1->print(dst);
-        dst << " ";
-        if(n2 != NULL) n2->print(dst);
-    }
-    
-    virtual void printPy(std::ostream& dst, int depth = 0)const override{
-        n2->print(dst);
-    }
-    
 };
 
 class Block: public Node{
@@ -269,7 +274,7 @@ public:
         dst << directDeclarator->getId() << "\n";
         dst << directDeclarator->getId() << ":\n";
         
-        Frame frame(dst);
+        Frame frame(dst, directDeclarator);
       
         block->printMips(dst, &frame);
         
@@ -301,6 +306,11 @@ public:
 	    basicProgram->printPy(dst);
 	    if(dynamic_cast<const Declaration*>(basicProgram))
 	        dynamic_cast<const Declaration*>(basicProgram)->addGlobal();
+    }
+    
+    virtual void printMips(std::ostream& dst, Frame* framePtr = NULL)const override{
+        program->printMips(dst, framePtr);
+        basicProgram->printMips(dst, framePtr);
     }
 };
 
