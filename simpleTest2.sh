@@ -135,7 +135,7 @@ for i in tests/assemble/in/*.c; do
             REF_EXIT=$?
             
             # Compile the .s file generated from our compiler
-            mips-linux-gnu-gcc -std=c89 -march=mips1 -mfp32 -static -O0 tests/assemble/out/$BASENAME.mips.s -o tests/assemble/out/$BASENAME.mips.exe
+            mips-linux-gnu-gcc -w -std=c89 -march=mips1 -mfp32 -static -O0 tests/assemble/out/$BASENAME.mips.s -o tests/assemble/out/$BASENAME.mips.exe
             
             # Pass the .mips.exe through qemu and get exit code
             qemu-mips tests/assemble/out/$BASENAME.mips.exe
