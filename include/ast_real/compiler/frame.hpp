@@ -7,6 +7,8 @@
 #include <vector>
 
 #include "ast_real/compiler/argTranslator.hpp"
+#include "ast_real/ast/node.hpp"
+#include "ast_real/ast/expr.hpp"
 
 class DirectDeclarator;
 
@@ -40,6 +42,8 @@ public:
     void deleteScope();
        
     void clean(std::ostream& dst)const;
+    
+    void saveArguments(std::ostream& dst, VectorPtr argExprList);
 };
 
 static unsigned gUniqueIndex = 0;

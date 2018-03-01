@@ -263,14 +263,7 @@ public:
         //Check if is is a function call
         if(*oper1 == "("){
             //TODO: Save arguments to registers/stack;
-            if(argumentExprList != NULL){
-                for(int i(0); i < argumentExprList->size(); ++i){
-                    const Expr* expr = static_cast<const Expr*>(argumentExprList->at(i));
-                    std::string exprValue = makeName();
-                    expr->printMipsE(dst, exprValue, framePtr);
-                    framePtr->load(dst, std::string("$a").append(std::to_string(i)), exprValue);
-                }
-            }
+            framePtr->saveArguments(dst, argumentExprList);
             dst << "jal " << primaryExpr->getId() << std::endl;
             dst << "nop" << std::endl;
             

@@ -2,6 +2,7 @@
 #define NODE_HPP
 
 #include <iostream>
+#include <vector>
 
 class Frame;
 
@@ -16,5 +17,6 @@ public:
 };
 
 typedef const Node* NodePtr;
+typedef std::vector<NodePtr>* VectorPtr;
 
 #endif

@@ -16,7 +16,7 @@ Frame::Frame(std::ostream& dst, const DirectDeclarator* directDeclarator)
     scopeMap.front().insert({"oldFramePointer", 8});
     scopeMap.front().insert({"returnAddr", 4});
     
-    freeWords = 0;
+    freeWords = 1;
     nextFreeAddr = 0;
     
     dst << "addiu $sp, $sp, -12\n";
@@ -68,3 +68,29 @@ void Frame::clean(std::ostream& dst)const{
     dst << "jr $31\n";
     dst << "nop\n";
 }
+
+void Frame::saveArguments(std::ostream& dst, VectorPtr argumentExprList){
+    //Looks compilcated but we need to do it this way so that the $sp doesn't change
+    if(argumentExprList != NULL){
+        //Vector to hold the names of the Variables of the expressions
+        std::vector<std::string> argumentNames;
+        for(int i(0); i < argumentExprList->size(); ++i){
+            std::string exprName = makeName();
+            argumentNames.push_back(exprName);
+            const Expr* expr = static_cast<const Expr*>(argumentExprList->at(i));
+            expr->printMipsE(dst, argumentNames.back(), this);
+        }
+        
+        //At this point all the expressions have been evaluated and are saved in the stack
+        dst << "addiu $sp, $sp, -" << 4*argumentExprList->size() << std::endl;
+        //From this point $sp can't change!!!
+        for(int i(0); i < argumentNames.size(); ++i){
+            if(i < 4) load(dst, std::string("$a").append(std::to_string(i)), argumentNames.at(i));
+            else{
+                //Store the arguments in the correct position of the frame;
+                load(dst, std::string("$t0"), argumentNames.at(i));
+                dst << "sw $t0, " << 4*(i) << "($sp)" << std::endl;
+            }
+        }
+    }
+}       
