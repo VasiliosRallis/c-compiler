@@ -1,0 +1,11 @@
+bison -v -d src/parser/parser.y -o src/parser/parser.tab.cpp
+src/parser/parser.y: warning: 1 shift/reduce conflict [-Wconflicts-sr]
+g++  -W -Wall -g  -std=c++11 -Wno-unused-function -Wno-sign-compare -Wno-unused-parameter -I include/ -I src/parser/ -I src/lexer/  -c -o src/parser/parser.tab.o src/parser/parser.tab.cpp
+bison -v -d src/parser/parser.y -o src/parser/parser.tab.cpp
+src/parser/parser.y: warning: 1 shift/reduce conflict [-Wconflicts-sr]
+flex -o src/lexer/lexer.yy.cpp src/lexer/lexer.flex  
+src/lexer/lexer.flex:127: warning, rule cannot be matched
+g++  -W -Wall -g  -std=c++11 -Wno-unused-function -Wno-sign-compare -Wno-unused-parameter -I include/ -I src/parser/ -I src/lexer/  -c -o src/lexer/lexer.yy.o src/lexer/lexer.yy.cpp
+g++  -W -Wall -g  -std=c++11 -Wno-unused-function -Wno-sign-compare -Wno-unused-parameter -I include/ -I src/parser/ -I src/lexer/  -c -o src/c_compiler.o src/c_compiler.cpp
+mkdir -p bin
+g++ -W -Wall -g  -std=c++11 -Wno-unused-function -Wno-sign-compare -Wno-unused-parameter -I include/ -I src/parser/ -I src/lexer/ -o bin/c_compiler src/parser/parser.tab.o src/lexer/lexer.yy.o src/c_compiler.o

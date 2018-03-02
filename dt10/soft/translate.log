@@ -1,0 +1,36 @@
+f00, translate, Pass
+f00, compile,   Pass
+f01, translate, Pass
+f01, compile,   Pass
+f02, translate, Pass
+f02, compile,   Fail,   couldn't link
+f03, translate, Pass
+f03, compile,   Fail,   couldn't link
+f04, translate, Pass
+f04, compile,   Pass
+f05, translate, Pass
+f05, compile,   Pass
+f06, translate, Pass
+f06, compile,   Pass
+f07, translate, Pass
+f07, compile,   Fail,   couldn't link
+f08, translate, FAIL,   Expected 3, got 2
+f08, compile,   Fail,   no assembly produced
+f09, translate, Pass
+f09, compile,   Fail,   couldn't link
+f10, translate, Pass
+f10, compile,   Fail,   couldn't link
+f11, translate, Pass
+f11, compile,   Fail,   couldn't link
+f12, translate, Pass
+f12, compile,   Pass
+f13, translate, Pass
+f13, compile,   Pass
+f14, translate, Pass
+f14, compile,   Pass
+f15, translate, Pass
+f15, compile,   Pass
+f16, translate, Pass
+f16, compile,   Pass
+f17, translate, Pass
+f17, compile,   Pass
