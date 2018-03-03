@@ -12,6 +12,7 @@
 #include "ast_real/ast/directDeclarator.hpp"
 
 extern std::vector<std::string> g_variables;
+extern std::vector<std::string> g_mips_var;
 
 class InitDeclarator : public StringNode{
 private:
@@ -42,6 +43,19 @@ public:
         framePtr->load(dst, "$t0", destName);
         //Store it in the frame
         framePtr->store(dst, "$t0", *id, true);
+    }
+    
+    void addGlobalMips(std::ostream& dst)const{
+        dst << "\t.globl\t" << *id << std::endl;
+        dst << "\t.data" << std::endl;
+        dst << "\t.align 2" << std::endl;
+        dst << "\t.size\t" << *id << ", 4" << std::endl;
+        dst << *id << ":" << std::endl;
+        dst << "\t.word\t";
+        asgnExpr->printPy(dst);
+        dst << std::endl;
+        
+        g_mips_var.push_back(*id);
     }
 };
 
@@ -85,12 +99,14 @@ public:
     }
     
     void addGlobal()const{
-        for(int i(0); i < initdeclrList->size(); ++i){
-            if(dynamic_cast<const StringNode*>(initdeclrList->at(i))){
-                dynamic_cast<const StringNode*>(initdeclrList->at(i))->addGlobal();
-            }
-            else if(dynamic_cast<const InitDeclarator*>(initdeclrList->at(i))){
-               dynamic_cast<const InitDeclarator*>(initdeclrList->at(i))->addGlobal();
+        if(initdeclrList != NULL){
+            for(int i(0); i < initdeclrList->size(); ++i){
+                if(dynamic_cast<const StringNode*>(initdeclrList->at(i))){
+                    dynamic_cast<const StringNode*>(initdeclrList->at(i))->addGlobal();
+                }
+                else if(dynamic_cast<const InitDeclarator*>(initdeclrList->at(i))){
+                   dynamic_cast<const InitDeclarator*>(initdeclrList->at(i))->addGlobal();
+                }
             }
         }
     }
@@ -103,6 +119,21 @@ public:
             }
         }
     }
+    
+    void addGlobalMips(std::ostream& dst)const{
+        if(initdeclrList != NULL){
+            for(int i(0); i < initdeclrList->size(); ++i){
+                if(dynamic_cast<const DirectDeclarator*>(initdeclrList->at(i))){
+                    dynamic_cast<const DirectDeclarator*>(initdeclrList->at(i))->addGlobalMips(dst);
+                }
+                else if(dynamic_cast<const InitDeclarator*>(initdeclrList->at(i))){
+                   dynamic_cast<const InitDeclarator*>(initdeclrList->at(i))->addGlobalMips(dst);
+                }
+            }
+        }
+    }
+    
+    
 };
 
 class Block: public Node{
@@ -249,8 +280,16 @@ public:
     }
     
     virtual void printMips(std::ostream& dst, Frame* framePtr = NULL)const override{
-        program->printMips(dst, framePtr);
-        basicProgram->printMips(dst, framePtr);
+        if(dynamic_cast<const Declaration*>(program)){
+            dynamic_cast<const Declaration*>(program)->addGlobalMips(dst);
+        }else{
+            program->printMips(dst);
+        }
+        if(dynamic_cast<const Declaration*>(basicProgram)){
+            dynamic_cast<const Declaration*>(basicProgram)->addGlobalMips(dst);
+        }else{
+            basicProgram->printMips(dst);
+        }
     }
 };
 

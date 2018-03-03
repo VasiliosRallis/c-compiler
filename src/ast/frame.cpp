@@ -29,26 +29,48 @@ void Frame::load(std::ostream& dst, const std::string reg, const std::string var
     try{
         dst << "lw " << reg << ", " << scopeMap.back().at(varName) << "($fp)\n";
     }catch(const std::out_of_range& e){
-        argTranslator.load(dst, reg, varName);
+        try{
+            argTranslator.load(dst, reg, varName);
+        }catch(const std::out_of_range& e){
+            bool isGlobal(false);
+            for(int i(0); i < g_mips_var.size() && !isGlobal; ++i){
+                if(varName == g_mips_var.at(i)) isGlobal = true;
+            }
+            if(!isGlobal) std::cerr << "Couldn't find variable in Global vector (mips)" << std::endl;
+            else{
+                dst << "lui " << reg << ",%hi(" << varName << ")" << std::endl;
+                dst << "lw " << reg <<  ",%lo(" << varName << ")(" << reg << ")" << std::endl;
+            }
+        }      
     }
 }
 
 void Frame::store(std::ostream& dst, const std::string reg, const std::string varName, bool force){
-    if(freeWords == 0) addWords(dst, scopeMap.back().size());
-    bool ok = scopeMap.back().insert({varName, nextFreeAddr}).second;
-    if(ok){
-        nextFreeAddr -= 4;
-        freeWords--;
-    }else{
-        //We want to replace the value in the stack and not create a new one
-        if(force){
-            scopeMap.back().erase(varName);
-            scopeMap.back().insert({varName, nextFreeAddr});
+    bool isGlobal(false);
+    for(int i(0); i < g_mips_var.size() && !isGlobal; ++i){
+        if(varName == g_mips_var.at(i)) isGlobal = true;
+    }
+    if(isGlobal){
+        dst << "lui $t7, %hi(" << varName << ")" << std::endl;
+        dst << "sw " << reg << ",%lo(" << varName << ")($t7)" << std::endl;
+    }
+    else{
+        if(freeWords == 0) addWords(dst, scopeMap.back().size());
+        bool ok = scopeMap.back().insert({varName, nextFreeAddr}).second;
+        if(ok){
             nextFreeAddr -= 4;
             freeWords--;
-        }
-    }    
+        }else{
+            //We want to replace the value in the stack and not create a new one
+            if(force){
+                scopeMap.back().erase(varName);
+                scopeMap.back().insert({varName, nextFreeAddr});
+                nextFreeAddr -= 4;
+                freeWords--;
+            }
+        }    
         dst << "sw " << reg << ", " << scopeMap.back().at(varName) << "($fp)\n";
+    }
 }
 
 void Frame::newScope(){

@@ -33,6 +33,8 @@ public:
     
     const std::vector<const ParameterDeclaration*>* getParameterList()const;
     
+    void addGlobalMips(std::ostream& dst)const;
+    
 };
 
 #endif

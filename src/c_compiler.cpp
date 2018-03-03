@@ -5,6 +5,7 @@
 #include <vector>
 
 std::vector<std::string> g_variables;
+std::vector<std::string> g_mips_var;
 
 int main(int argc, char* argv[]){
     

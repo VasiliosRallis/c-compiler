@@ -10,6 +10,10 @@ class Frame;
 
 #include "ast_real/compiler/argTranslator.hpp"
 #include "ast_real/ast/directDeclarator.hpp"
+#include "ast_real/ast/node.hpp"
+#include "ast_real/ast/expr.hpp"
+
+extern std::vector<std::string> g_mips_var;
 
 class Frame{
 private:
