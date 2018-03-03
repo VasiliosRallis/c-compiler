@@ -89,11 +89,11 @@ for i in tests/python/in/*.c; do
         PASSED=$(( ${PASSED}+1 ));
   
         # Get the exit code of the reference python version
-        python tests/python/in/$BASENAME.py
+        python3 tests/python/in/$BASENAME.py
         REF_P_OUT=$?
     
         # Get the actual python exit code
-        python tests/python/out/$BASENAME.py      
+        python3 tests/python/out/$BASENAME.py      
         GOT_P_OUT=$?
     
         if [[ $REF_P_OUT -ne $GOT_P_OUT ]]; then

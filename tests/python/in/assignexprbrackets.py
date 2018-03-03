@@ -1,5 +1,5 @@
 def main():  
-    a =30/-3 - 40
+    a =(5+3)*8
     return a
 
 # Boilerplat

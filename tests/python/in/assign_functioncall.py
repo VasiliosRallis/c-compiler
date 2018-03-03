@@ -1,6 +1,10 @@
-def main():  
-    a =30/-3 - 40
+def f():   
+  return 10
+
+def main():
+    a = f()
     return a
+
 
 # Boilerplat
 if __name__ == "__main__":
