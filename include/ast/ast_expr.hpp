@@ -10,14 +10,24 @@ public:
         :expr(_expr){}
         
     virtual void print(std::ostream& dst)const override{
-        dst << "(";
-        expr->print(dst);
-        dst << ")";
+        if(dynamic_cast<const Expr*>(expr)){
+            dst << "(";
+            expr->print(dst);
+            dst << ")";
+        }else{
+            expr->print(dst);
+        }   
     }
     
     virtual void printPy(std::ostream& dst, int depth = 0) const override{
-	    expr -> printPy(dst);	
-	}
+        if(dynamic_cast<const Expr*>(expr)){
+            dst << "(";
+            expr->printPy(dst);
+            dst << ")";
+        }else{
+            expr->printPy(dst);
+        }   
+    }
 	
 	virtual void printMipsE(std::ostream& dst, const std::string& destName, Frame* framePtr = NULL)const override{
 	    if(dynamic_cast<const IntConst*>(expr)){
@@ -257,7 +267,21 @@ public:
         }
     }
     
-    virtual void printPy(std::ostream& dst, int depth = 0)const override{}
+    virtual void printPy(std::ostream& dst, int depth = 0)const override{
+        primaryExpr->printPy(dst);
+        if(oper1 != NULL){
+            dst << *oper1;
+        }
+        if(argumentExprList != NULL){
+            for(int i(0); i < argumentExprList->size(); ++i){
+                argumentExprList->at(i)->printPy(dst);
+                if(i < argumentExprList->size() - 1) dst << ",";
+            }
+        }
+        if(oper2 != NULL){
+            dst << *oper2;
+        }
+    }
     
     virtual void printMipsE(std::ostream& dst, const std::string& destName, Frame* framePtr = NULL)const{
         //Check if is is a function call

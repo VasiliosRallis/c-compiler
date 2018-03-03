@@ -56,7 +56,7 @@ public:
         for(int i(0); i < depth; ++i) dst << "\t";
         dst << *str1 << " ";
         if(str2 != NULL) dst << *str2;
-        if(p1 != NULL) p1->print(dst);
+        if(p1 != NULL) p1->printPy(dst);
     }
     
     virtual void printMips(std::ostream& dst, Frame* framePtr = NULL)const override{
