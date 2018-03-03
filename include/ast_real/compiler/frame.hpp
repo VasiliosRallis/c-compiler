@@ -11,6 +11,7 @@
 #include "ast_real/ast/expr.hpp"
 
 class DirectDeclarator;
+class ArgTranslator;
 
 class Frame{
 private:
