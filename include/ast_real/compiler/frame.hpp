@@ -6,12 +6,10 @@
 #include <iostream>
 #include <vector>
 
-#include "ast_real/compiler/argTranslator.hpp"
-#include "ast_real/ast/node.hpp"
-#include "ast_real/ast/expr.hpp"
+class Frame;
 
-class DirectDeclarator;
-class ArgTranslator;
+#include "ast_real/compiler/argTranslator.hpp"
+#include "ast_real/ast/directDeclarator.hpp"
 
 class Frame{
 private:

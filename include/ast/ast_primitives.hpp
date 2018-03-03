@@ -7,6 +7,7 @@
 #include <sstream>
 
 #include "ast_real/ast/node.hpp"
+#include "ast_real/ast/expr.hpp"
 #include "ast_real/compiler/frame.hpp"
 #include "ast_real/ast/directDeclarator.hpp"
 

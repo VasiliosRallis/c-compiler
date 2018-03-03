@@ -4,10 +4,10 @@
 #include <iostream>
 #include <string>
 
+class ParameterDeclaration;
+
 #include "ast_real/ast/node.hpp"
 #include "ast_real/ast/directDeclarator.hpp"
-
-class DirectDeclarator;
 
 class ParameterDeclaration: public Node{
 private:

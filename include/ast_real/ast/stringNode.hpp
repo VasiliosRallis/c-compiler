@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 
+class StringNode;
+
 #include "ast_real/ast/node.hpp"
 
 extern std::vector<std::string> g_variables;

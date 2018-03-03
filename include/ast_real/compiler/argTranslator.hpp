@@ -6,6 +6,8 @@
 #include <iostream>
 #include <unordered_map>
 
+class ArgTranslator;
+
 #include "ast_real/ast/directDeclarator.hpp"
 
 class ArgTranslator{

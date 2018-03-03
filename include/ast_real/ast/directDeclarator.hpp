@@ -5,10 +5,12 @@
 #include <iostream>
 #include <string>
 
-#include "ast_real/ast/node.hpp"
+class DirectDeclarator;
+#include "ast_real/compiler/frame.hpp"
 #include "ast_real/ast/stringNode.hpp"
 #include "ast_real/ast/parameterDeclaration.hpp"
-#include "ast_real/compiler/frame.hpp"
+
+
 
 class ParameterDeclaration;
 
