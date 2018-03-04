@@ -38,14 +38,19 @@ public:
     }
     
     virtual void printMips(std::ostream& dst, Frame* framePtr)const override{
-        //Generate a unique name
-        std::string destName = makeName();
-        //Ask the expression to evaluate itself and store its value in the frame, with destName as it's identifier
-        asgnExpr->printMipsE(dst, destName, framePtr);
-        //Temporary store the identifier in $t1
-        framePtr->load(dst, "$t0", destName);
-        //Store it in the frame
-        framePtr->store(dst, "$t0", directDeclarator->getId(), true);
+        if(asgnExpr != NULL){
+            //Generate a unique name
+            std::string destName = makeName();
+            //Ask the expression to evaluate itself and store its value in the frame, with destName as it's identifier
+            asgnExpr->printMipsE(dst, destName, framePtr);
+            //Temporary store the identifier in $t1
+            framePtr->load(dst, "$t0", destName);
+            //Store it in the frame
+            framePtr->store(dst, "$t0", directDeclarator->getId(), true);
+        }
+        if(exprList != NULL){
+            framePtr->storeArray(dst, directDeclarator->getId(), exprList, true);
+        }
     }
     
     void addGlobalMips(std::ostream& dst)const{
@@ -209,7 +214,14 @@ public:
             }
             if(statementList != NULL){
                 for(int i(0); i < statementList->size(); ++i){
-                    statementList->at(i)->printMips(dst, framePtr);
+                    if(dynamic_cast<const Block*>(statementList->at(i))){ 
+                        std::cerr << "Double BLOCK HIT " << std::endl;
+                        framePtr->newScope();
+                        statementList->at(i)->printMips(dst, framePtr);
+                        framePtr->deleteScope();
+                    }else{
+                        statementList->at(i)->printMips(dst, framePtr);
+                    }
                     if(i < statementList->size() - 1) dst << "\n";
                 }
             }

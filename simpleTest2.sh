@@ -110,7 +110,7 @@ done
 
 echo ""
 echo "Running compiler to assembly tests"
-echo "========================================"
+echo "=================================================="
 mkdir -p tests/assemble/out
 for i in tests/assemble/in/*.c; do
     BASENAME=$(basename $i .c);

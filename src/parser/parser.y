@@ -94,12 +94,14 @@ INIT_DECLARATOR_LIST: INIT_DECLARATOR                               {$$ = new st
 
 INIT_DECLARATOR: DIRECT_DECLARATOR                          {$$ = $1;}                                   // int x;
 		       | DIRECT_DECLARATOR T_EQUAL ASSIGNMENT_EXPR  {$$ = new InitDeclarator($1,$3);}            // int x =5
-		       | DIRECT_DECLARATOR T_EQUAL T_RCURLBRACKET ARGUMENT_EXPR_LIST T_LCURLBRACKET {$$ = new InitDeclarator($1, NULL, $4);}
+		       | DIRECT_DECLARATOR T_EQUAL T_LCURLBRACKET ARGUMENT_EXPR_LIST T_RCURLBRACKET {$$ = new InitDeclarator($1, NULL, $4);}
 
-DIRECT_DECLARATOR: T_IDENTIFIER                                        {$$ = new DirectDeclarator($1, NULL, NULL, NULL);} 
-		         | T_IDENTIFIER T_LBRACKET T_RBRACKET                  {$$ = new DirectDeclarator($1, $2, NULL, $3);}// function declaration : int f() ;
+DIRECT_DECLARATOR: T_IDENTIFIER                                             {$$ = new DirectDeclarator($1, NULL, NULL, NULL);} 
+		         | T_IDENTIFIER T_LBRACKET T_RBRACKET                       {$$ = new DirectDeclarator($1, $2, NULL, $3);}// function declaration : int f() ;
 //		         | DIRECT_DECLARATOR T_LBRACKET IDENTIFIER_LIST T_RBRACKET  {$$ = new DirectDeclarator($1, $2, $3, $4);} // Not sure if need this int f(a,b);
-		         | T_IDENTIFIER T_LBRACKET PARAMETER_LIST T_RBRACKET   {$$ = new DirectDeclarator($1, $2, $3, $4);} // function declaration : int f(int a, int b) ;
+		         | T_IDENTIFIER T_LBRACKET PARAMETER_LIST T_RBRACKET        {$$ = new DirectDeclarator($1, $2, $3, $4);} // function declaration : int f(int a, int b) ;
+		         | T_IDENTIFIER T_SQUARE_LBRACKET EXPR T_SQUARE_RBRACKET    {$$ = new DirectDeclarator($1, $2, NULL, $4);}
+		         | T_IDENTIFIER T_SQUARE_LBRACKET T_SQUARE_RBRACKET         {$$ = new DirectDeclarator($1, $2, NULL, $3);}
 		         
 PARAMETER_LIST: PARAMETER_DECL                          {$$ = new std::vector<const ParameterDeclaration*>{$1};}    // 
               | PARAMETER_LIST T_COMMA PARAMETER_DECL   {$$ = $1; $1->push_back($3);}           // Inside brackets of ( int x, int y)

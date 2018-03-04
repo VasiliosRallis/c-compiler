@@ -1,6 +1,8 @@
 #ifndef ast_expr_hpp
 #define ast_expr_hpp
 
+#include "ast_real/ast/postfixExpr.hpp"
+
 class PrimaryExpr: public Expr{
 private:
     NodePtr expr; //This can be everything a stringConst an intConst (might lead to future issues)
@@ -147,7 +149,6 @@ public:
         std::string n1 = makeName();
         std::string n2 = makeName();
         operand1->printMipsE(dst,n1,framePtr);
-        std::cerr << "Was here" << std::endl;
         operand2->printMipsE(dst,n2,framePtr);
         
         framePtr->load(dst,"$t0",n1);
@@ -211,8 +212,13 @@ public:
                 std::string id = dynamic_cast<const PrimaryExpr*>(operand1)->getId();
                 framePtr->store(dst, "$t1", id);
                 dst << "move $t2, $t1\n";
-            }else{
-                std::cerr << "Left operand of assignment expr was not a PrimaryExpr\n";
+            }else if(dynamic_cast<const PostfixExpr*>(operand1)){
+                std::string arrayName = dynamic_cast<const PostfixExpr*>(operand1)->getId();
+                std::string indexName = makeName();
+                dynamic_cast<const PostfixExpr*>(operand1)->evaluateArgument(dst, indexName, framePtr);
+                framePtr->load(dst, "$t0", indexName);
+                framePtr->storeArrayElement(dst, "$t1", arrayName, "$t0");
+                dst << "move $t2, $t1" << std::endl;
            }
         }
 
@@ -238,63 +244,6 @@ public:
     }
    
    virtual void printPy(std::ostream& dst, int depth = 0)const override{}
-};
-
-class PostfixExpr: public Expr{
-private:
-    const Expr* primaryExpr;
-    StrPtr oper1;
-    const std::vector<const Expr*>* argumentExprList;
-    StrPtr oper2;
-    
-public:
-    PostfixExpr(const Expr* _primaryExpr, StrPtr _oper1, const std::vector<const Expr*>* _argumentExprList, StrPtr _oper2)
-        :primaryExpr(_primaryExpr), oper1(_oper1), argumentExprList(_argumentExprList), oper2(_oper2){}
-        
-    virtual void print(std::ostream& dst)const override{
-        primaryExpr->print(dst);
-        if(oper1 != NULL){
-            dst << *oper1;
-        }
-        if(argumentExprList != NULL){
-            for(int i(0); i < argumentExprList->size(); ++i){
-                argumentExprList->at(i)->print(dst);
-                if(i < argumentExprList->size() - 1) dst << ",";
-            }
-        }
-        if(oper2 != NULL){
-            dst << *oper2;
-        }
-    }
-    
-    virtual void printPy(std::ostream& dst, int depth = 0)const override{
-        primaryExpr->printPy(dst);
-        if(oper1 != NULL){
-            dst << *oper1;
-        }
-        if(argumentExprList != NULL){
-            for(int i(0); i < argumentExprList->size(); ++i){
-                argumentExprList->at(i)->printPy(dst);
-                if(i < argumentExprList->size() - 1) dst << ",";
-            }
-        }
-        if(oper2 != NULL){
-            dst << *oper2;
-        }
-    }
-    
-    virtual void printMipsE(std::ostream& dst, const std::string& destName, Frame* framePtr = NULL)const{
-        //Check if is is a function call
-        if(*oper1 == "("){
-            //TODO: Save arguments to registers/stack;
-            framePtr->saveArguments(dst, argumentExprList);
-            dst << "jal " << primaryExpr->getId() << std::endl;
-            dst << "nop" << std::endl;
-            
-            //TODO: Think about more than one return variables
-            framePtr->store(dst, "$v0", destName);
-        }
-    }     
 };
   
 class DeclSpecifier: public StringNode{

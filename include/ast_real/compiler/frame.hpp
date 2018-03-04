@@ -49,6 +49,10 @@ public:
     void saveArguments(std::ostream& dst, const std::vector<const Expr*>* argExprList);
     
     void storeArray(std::ostream& dst, const std::string& arrayName, const std::vector<const Expr*>* argumentExprList, bool force = false);
+    
+    void loadArrayElement(std::ostream& dst, const std::string& reg, const std::string& arrayName, const std::string& indexReg)const;
+    
+    void storeArrayElement(std::ostream& dst, const std::string& reg, const std::string& arrayName, const std::string& indexReg)const;
 };
 
 static unsigned gUniqueIndex = 0;

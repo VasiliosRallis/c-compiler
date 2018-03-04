@@ -74,8 +74,7 @@ void Frame::store(std::ostream& dst, const std::string reg, const std::string va
 }
 
 void Frame::newScope(){
-    std::unordered_map<std::string, int> temp = scopeMap.back();
-    scopeMap.push_back(temp);
+    scopeMap.push_back(scopeMap.back());
 }
 
 void Frame::deleteScope(){
@@ -124,15 +123,36 @@ void Frame::storeArray(std::ostream& dst, const std::string& arrayName, const st
         while(freeWords < argumentExprList->size()) addWords(dst, scopeMap.back().size());
         bool ok = scopeMap.back().insert({arrayName, nextFreeAddr}).second;
         if(ok){
+            //No shadowing
             scopeMap.back().insert({arrayName, nextFreeAddr});
             for(int i(0); i < argumentExprList->size(); ++i){
-                dst << "li $t0, " << argumentExprList->at(i) << std::endl;
+                dst << "li $t0, " << argumentExprList->at(i)->getId() << std::endl;
                 dst << "sw $t0, " << scopeMap.back().at(arrayName) - 4*i << "($fp)" << std::endl;
                 nextFreeAddr -= 4;
                 freeWords--;
             }
         }else{
-            //Somecode;        
+            //Shadowing
+            for(int i(0); i < argumentExprList->size(); ++i){
+                scopeMap.back().erase(arrayName);
+                scopeMap.back().insert({arrayName, nextFreeAddr});
+                dst << "li $t0, " << argumentExprList->at(i)->getId() << std::endl;
+                dst << "sw $t0, " << scopeMap.back().at(arrayName) - 4*i << "($fp)" << std::endl;
+                nextFreeAddr -= 4;
+                freeWords--;
+            }
+                
         }
     }
+}
+
+void Frame::loadArrayElement(std::ostream& dst, const std::string& reg, const std::string& arrayName, const std::string& indexReg)const{
+    dst << "lw " << reg << ", " << scopeMap.back().at(arrayName) << "(" << indexReg << ")" << std::endl;
+}
+
+void Frame::storeArrayElement(std::ostream& dst, const std::string& reg, const std::string& arrayName, const std::string& indexReg)const{
+    dst << "sll " << indexReg << ", " << indexReg << ", 2" << std::endl;
+    dst << "subu " << indexReg << ", $fp, " << indexReg << std::endl;
+    std::cerr << arrayName << std::endl;
+    dst << "sw " << reg << ", " << scopeMap.back().at(arrayName) << "(" << indexReg << ")" << std::endl;
 }       
