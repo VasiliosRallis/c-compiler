@@ -71,6 +71,11 @@ for i in tests/c/in/*.c; do
     
 done
 
+P_RED=$(tput setaf 1)
+P_GREEN=$(tput setaf 2)
+P_NC=$(tput sgr 0)
+RED_PASS="${P_RED}PASS${P_NC}"
+GREEN_PASS="${P_GREEN}PASS${P_NC}"
 
 echo ""
 echo "Running Python translate tests"
@@ -84,7 +89,8 @@ for i in tests/python/in/*.c; do
     
     # Check if the parser actually exited with 0 (if it didn't the out.c will be empty which will actaully compile)
     if [[ "$?" -ne "0" ]]; then
-        echo -e "${i} \t ${RED}PASS${NC} 0/2"
+        # echo -e "${i} \t ${RED}PASS${NC} 0/2"
+        printf "%-60s ${RED_PASS} 1/2\n" "$i"
     else
         PASSED=$(( ${PASSED}+1 ));
   
@@ -97,9 +103,11 @@ for i in tests/python/in/*.c; do
         GOT_P_OUT=$?
     
         if [[ $REF_P_OUT -ne $GOT_P_OUT ]]; then
-            echo -e "${i} \t ${RED}PASS${NC} 1/2"
+            # echo -e "${i} \t ${RED}PASS${NC} 1/2"
+            printf "%-60s ${RED_PASS} 1/2\n" "$i"
         else
-            echo -e "${i} \t ${GREEN}PASS${NC} 2/2"
+            # echo -e "${i} \t ${GREEN}PASS${NC} 2/2"
+            printf "%-60s ${GREEN_PASS} 2/2\n" "$i"
             PASSED=$(( ${PASSED}+1 ));
         fi
     
@@ -110,29 +118,31 @@ done
 
 echo ""
 echo "Running compiler to assembly tests"
-echo "=================================================="
+echo "========================================================="
 mkdir -p tests/assemble/out
 for i in tests/assemble/in/*.c; do
     BASENAME=$(basename $i .c);
     
-    ./bin/$PARSER -S tests/assemble/in/$BASENAME.c -o tests/assemble/out/$BASENAME.mips.s 2> tests/assemble/out/$BASENAME.stderr.txt
+    # Compile the .c file and get the golden exit code
+    gcc -std=c89 -w tests/assemble/in/$BASENAME.c -o tests/assemble/in/$BASENAME.exe
+    if [[ "$?" -ne "0" ]]; then
+        rm tests/assemble/in/*.exe
+        echo ""
+        echo "ERROR: test ${BASENAME} is wrong!"
+        exit 1
+    else
+        ./tests/assemble/in/$BASENAME.exe
+        REF_EXIT=$?
+            
+    ./bin/$PARSER -S tests/assemble/in/$BASENAME.c -o tests/assemble/out/$BASENAME.mips.s 2> tests/assemble/out/$BASENAME.stderr.txt  
     
     # Check if the parser actually exited with 0 (if it didn't the out.c will be empty which will actaully compile)
     if [[ "$?" -ne "0" ]]; then
-        echo -e "${i} \t ${RED}PASS${NC} 0/2"
+        # echo -e "${i} \t ${RED}PASS${NC} 0/2"
+        printf "%-60s ${RED_PASS} 0/2\n" "$i"
     else
         PASSED=$(( ${PASSED}+1 ));
   
-        # Compile the .c file and get the golden exit code
-        gcc -std=c89 -w tests/assemble/in/$BASENAME.c -o tests/assemble/in/$BASENAME.exe
-        if [[ "$?" -ne "0" ]]; then
-            rm tests/assemble/in/*.exe
-            echo ""
-            echo "ERROR: test ${BASENAME} is wrong!"
-            exit 1
-        else
-            ./tests/assemble/in/$BASENAME.exe
-            REF_EXIT=$?
             
             # Compile the .s file generated from our compiler
             mips-linux-gnu-gcc -w -std=c89 -march=mips1 -mfp32 -static -O0 tests/assemble/out/$BASENAME.mips.s -o tests/assemble/out/$BASENAME.mips.exe
@@ -143,9 +153,11 @@ for i in tests/assemble/in/*.c; do
             # Compare exit codes
             GOT_EXIT=$?
             if [[ $REF_EXIT -ne $GOT_EXIT ]]; then
-                echo -e "${i} \t ${RED}PASS${NC} 1/2 \t REF_EXIT=${REF_EXIT} GOT_EXIT = ${GOT_EXIT}"
+                # echo -e "${i} \t ${RED}PASS${NC} 1/2 \t REF_EXIT=${REF_EXIT} GOT_EXIT = ${GOT_EXIT}"
+                printf "%-60s ${RED_PASS} 1/2 REF_EXIT=${REF_EXIT} GOT_EXIT = ${GOT_EXIT}\n" "$i"
             else
-                echo -e "${i} \t ${GREEN}PASS${NC} 2/2"
+                # echo -e "${i} \t ${GREEN}PASS${NC} 2/2"
+                printf "%-60s ${GREEN_PASS} 2/2\n" "$i"
                 PASSED=$(( ${PASSED}+1 ));
             fi
     

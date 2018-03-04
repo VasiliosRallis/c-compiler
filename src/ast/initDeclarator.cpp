@@ -33,16 +33,19 @@ void InitDeclarator::printMips(std::ostream& dst, Frame* framePtr)const{
 }
 
 void InitDeclarator::addGlobalMips(std::ostream& dst)const{
-    dst << "\t.globl\t" << directDeclarator->getId() << std::endl;
-    dst << "\t.data" << std::endl;
-    dst << "\t.align 2" << std::endl;
-    dst << "\t.size\t" << directDeclarator->getId() << ", 4" << std::endl;
-    dst << directDeclarator->getId() << ":" << std::endl;
-    dst << "\t.word\t";
-    asgnExpr->printPy(dst);
-    dst << std::endl;
+    if(asgnExpr != NULL){
+        dst << "\t.globl\t" << directDeclarator->getId() << std::endl;
+        dst << "\t.data" << std::endl;
+        dst << "\t.align 2" << std::endl;
+        dst << "\t.size\t" << directDeclarator->getId() << ", 4" << std::endl;
+        dst << directDeclarator->getId() << ":" << std::endl;
+        dst << "\t.word\t";
+        asgnExpr->printPy(dst);
+        dst << std::endl;
+        
+        g_mips_var.push_back(directDeclarator->getId());
+    }
     
-    g_mips_var.push_back(directDeclarator->getId());
 }
 
 std::string InitDeclarator::getId()const{
