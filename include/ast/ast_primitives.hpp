@@ -10,65 +10,10 @@
 #include "ast_real/ast/expr.hpp"
 #include "ast_real/compiler/frame.hpp"
 #include "ast_real/ast/directDeclarator.hpp"
+#include "ast_real/ast/initDeclarator.hpp"
 
 extern std::vector<std::string> g_variables;
 extern std::vector<std::string> g_mips_var;
-
-class InitDeclarator : public Node{
-private:
-    const DirectDeclarator* directDeclarator;
-    const Expr* asgnExpr;
-    const std::vector<const Expr*>* exprList;
-    
-public:
-    InitDeclarator(const DirectDeclarator* _directDeclarator, const Expr* _asgnExpr, const std::vector<const Expr*>* _exprList = NULL)
-        :directDeclarator(_directDeclarator), asgnExpr(_asgnExpr), exprList(_exprList) {}
-    
-    virtual void print(std::ostream& dst) const override{
-        dst << directDeclarator->getId();
-	    dst << "=";      
-        asgnExpr->print(dst);
-    }
-    
-    virtual void printPy(std::ostream& dst, int depth = 0) const override{
-        for(int i(0); i < depth; ++i) dst << "\t";
-        dst << directDeclarator->getId();
-        dst << "=";
-        asgnExpr->printPy(dst);
-    }
-    
-    virtual void printMips(std::ostream& dst, Frame* framePtr)const override{
-        if(asgnExpr != NULL){
-            //Generate a unique name
-            std::string destName = makeName();
-            //Ask the expression to evaluate itself and store its value in the frame, with destName as it's identifier
-            asgnExpr->printMipsE(dst, destName, framePtr);
-            //Temporary store the identifier in $t1
-            framePtr->load(dst, "$t0", destName);
-            //Store it in the frame
-            framePtr->store(dst, "$t0", directDeclarator->getId(), true);
-        }
-        if(exprList != NULL){
-            framePtr->storeArray(dst, directDeclarator->getId(), exprList, true);
-        }
-    }
-    
-    void addGlobalMips(std::ostream& dst)const{
-        dst << "\t.globl\t" << directDeclarator->getId() << std::endl;
-        dst << "\t.data" << std::endl;
-        dst << "\t.align 2" << std::endl;
-        dst << "\t.size\t" << directDeclarator->getId() << ", 4" << std::endl;
-        dst << directDeclarator->getId() << ":" << std::endl;
-        dst << "\t.word\t";
-        asgnExpr->printPy(dst);
-        dst << std::endl;
-        
-        g_mips_var.push_back(directDeclarator->getId());
-    }
-    
-    std::string getId()const{return directDeclarator->getId();}
-    void addGlobal()const{g_variables.push_back(directDeclarator->getId());}
-};
 
 class Declaration : public Node {
 private:
@@ -214,8 +159,7 @@ public:
             }
             if(statementList != NULL){
                 for(int i(0); i < statementList->size(); ++i){
-                    if(dynamic_cast<const Block*>(statementList->at(i))){ 
-                        std::cerr << "Double BLOCK HIT " << std::endl;
+                    if(dynamic_cast<const Block*>(statementList->at(i))){
                         framePtr->newScope();
                         statementList->at(i)->printMips(dst, framePtr);
                         framePtr->deleteScope();
