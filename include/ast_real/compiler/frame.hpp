@@ -46,7 +46,9 @@ public:
        
     void clean(std::ostream& dst)const;
     
-    void saveArguments(std::ostream& dst, VectorPtr argExprList);
+    void saveArguments(std::ostream& dst, const std::vector<const Expr*>* argExprList);
+    
+    void storeArray(std::ostream& dst, const std::string& arrayName, const std::vector<const Expr*>* argumentExprList, bool force = false);
 };
 
 static unsigned gUniqueIndex = 0;

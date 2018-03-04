@@ -14,22 +14,25 @@
 extern std::vector<std::string> g_variables;
 extern std::vector<std::string> g_mips_var;
 
-class InitDeclarator : public StringNode{
+class InitDeclarator : public Node{
 private:
+    const DirectDeclarator* directDeclarator;
     const Expr* asgnExpr;
+    const std::vector<const Expr*>* exprList;
+    
 public:
-    InitDeclarator(StrPtr _id, const Expr* _asgnExpr)
-        :StringNode(_id), asgnExpr(_asgnExpr) {}
+    InitDeclarator(const DirectDeclarator* _directDeclarator, const Expr* _asgnExpr, const std::vector<const Expr*>* _exprList = NULL)
+        :directDeclarator(_directDeclarator), asgnExpr(_asgnExpr), exprList(_exprList) {}
     
     virtual void print(std::ostream& dst) const override{
-        dst << *id;
+        dst << directDeclarator->getId();
 	    dst << "=";      
         asgnExpr->print(dst);
     }
     
     virtual void printPy(std::ostream& dst, int depth = 0) const override{
         for(int i(0); i < depth; ++i) dst << "\t";
-        dst << *id;
+        dst << directDeclarator->getId();
         dst << "=";
         asgnExpr->printPy(dst);
     }
@@ -42,21 +45,24 @@ public:
         //Temporary store the identifier in $t1
         framePtr->load(dst, "$t0", destName);
         //Store it in the frame
-        framePtr->store(dst, "$t0", *id, true);
+        framePtr->store(dst, "$t0", directDeclarator->getId(), true);
     }
     
     void addGlobalMips(std::ostream& dst)const{
-        dst << "\t.globl\t" << *id << std::endl;
+        dst << "\t.globl\t" << directDeclarator->getId() << std::endl;
         dst << "\t.data" << std::endl;
         dst << "\t.align 2" << std::endl;
-        dst << "\t.size\t" << *id << ", 4" << std::endl;
-        dst << *id << ":" << std::endl;
+        dst << "\t.size\t" << directDeclarator->getId() << ", 4" << std::endl;
+        dst << directDeclarator->getId() << ":" << std::endl;
         dst << "\t.word\t";
         asgnExpr->printPy(dst);
         dst << std::endl;
         
-        g_mips_var.push_back(*id);
+        g_mips_var.push_back(directDeclarator->getId());
     }
+    
+    std::string getId()const{return directDeclarator->getId();}
+    void addGlobal()const{g_variables.push_back(directDeclarator->getId());}
 };
 
 class Declaration : public Node {

@@ -28,6 +28,7 @@
   const ExprStatement* exprStatement;
   const ParameterDeclaration* parameterDeclaration;
   std::vector<const ParameterDeclaration*>* parameterList;
+  std::vector<const Expr*>* exprList;
 }
 
 //Keywords
@@ -53,13 +54,14 @@
 %type <node> TYPE_QUALIFIER DECL_SPECIFIER STOR_CLASS_SPEC
 %type <oper> ASSIGNMENT_OPER
 %type <node>  LABELED_STATEMENT JUMP_STATEMENT
-%type <nodeVector> INIT_DECLARATOR_LIST STATEMENT_LIST DECLR_LIST DECL_SPECIFIER_LIST ARGUMENT_EXPR_LIST
+%type <nodeVector> INIT_DECLARATOR_LIST STATEMENT_LIST DECLR_LIST DECL_SPECIFIER_LIST
 //%type <nodeVector> IDENTIFIER_LIST
 %type <expr> ASSIGNMENT_EXPR CONDITIONAL_EXPR UNARY_EXPR CAST_EXPR LOGICAL_OR_EXPR LOGICAL_AND_EXPR PRIMARY_EXPR POSTFIX_EXPR
 %type <expr> INCLUSIVE_OR_EXPR EXCLUSIVE_OR_EXPR AND_EXPR EQUAL_EXPR RELATIONAL_EXPR SHIFT_EXPR ADDITIVE_EXPR MULT_EXPR EXPR
 %type <exprStatement> EXPR_STATEMENT
 %type <parameterDeclaration> PARAMETER_DECL
 %type <parameterList> PARAMETER_LIST
+%type <exprList> ARGUMENT_EXPR_LIST
 
 %type <string> T_INT_CONSTANT
 %type <string> T_IDENTIFIER T_STR_LIT
@@ -90,8 +92,9 @@ DECLARATION: DECL_SPECIFIER_LIST T_SEMICOLON                      {$$ = new Decl
 INIT_DECLARATOR_LIST: INIT_DECLARATOR                               {$$ = new std::vector<NodePtr>{$1};}  // int x;
 			        | INIT_DECLARATOR_LIST T_COMMA INIT_DECLARATOR  {$$ = $1 ; $1->push_back($3);}        // int x, y=5;
 
-INIT_DECLARATOR: DIRECT_DECLARATOR                     {$$ = $1;}                                   // int x;
-		       | T_IDENTIFIER T_EQUAL ASSIGNMENT_EXPR  {$$ = new InitDeclarator($1,$3);}            // int x =5
+INIT_DECLARATOR: DIRECT_DECLARATOR                          {$$ = $1;}                                   // int x;
+		       | DIRECT_DECLARATOR T_EQUAL ASSIGNMENT_EXPR  {$$ = new InitDeclarator($1,$3);}            // int x =5
+		       | DIRECT_DECLARATOR T_EQUAL T_RCURLBRACKET ARGUMENT_EXPR_LIST T_LCURLBRACKET {$$ = new InitDeclarator($1, NULL, $4);}
 
 DIRECT_DECLARATOR: T_IDENTIFIER                                        {$$ = new DirectDeclarator($1, NULL, NULL, NULL);} 
 		         | T_IDENTIFIER T_LBRACKET T_RBRACKET                  {$$ = new DirectDeclarator($1, $2, NULL, $3);}// function declaration : int f() ;
@@ -184,7 +187,7 @@ UNARY_OPER: T_AMPERSAND     {$$ = $1;}
           
           
 POSTFIX_EXPR: PRIMARY_EXPR                                          {$$ = $1;}
-            | POSTFIX_EXPR T_SQUARE_LBRACKET EXPR T_SQUARE_RBRACKET {$$ = new PostfixExpr($1, $2, new std::vector<NodePtr>{$3}, $4);}
+            | POSTFIX_EXPR T_SQUARE_LBRACKET EXPR T_SQUARE_RBRACKET {$$ = new PostfixExpr($1, $2, new std::vector<const Expr*>{$3}, $4);}
             | POSTFIX_EXPR T_LBRACKET ARGUMENT_EXPR_LIST T_RBRACKET {$$ = new PostfixExpr($1, $2, $3, $4);}
             | POSTFIX_EXPR T_LBRACKET T_RBRACKET                    {$$ = new PostfixExpr($1, $2, NULL, $3);}
             | POSTFIX_EXPR T_DOT T_IDENTIFIER                       {$$ = new PostfixExpr($1, $2, NULL, $3);}
@@ -192,7 +195,7 @@ POSTFIX_EXPR: PRIMARY_EXPR                                          {$$ = $1;}
             | POSTFIX_EXPR T_INCREMENT                              {$$ = new PostfixExpr($1, $2, NULL, NULL);}
             | POSTFIX_EXPR T_DECREMENT                              {$$ = new PostfixExpr($1, $2, NULL, NULL);}
             
-ARGUMENT_EXPR_LIST: ASSIGNMENT_EXPR                            {$$ = new std::vector<NodePtr>{$1};}
+ARGUMENT_EXPR_LIST: ASSIGNMENT_EXPR                            {$$ = new std::vector<const Expr*>{$1};}
                   | ARGUMENT_EXPR_LIST T_COMMA ASSIGNMENT_EXPR {$$ = $1; $1->push_back($3);}
 
 

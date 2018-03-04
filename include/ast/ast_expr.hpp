@@ -244,11 +244,11 @@ class PostfixExpr: public Expr{
 private:
     const Expr* primaryExpr;
     StrPtr oper1;
-    VectorPtr argumentExprList;
+    const std::vector<const Expr*>* argumentExprList;
     StrPtr oper2;
     
 public:
-    PostfixExpr(const Expr* _primaryExpr, StrPtr _oper1, VectorPtr _argumentExprList, StrPtr _oper2)
+    PostfixExpr(const Expr* _primaryExpr, StrPtr _oper1, const std::vector<const Expr*>* _argumentExprList, StrPtr _oper2)
         :primaryExpr(_primaryExpr), oper1(_oper1), argumentExprList(_argumentExprList), oper2(_oper2){}
         
     virtual void print(std::ostream& dst)const override{

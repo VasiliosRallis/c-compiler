@@ -91,7 +91,7 @@ void Frame::clean(std::ostream& dst)const{
     dst << "nop\n";
 }
 
-void Frame::saveArguments(std::ostream& dst, VectorPtr argumentExprList){
+void Frame::saveArguments(std::ostream& dst, const std::vector<const Expr*>* argumentExprList){
     //Looks compilcated but we need to do it this way so that the $sp doesn't change
     if(argumentExprList != NULL){
         //Vector to hold the names of the Variables of the expressions
@@ -113,6 +113,26 @@ void Frame::saveArguments(std::ostream& dst, VectorPtr argumentExprList){
                 load(dst, std::string("$t0"), argumentNames.at(i));
                 dst << "sw $t0, " << 4*(i) << "($sp)" << std::endl;
             }
+        }
+    }
+}
+
+
+void Frame::storeArray(std::ostream& dst, const std::string& arrayName, const std::vector<const Expr*>* argumentExprList, bool force){
+    if(argumentExprList != NULL){
+        //Allocate enough space for the array
+        while(freeWords < argumentExprList->size()) addWords(dst, scopeMap.back().size());
+        bool ok = scopeMap.back().insert({arrayName, nextFreeAddr}).second;
+        if(ok){
+            scopeMap.back().insert({arrayName, nextFreeAddr});
+            for(int i(0); i < argumentExprList->size(); ++i){
+                dst << "li $t0, " << argumentExprList->at(i) << std::endl;
+                dst << "sw $t0, " << scopeMap.back().at(arrayName) - 4*i << "($fp)" << std::endl;
+                nextFreeAddr -= 4;
+                freeWords--;
+            }
+        }else{
+            //Somecode;        
         }
     }
 }       
