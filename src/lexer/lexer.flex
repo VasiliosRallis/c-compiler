@@ -207,7 +207,8 @@ return 		    {yylval.string = new std::string(yytext); return reportToken(T_RETU
 {STR_LIT}       {yylval.string = new std::string(yytext); return reportToken(T_STR_LIT, yytext);}
 
 #.*             {  } //remove preprocessed information
-
+\/\/.*            {   } // single line comments
+\/\*([^*]|[\n]|([\*]+([^*/]|[\n])))*[\*]+\/ { } // remove multiline comments
 .|[\n] 			{ }
 
 
