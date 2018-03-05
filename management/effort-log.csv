@@ -8,3 +8,5 @@ Date,		    Effort,		Developers,	    Milestones
 23/02/2018,     7,          yhl15;vgr16,    CtoPythonTranslator;PlanCodeGenStructure
 24/02/2018,     4,          yhl15;vgr16,    Testsuiteforcomplier
 25/02/2018,     8,          yhl15;vgr16,    StartCodeGen
+03/03/2018,     8,          yhl15;vgr16,    WellWorkingCodegen
+05/03/2018,     6,          vgr16;yhl15,    NearCompletedCParser
