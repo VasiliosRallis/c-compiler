@@ -46,24 +46,7 @@ public:
             dynamic_cast<const Expr*>(expr)->printMipsE(dst,destName,framePtr);        
         }
     }
-    
-    void printMipsENegate(std::ostream& dst, const std::string& destName, Frame* framePtr = NULL)const{
-	    if(dynamic_cast<const IntConst*>(expr)){
-	        int id = dynamic_cast<const IntConst*>(expr)->getId();
-	        dst << "li $t0, -" << id << "\n";
-	        framePtr->store(dst, "$t0", destName);
-	    }
-	    else if(dynamic_cast<const StringNode*>(expr)){
-	        std::string id = dynamic_cast<const StringNode*>(expr)->getId();
-	        framePtr->load(dst, "$t0", id);
-            dst << "sub $t0, $0, $t0" << std::endl;     //Negate variable value stored in $t0
-	        framePtr->store(dst, "$t0", destName);
-        }
-        else if (dynamic_cast<const Expr*>(expr)){
-            dynamic_cast<const Expr*>(expr)->printMipsE(dst,destName,framePtr);        
-        }
-    }
-    
+      
     virtual std::string getId()const override{
         if(dynamic_cast<const StringNode*>(expr)){
             std::string id = dynamic_cast<const StringNode*>(expr) ->getId() ;
@@ -98,7 +81,22 @@ public:
     
     virtual void printMipsE(std::ostream& dst, const std::string& destName, Frame* framePtr = NULL)const override{
         if(*oper == "-"){            
-            postfixExpr->printMipsENegate(dst,destName,framePtr);
+            postfixExpr->printMipsE(dst,destName,framePtr);
+	        framePtr->load(dst, "$t0", destName);
+            dst << "sub $t0, $0, $t0" << std::endl;     //Negate variable value stored in $t0
+	        framePtr->store(dst, "$t0", destName);
+        }
+        else if(*oper == "++"){            
+            postfixExpr->printMipsE(dst,destName,framePtr);
+	        framePtr->load(dst, "$t0", destName);
+            dst << "addi $t0, $t0, 1" << std::endl;     //Negate variable value stored in $t0
+	        framePtr->store(dst, "$t0", destName);
+        }
+        else if(*oper == "--"){            
+            postfixExpr->printMipsE(dst,destName,framePtr);
+	        framePtr->load(dst, "$t0", destName);
+            dst << "addi $t0, $t0, -1" << std::endl;     //Negate variable value stored in $t0
+	        framePtr->store(dst, "$t0", destName);
         }
     }
 };
