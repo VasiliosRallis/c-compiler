@@ -96,6 +96,12 @@ public:
 	        dst << "andi $t0, $t0, 0x00ff" << std::endl;
             framePtr-> store(dst, "$t0" , destName);
         }
+        else if(*oper == "~"){
+            postfixExpr->printMipsE(dst,destName,framePtr);
+            framePtr->load(dst, "$t0", destName);                    	
+            dst << "nor  $t0, $t0, $0" << std::endl;
+            framePtr-> store(dst, "$t0" , destName);           
+        }
         else if(*oper == "++"){            
             postfixExpr->printMipsE(dst,destName,framePtr);
 	        framePtr->load(dst, "$t0", destName);

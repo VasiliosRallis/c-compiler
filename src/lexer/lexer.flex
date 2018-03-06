@@ -163,6 +163,7 @@ return 		    {yylval.string = new std::string(yytext); return reportToken(T_RETU
 \-\-            {yylval.string = new std::string(yytext); return reportToken(T_DECREMENT, yytext);}
 
 \!              {yylval.string = new std::string(yytext); return reportToken(T_EXCLAMATION, yytext);}
+\~              {yylval.string = new std::string(yytext); return reportToken(T_TILDE, yytext);}
 \?              {yylval.string = new std::string(yytext); return reportToken(T_QUESTION, yytext);}
 \:              {yylval.string = new std::string(yytext); return reportToken(T_COLON, yytext);}
 
