@@ -4,5 +4,5 @@ int f(){
     return x;
 }
 int main(){
-    return x + f();
+    return x+f();
 }

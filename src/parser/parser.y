@@ -180,12 +180,12 @@ UNARY_EXPR: POSTFIX_EXPR            {$$ = $1;}
           | T_DECREMENT POSTFIX_EXPR  {$$ = new UnaryExpr($1,$2);}
           | UNARY_OPER POSTFIX_EXPR    {$$ = new UnaryExpr($1,$2);} //Add more
 
-UNARY_OPER: T_AMPERSAND     {$$ = $1;}
+UNARY_OPER: T_AMPERSAND     {$$ = $1;}          //Address
           | T_MULT          {$$ = $1;}
           | T_PLUS          {$$ = $1;}
           | T_MINUS         {$$ = $1;}
-          | T_TILDE         {$$ = $1;}
-          | T_EXCLAMATION   {$$ = $1;}
+          | T_TILDE         {$$ = $1;}          // ~ (BITWISE NOT)
+          | T_EXCLAMATION   {$$ = $1;}          // LOGICAL NOT
           
           
 POSTFIX_EXPR: PRIMARY_EXPR                                          {$$ = $1;}

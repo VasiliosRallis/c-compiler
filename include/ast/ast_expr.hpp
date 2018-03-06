@@ -86,6 +86,16 @@ public:
             dst << "sub $t0, $0, $t0" << std::endl;     //Negate variable value stored in $t0
 	        framePtr->store(dst, "$t0", destName);
         }
+        else if(*oper == "+"){            
+            postfixExpr->printMipsE(dst,destName,framePtr);
+        }
+        else if (*oper == "!"){
+            postfixExpr->printMipsE(dst,destName,framePtr);
+            framePtr->load(dst, "$t0", destName);                    	
+            dst << "sltu $t0, $t0, 1" << std::endl;
+	        dst << "andi $t0, $t0, 0x00ff" << std::endl;
+            framePtr-> store(dst, "$t0" , destName);
+        }
         else if(*oper == "++"){            
             postfixExpr->printMipsE(dst,destName,framePtr);
 	        framePtr->load(dst, "$t0", destName);
