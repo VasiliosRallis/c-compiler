@@ -31,7 +31,7 @@ private:
     
     void addWords(std::ostream& dst, int n);
     
-    ArgTranslator argTranslator;
+    ArgTranslator* const argTranslator;
     
 public:
     Frame(std::ostream& dst, const DirectDeclarator* directDeclarator);

@@ -7,7 +7,7 @@ void Frame::addWords(std::ostream& dst, int n){
 }
 
 Frame::Frame(std::ostream& dst, const DirectDeclarator* directDeclarator)
-    :argTranslator(directDeclarator){
+    :argTranslator(new ArgTranslator(directDeclarator)){
 
     std::unordered_map<std::string, int> temp;
     scopeMap.push_back(temp);
@@ -30,7 +30,7 @@ void Frame::load(std::ostream& dst, const std::string reg, const std::string var
         dst << "lw " << reg << ", " << scopeMap.back().at(varName) << "($fp)\n";
     }catch(const std::out_of_range& e){
         try{
-            argTranslator.load(dst, reg, varName);
+            argTranslator->load(dst, reg, varName);
         }catch(const std::out_of_range& e){
             bool isGlobal(false);
             for(int i(0); i < g_mips_var.size() && !isGlobal; ++i){
@@ -156,3 +156,5 @@ void Frame::storeArrayElement(std::ostream& dst, const std::string& reg, const s
     std::cerr << arrayName << std::endl;
     dst << "sw " << reg << ", " << scopeMap.back().at(arrayName) << "(" << indexReg << ")" << std::endl;
 }       
+
+

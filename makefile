@@ -8,7 +8,7 @@ OBJ_FILES := $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(SRC_FILES))
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	g++ $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $<
 
-CPPFLAGS += -W -Wall -g 
+CPPFLAGS += -W -Wall -g -O1
 
 # This avoids error: ‘fileno’ was not declared in this scope
 CPPFLAGS += -std=c++11
@@ -33,11 +33,11 @@ src/parser/parser.tab.cpp src/parser/parser.tab.hpp : src/parser/parser.y
 	
    
 clean :
-	-rm -r bin
-	-rm src/lexer/*.o
-	-rm src/lexer/*.yy.cpp
-	-rm src/parser/*.output
-	-rm src/parser/*.o
-	-rm src/parser/*.tab.*
-	-rm -r tests/c/out
-	-rm -r tests/python/out
+	rm -r tests/c/out
+	rm -r tests/python/out
+	rm -r tests/assemble/out
+	find . -name "*.o" -type f -delete
+	find . -name "*.exe" -type f -delete
+	find . -name "*.tab.*" -type f -delete
+	find . -name "*.output" -type f -delete
+	find . -name "*.yy.cpp" -type f -delete

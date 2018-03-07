@@ -9,6 +9,7 @@
 class ArgTranslator;
 
 #include "ast_real/ast/directDeclarator.hpp"
+#include "ast_real/ast/parameterDeclaration.hpp"
 
 class ArgTranslator{
 private:

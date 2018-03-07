@@ -1,6 +1,8 @@
 #ifndef ast_statement_hpp
 #define ast_statement_hpp
 
+#include "ast_real/compiler/frame.hpp"
+
 class ExprStatement: public Statement{
 private:
     const Expr* expr;    

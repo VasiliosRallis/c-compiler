@@ -6,13 +6,10 @@
 #include <string>
 
 class DirectDeclarator;
+
 #include "ast_real/compiler/frame.hpp"
 #include "ast_real/ast/stringNode.hpp"
 #include "ast_real/ast/parameterDeclaration.hpp"
-
-
-
-class ParameterDeclaration;
 
 class DirectDeclarator: public StringNode{
 private:
