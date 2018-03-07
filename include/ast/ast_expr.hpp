@@ -1,6 +1,7 @@
 #ifndef ast_expr_hpp
 #define ast_expr_hpp    
 #include "ast_real/ast/postfixExpr.hpp"
+#include "ast_real/compiler/frame.hpp"
 
 class PrimaryExpr: public Expr{
 private:
@@ -169,10 +170,12 @@ public:
     virtual void printMipsE(std::ostream& dst, const std::string& destName, Frame* framePtr = NULL)const override{
         std::string n1 = makeName();
         std::string n2 = makeName();
-        operand1->printMipsE(dst,n1,framePtr);
+        
+        //We don't need the first operand if we are doing an assignment
+        if(oper->getId() != "=") operand1->printMipsE(dst,n1,framePtr);
         operand2->printMipsE(dst,n2,framePtr);
         
-        framePtr->load(dst,"$t0",n1);
+        if(oper->getId() != "=") framePtr->load(dst,"$t0",n1);
         framePtr->load(dst,"$t1",n2);        
         
         if(oper->getId() == "+"){
@@ -234,11 +237,7 @@ public:
                 framePtr->store(dst, "$t1", id);
                 dst << "move $t2, $t1\n";
             }else if(dynamic_cast<const PostfixExpr*>(operand1)){
-                std::string arrayName = dynamic_cast<const PostfixExpr*>(operand1)->getId();
-                std::string indexName = makeName();
-                dynamic_cast<const PostfixExpr*>(operand1)->evaluateArgument(dst, indexName, framePtr);
-                framePtr->load(dst, "$t0", indexName);
-                framePtr->storeArrayElement(dst, "$t1", arrayName, "$t0");
+                framePtr->storeArrayElement(dst, "$t1", dynamic_cast<const PostfixExpr*>(operand1));
                 dst << "move $t2, $t1" << std::endl;
            }
         }

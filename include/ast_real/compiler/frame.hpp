@@ -12,6 +12,7 @@ class Frame;
 #include "ast_real/ast/directDeclarator.hpp"
 #include "ast_real/ast/node.hpp"
 #include "ast_real/ast/expr.hpp"
+#include "ast_real/ast/postfixExpr.hpp"
 
 extern std::vector<std::string> g_mips_var;
 
@@ -50,9 +51,9 @@ public:
     
     void storeArray(std::ostream& dst, const std::string& arrayName, const std::vector<const Expr*>* argumentExprList, bool force = false);
     
-    void loadArrayElement(std::ostream& dst, const std::string& reg, const std::string& arrayName, const std::string& indexReg)const;
+    void loadArrayElement(std::ostream& dst, const std::string& reg, const std::string& arrayName, const Expr* index);
     
-    void storeArrayElement(std::ostream& dst, const std::string& reg, const std::string& arrayName, const std::string& indexReg)const;
+    void storeArrayElement(std::ostream& dst, const std::string& reg, const PostfixExpr* postfixExpr);
 };
 
 static unsigned gUniqueIndex = 0;

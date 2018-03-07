@@ -1,4 +1,5 @@
 #include "ast_real/ast/initDeclarator.hpp"
+#include <cassert>
 
 InitDeclarator::InitDeclarator(const DirectDeclarator* _directDeclarator, const Expr* _asgnExpr, const std::vector<const Expr*>* _exprList)
     :directDeclarator(_directDeclarator), asgnExpr(_asgnExpr), exprList(_exprList) {}
@@ -44,8 +45,22 @@ void InitDeclarator::addGlobalMips(std::ostream& dst)const{
         dst << std::endl;
         
         g_mips_var.push_back(directDeclarator->getId());
+    }else if(exprList != NULL){
+        dst << "\t.globl\t" << directDeclarator->getId() << std::endl;
+        dst << "\t.data" << std::endl;
+        dst << "\t.align 2" << std::endl;
+        dst << "\t.size\t" << directDeclarator->getId() << ", " << exprList->size()*4<< std::endl;
+        dst << directDeclarator->getId() << ":" << std::endl;
+        for(int i(0); i < exprList->size(); ++i){
+            dst << "\t.word\t";
+            exprList->at(i)->printPy(dst);
+            dst << std::endl;
+        }
+        g_mips_var.push_back(directDeclarator->getId());
     }
-    
+    else{
+        assert(false);
+    }
 }
 
 std::string InitDeclarator::getId()const{
