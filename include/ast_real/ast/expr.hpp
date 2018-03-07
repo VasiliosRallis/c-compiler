@@ -14,6 +14,7 @@ class Expr: public Node{
 public:
     virtual void printMipsE(std::ostream& dst, const std::string& destName, Frame* framePtr = NULL)const;
     virtual std::string getId()const;
+    virtual bool isAddr()const;
 };
 
 #endif

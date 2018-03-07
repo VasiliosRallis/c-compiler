@@ -1,7 +1,8 @@
 #ifndef ast_statement_hpp
 #define ast_statement_hpp
 
-#include "ast_real/compiler/frame.hpp"
+#include "ast_real/ast/statement.hpp"
+class Frame;
 
 class ExprStatement: public Statement{
 private:
@@ -224,11 +225,7 @@ public:
     }
     
     virtual void printPy(std::ostream& dst, int depth = 0) const override{}
-    
-    virtual ~CaseStatement() override{
-        delete expr;
-        delete statement;
-    }
+
 };
 
 class IfStatement: public Statement{

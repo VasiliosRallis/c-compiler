@@ -3,6 +3,7 @@
 
 #include "ast_real/ast/postfixExpr.hpp"
 #include "ast_real/compiler/frame.hpp"
+#include <cassert>
 
 class PrimaryExpr: public Expr{
 private:
@@ -115,6 +116,26 @@ public:
             dst << "addi $t0, $t0, -1" << std::endl;     //Negate variable value stored in $t0
 	        framePtr->store(dst, "$t0", destName);
         }
+        else if(*oper == "&"){
+            std::string id(postfixExpr->getId());
+            framePtr->loadAddr(dst, "$t0", id);
+            framePtr->store(dst, "$t0", destName);
+        }
+        else if(*oper == "*"){
+            postfixExpr->printMipsE(dst,destName,framePtr);
+            framePtr->load(dst, "$t0", destName);
+            dst << "lw $t0, 0($t0)" << std::endl;
+            framePtr->store(dst, "$t0", destName);
+        }
+    }
+    
+    virtual bool isAddr()const override{
+        if(*oper == "&") return true;
+        else return false;
+    }
+    
+    virtual std::string getId()const override{
+        return postfixExpr->getId();
     }
 };
 
@@ -257,12 +278,6 @@ public:
     }
    
    virtual void printPy(std::ostream& dst, int depth = 0)const override{}
-};
-  
-class DeclSpecifier: public StringNode{
-public:
-    DeclSpecifier(StrPtr _id)
-        :StringNode(_id){}
 };
 
 #endif

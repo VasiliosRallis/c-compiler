@@ -1,4 +1,3 @@
-#include "ast.hpp"
 #include <string>
 #include <iostream>
 #include <fstream>
@@ -6,6 +5,9 @@
 
 std::vector<std::string> g_variables;
 std::vector<std::string> g_mips_var;
+std::vector<std::string> endPrint;
+
+#include "ast_real/ast/node.hpp"
 
 int main(int argc, char* argv[]){
     

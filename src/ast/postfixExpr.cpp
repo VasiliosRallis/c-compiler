@@ -38,12 +38,10 @@ void PostfixExpr::printPy(std::ostream& dst, int depth)const{
 void PostfixExpr::printMipsE(std::ostream& dst, const std::string& destName, Frame* framePtr)const{
     //Check if is is a function call
     if(*oper1 == "("){
-        //TODO: Save arguments to registers/stack;
         framePtr->saveArguments(dst, argumentExprList);
         dst << "jal " << primaryExpr->getId() << std::endl;
         dst << "nop" << std::endl;
         
-        //TODO: Think about more than one return variables
         framePtr->store(dst, "$v0", destName);
     }
     if(*oper1 == "["){
@@ -60,3 +58,4 @@ void PostfixExpr::evaluateArgument(std::ostream& dst, const std::string& destNam
 std::string PostfixExpr::getId()const{
     return primaryExpr->getId();
 }
+

@@ -54,6 +54,8 @@ public:
     void loadArrayElement(std::ostream& dst, const std::string& reg, const std::string& arrayName, const Expr* index);
     
     void storeArrayElement(std::ostream& dst, const std::string& reg, const PostfixExpr* postfixExpr);
+    
+    void loadAddr(std::ostream& dst, const std::string& reg, const std::string& varName)const;
 };
 
 static unsigned gUniqueIndex = 0;

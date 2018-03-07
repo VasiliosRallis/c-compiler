@@ -5,6 +5,7 @@
 #include <iostream>
 #include <vector>
 #include <sstream>
+#include <cassert>
 
 #include "ast_real/ast/node.hpp"
 #include "ast_real/ast/expr.hpp"
@@ -15,12 +16,25 @@
 extern std::vector<std::string> g_variables;
 extern std::vector<std::string> g_mips_var;
 
+class DeclSpecifier: public StringNode{
+public:
+    DeclSpecifier(StrPtr _id)
+        :StringNode(_id){}
+  
+    Type getType()const{
+        if(*id == "int"){return Type::INT;}
+        else if(*id == "float"){return Type::FLOAT;}
+        else if(*id == "double"){return Type::DOUBLE;}
+        else{assert(false);}
+    }
+};
+
 class Declaration : public Node {
 private:
-    VectorPtr declrspecList;    
+    const std::vector<const DeclSpecifier*>* declrspecList;    
     VectorPtr initdeclrList;
 public:
-    Declaration(VectorPtr _declrspecList, VectorPtr _initdeclrList)
+    Declaration(const std::vector<const DeclSpecifier*>* _declrspecList, VectorPtr _initdeclrList)
         : declrspecList(_declrspecList), initdeclrList(_initdeclrList) {}
     
     virtual void print(std::ostream& dst) const override{
@@ -56,6 +70,9 @@ public:
     
     void addGlobal()const{
         if(initdeclrList != NULL){
+        //Get the type of the variable we are trying to declare;
+        //Type type = declrspecList->at(0)->getType();
+        
             for(int i(0); i < initdeclrList->size(); ++i){
                 if(dynamic_cast<const StringNode*>(initdeclrList->at(i))){
                     dynamic_cast<const StringNode*>(initdeclrList->at(i))->addGlobal();
@@ -174,12 +191,12 @@ public:
 
 class FunctionDef: public Node{
 private:
-	VectorPtr declrSpecList;
+	std::vector<const DeclSpecifier*>* declrSpecList;
 	const DirectDeclarator* directDeclarator;   
 	const Block* block;
     
 public:
-    FunctionDef(VectorPtr _declrSpecList, const DirectDeclarator* _directDeclarator, const Block* _block)
+    FunctionDef(std::vector<const DeclSpecifier*>* _declrSpecList, const DirectDeclarator* _directDeclarator, const Block* _block)
         : declrSpecList(_declrSpecList), directDeclarator(_directDeclarator), block(_block) {}
         
 
@@ -305,8 +322,6 @@ public:
             dst << *id ;
         }
     }
-
-    
 
 protected:
    Type type;

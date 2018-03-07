@@ -1,7 +1,13 @@
 %code requires{
-  #include "ast.hpp"
   #include <vector>
   #include <cassert>
+  #include <string>
+  
+  #include "ast_real/ast/node.hpp"
+  #include "ast/ast_primitives.hpp"
+  #include "ast_real/ast/expr.hpp"
+  #include "ast/ast_statement.hpp"
+  #include "ast/ast_expr.hpp"
   
   extern NodePtr g_root; // A way of getting the AST out global defined in maths_parser.tab.cpp from bison
 
@@ -29,6 +35,8 @@
   const ParameterDeclaration* parameterDeclaration;
   std::vector<const ParameterDeclaration*>* parameterList;
   std::vector<const Expr*>* exprList;
+  const DeclSpecifier* declSpecifier;
+  std::vector<const DeclSpecifier*>* declrSpecList;
 }
 
 //Keywords
@@ -47,21 +55,21 @@
 %token T_ARROW T_DOT T_SQUARE_LBRACKET T_SQUARE_RBRACKET
 
 //Non-terminals declaration
-%type <node> PROGRAM EXT_DECLARATION VAR_TYPE FUNCTION_DEF DECLARATION INIT_DECLARATOR
+%type <node> PROGRAM EXT_DECLARATION FUNCTION_DEF DECLARATION INIT_DECLARATOR
 %type <dirDeclPtr> DIRECT_DECLARATOR
 %type <block> BLOCK
 %type <node> STATEMENT SELECTION_STATEMENT ITERATION_STATEMENT
-%type <node> TYPE_QUALIFIER DECL_SPECIFIER STOR_CLASS_SPEC
 %type <oper> ASSIGNMENT_OPER
 %type <node>  LABELED_STATEMENT JUMP_STATEMENT
-%type <nodeVector> INIT_DECLARATOR_LIST STATEMENT_LIST DECLR_LIST DECL_SPECIFIER_LIST
-//%type <nodeVector> IDENTIFIER_LIST
+%type <nodeVector> INIT_DECLARATOR_LIST STATEMENT_LIST DECLR_LIST
 %type <expr> ASSIGNMENT_EXPR CONDITIONAL_EXPR UNARY_EXPR CAST_EXPR LOGICAL_OR_EXPR LOGICAL_AND_EXPR PRIMARY_EXPR POSTFIX_EXPR
 %type <expr> INCLUSIVE_OR_EXPR EXCLUSIVE_OR_EXPR AND_EXPR EQUAL_EXPR RELATIONAL_EXPR SHIFT_EXPR ADDITIVE_EXPR MULT_EXPR EXPR
 %type <exprStatement> EXPR_STATEMENT
 %type <parameterDeclaration> PARAMETER_DECL
 %type <parameterList> PARAMETER_LIST
 %type <exprList> ARGUMENT_EXPR_LIST
+%type <declrSpecList> DECL_SPECIFIER_LIST
+%type <declSpecifier> VAR_TYPE TYPE_QUALIFIER STOR_CLASS_SPEC DECL_SPECIFIER
 
 %type <string> T_INT_CONSTANT
 %type <string> T_IDENTIFIER T_STR_LIT
@@ -95,13 +103,15 @@ INIT_DECLARATOR_LIST: INIT_DECLARATOR                               {$$ = new st
 INIT_DECLARATOR: DIRECT_DECLARATOR                          {$$ = $1;}                                   // int x;
 		       | DIRECT_DECLARATOR T_EQUAL ASSIGNMENT_EXPR  {$$ = new InitDeclarator($1,$3);}            // int x =5
 		       | DIRECT_DECLARATOR T_EQUAL T_LCURLBRACKET ARGUMENT_EXPR_LIST T_RCURLBRACKET {$$ = new InitDeclarator($1, NULL, $4);}
+		       
 
-DIRECT_DECLARATOR: T_IDENTIFIER                                             {$$ = new DirectDeclarator($1, NULL, NULL, NULL);} 
+DIRECT_DECLARATOR: T_IDENTIFIER                                             {$$ = new DirectDeclarator($1, NULL, NULL, NULL);}  
 		         | T_IDENTIFIER T_LBRACKET T_RBRACKET                       {$$ = new DirectDeclarator($1, $2, NULL, $3);}// function declaration : int f() ;
 //		         | DIRECT_DECLARATOR T_LBRACKET IDENTIFIER_LIST T_RBRACKET  {$$ = new DirectDeclarator($1, $2, $3, $4);} // Not sure if need this int f(a,b);
 		         | T_IDENTIFIER T_LBRACKET PARAMETER_LIST T_RBRACKET        {$$ = new DirectDeclarator($1, $2, $3, $4);} // function declaration : int f(int a, int b) ;
 		         | T_IDENTIFIER T_SQUARE_LBRACKET EXPR T_SQUARE_RBRACKET    {$$ = new DirectDeclarator($1, $2, NULL, $4);}
 		         | T_IDENTIFIER T_SQUARE_LBRACKET T_SQUARE_RBRACKET         {$$ = new DirectDeclarator($1, $2, NULL, $3);}
+		         | T_MULT T_IDENTIFIER                                      {$$ = new DirectDeclarator($2, $1, NULL, NULL);}
 		         
 PARAMETER_LIST: PARAMETER_DECL                          {$$ = new std::vector<const ParameterDeclaration*>{$1};}    // 
               | PARAMETER_LIST T_COMMA PARAMETER_DECL   {$$ = $1; $1->push_back($3);}           // Inside brackets of ( int x, int y)
@@ -180,7 +190,7 @@ UNARY_EXPR: POSTFIX_EXPR            {$$ = $1;}
           | T_DECREMENT POSTFIX_EXPR  {$$ = new UnaryExpr($1,$2);}
           | UNARY_OPER POSTFIX_EXPR    {$$ = new UnaryExpr($1,$2);} //Add more
 
-UNARY_OPER: T_AMPERSAND     {$$ = $1;}          //Address
+UNARY_OPER: T_AND           {$$ = $1;}          //Address
           | T_MULT          {$$ = $1;}
           | T_PLUS          {$$ = $1;}
           | T_MINUS         {$$ = $1;}
@@ -225,7 +235,7 @@ PRIMARY_EXPR : T_IDENTIFIER	                {$$ = new PrimaryExpr(new StringNode
 		     | T_STR_LIT                    {$$ = new PrimaryExpr(new StringNode($1));}
 		     | T_LBRACKET EXPR T_RBRACKET   {$$ = new PrimaryExpr($2);}
                
-DECL_SPECIFIER_LIST: DECL_SPECIFIER                     {$$ = new std::vector<NodePtr>{$1};}
+DECL_SPECIFIER_LIST: DECL_SPECIFIER                     {$$ = new std::vector<const DeclSpecifier*>{$1};}
                    | DECL_SPECIFIER_LIST DECL_SPECIFIER {$$ = $1; $1->push_back($2);}
                    
 DECL_SPECIFIER: VAR_TYPE            {$$ = $1;}
@@ -254,7 +264,8 @@ VAR_TYPE : T_INT        {$$ = new DeclSpecifier($1);}
          | T_DOUBLE     {$$ = new DeclSpecifier($1);}
          | T_SIGNED     {$$ = new DeclSpecifier($1);}
          | T_UNSIGNED   {$$ = new DeclSpecifier($1);}
-
+         
+        
 TYPE_QUALIFIER: T_CONST     {$$ = new DeclSpecifier($1);}
               | T_VOLATILE  {$$ = new DeclSpecifier($1);}
 

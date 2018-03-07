@@ -1,6 +1,8 @@
 #include "ast_real/ast/initDeclarator.hpp"
 #include <cassert>
 
+extern std::vector<std::string> endPrint;
+
 InitDeclarator::InitDeclarator(const DirectDeclarator* _directDeclarator, const Expr* _asgnExpr, const std::vector<const Expr*>* _exprList)
     :directDeclarator(_directDeclarator), asgnExpr(_asgnExpr), exprList(_exprList) {}
 
@@ -27,6 +29,9 @@ void InitDeclarator::printMips(std::ostream& dst, Frame* framePtr)const{
         framePtr->load(dst, "$t0", destName);
         //Store it in the frame
         framePtr->store(dst, "$t0", directDeclarator->getId(), true);
+        
+        //if(
+        
     }
     if(exprList != NULL){
         framePtr->storeArray(dst, directDeclarator->getId(), exprList, true);
@@ -35,15 +40,23 @@ void InitDeclarator::printMips(std::ostream& dst, Frame* framePtr)const{
 
 void InitDeclarator::addGlobalMips(std::ostream& dst)const{
     if(asgnExpr != NULL){
-        dst << "\t.globl\t" << directDeclarator->getId() << std::endl;
-        dst << "\t.data" << std::endl;
-        dst << "\t.align 2" << std::endl;
-        dst << "\t.size\t" << directDeclarator->getId() << ", 4" << std::endl;
-        dst << directDeclarator->getId() << ":" << std::endl;
-        dst << "\t.word\t";
-        asgnExpr->printPy(dst);
-        dst << std::endl;
-        
+        //Check if we are dealing with a pointer
+        if(asgnExpr->isAddr() == true){
+            dst << "\t.globl\t" << directDeclarator->getId() << std::endl;
+            dst << "\t.align 2" << std::endl;
+            dst << "\t.size\t" << directDeclarator->getId() << ", 4" << std::endl;
+            dst << directDeclarator->getId() << ":" << std::endl;
+            dst << "\t.word\t" << asgnExpr->getId() << std::endl;
+        }else{     
+            dst << "\t.globl\t" << directDeclarator->getId() << std::endl;
+            dst << "\t.data" << std::endl;
+            dst << "\t.align 2" << std::endl;
+            dst << "\t.size\t" << directDeclarator->getId() << ", 4" << std::endl;
+            dst << directDeclarator->getId() << ":" << std::endl;
+            dst << "\t.word\t";
+            asgnExpr->printPy(dst);
+            dst << std::endl;
+        }
         g_mips_var.push_back(directDeclarator->getId());
     }else if(exprList != NULL){
         dst << "\t.globl\t" << directDeclarator->getId() << std::endl;

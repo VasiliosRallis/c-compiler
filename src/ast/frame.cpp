@@ -206,3 +206,15 @@ void Frame::storeArrayElement(std::ostream& dst, const std::string& reg, const P
     dst << "######## Done Storing ########" << std::endl;
 }
 
+void Frame::loadAddr(std::ostream& dst, const std::string& reg, const std::string& varName)const{
+    //Check if the variable is in local scope
+    if(scopeMap.back().find(varName) != scopeMap.back().end()){
+        dst << "addi " << reg << ", $fp, " << scopeMap.back().at(varName) << std::endl;
+    }else{
+        //Assuming that it is in Global
+        
+        //Find the address of the variable
+        dst << "lui " << reg << ", %hi(" << varName << ")" << std::endl;
+        dst << "addiu " << reg << ", " << reg << ", %lo(" << varName << ")" << std::endl;
+    }       
+}
