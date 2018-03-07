@@ -60,6 +60,14 @@ void PostfixExpr::printMipsE(std::ostream& dst, const std::string& destName, Fra
             std::string id2 = primaryExpr->getId();     // Wondering if there are problems with this, "5++;" Not valid in C89
             framePtr->store(dst, "$t0", id2);
     }
+    else if(*oper1 == "--"){            
+            primaryExpr->printMipsE(dst,destName,framePtr);
+	        framePtr->load(dst, "$t0", destName);
+	        framePtr->store(dst, "$t0", destName);
+            dst << "addi $t0, $t0, -1" << std::endl;
+            std::string id2 = primaryExpr->getId();     // Wondering if there are problems with this, "5--;" Not valid in C89
+            framePtr->store(dst, "$t0", id2);
+    }
 }
 
 void PostfixExpr::evaluateArgument(std::ostream& dst, const std::string& destName, Frame* framePtr)const{
