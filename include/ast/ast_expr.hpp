@@ -1,6 +1,5 @@
 #ifndef ast_expr_hpp
-#define ast_expr_hpp
-
+#define ast_expr_hpp    
 #include "ast_real/ast/postfixExpr.hpp"
 #include "ast_real/compiler/frame.hpp"
 #include <cassert>
@@ -107,14 +106,22 @@ public:
         else if(*oper == "++"){            
             postfixExpr->printMipsE(dst,destName,framePtr);
 	        framePtr->load(dst, "$t0", destName);
-            dst << "addi $t0, $t0, 1" << std::endl;     //Negate variable value stored in $t0
+            dst << "addi $t0, $t0, 1" << std::endl;     //Increment value before storing it back 
 	        framePtr->store(dst, "$t0", destName);
+            if(dynamic_cast<const PrimaryExpr*>(postfixExpr)){
+                std::string id = dynamic_cast<const PrimaryExpr*>(postfixExpr) ->getId();
+                framePtr->store(dst, "$t0", id);
+            }
         }
         else if(*oper == "--"){            
             postfixExpr->printMipsE(dst,destName,framePtr);
 	        framePtr->load(dst, "$t0", destName);
-            dst << "addi $t0, $t0, -1" << std::endl;     //Negate variable value stored in $t0
+            dst << "addi $t0, $t0, -1" << std::endl;     //Increment value before storing it back
 	        framePtr->store(dst, "$t0", destName);
+            if(dynamic_cast<const PrimaryExpr*>(postfixExpr)){
+                std::string id = dynamic_cast<const PrimaryExpr*>(postfixExpr) ->getId();
+                framePtr->store(dst, "$t0", id);
+            }
         }
         else if(*oper == "&"){
             std::string id(postfixExpr->getId());

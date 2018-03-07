@@ -1,4 +1,5 @@
 #include "ast_real/ast/postfixExpr.hpp"
+#include <typeinfo>
 
 PostfixExpr::PostfixExpr(const Expr* _primaryExpr, StrPtr _oper1, const std::vector<const Expr*>* _argumentExprList, StrPtr _oper2)
     :primaryExpr(_primaryExpr), oper1(_oper1), argumentExprList(_argumentExprList), oper2(_oper2){}
@@ -48,6 +49,22 @@ void PostfixExpr::printMipsE(std::ostream& dst, const std::string& destName, Fra
         //Trying to access element of an array;
         framePtr->loadArrayElement(dst, "$t0", primaryExpr->getId(), argumentExprList->at(0));
         framePtr->store(dst, "$t0", destName);
+    }
+    else if(*oper1 == "++"){            
+            primaryExpr->printMipsE(dst,destName,framePtr);
+	        framePtr->load(dst, "$t0", destName);
+	        framePtr->store(dst, "$t0", destName);
+            dst << "addi $t0, $t0, 1" << std::endl;
+            std::string id2 = primaryExpr->getId();     // Wondering if there are problems with this, "5++;" Not valid in C89
+            framePtr->store(dst, "$t0", id2);
+    }
+    else if(*oper1 == "--"){            
+            primaryExpr->printMipsE(dst,destName,framePtr);
+	        framePtr->load(dst, "$t0", destName);
+	        framePtr->store(dst, "$t0", destName);
+            dst << "addi $t0, $t0, -1" << std::endl;
+            std::string id2 = primaryExpr->getId();     // Wondering if there are problems with this, "5--;" Not valid in C89
+            framePtr->store(dst, "$t0", id2);
     }
 }
 
