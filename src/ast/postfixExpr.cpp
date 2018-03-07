@@ -48,13 +48,7 @@ void PostfixExpr::printMipsE(std::ostream& dst, const std::string& destName, Fra
     }
     if(*oper1 == "["){
         //Trying to access element of an array;
-        std::string indexName = makeName();
-        argumentExprList->at(0)->printMipsE(dst, indexName, framePtr);
-        framePtr->load(dst, "$t0", indexName);
-        //Multiply by 4
-        dst << "sll $t0, $t0, 2" << std::endl;
-        dst << "subu $t0, $fp, $t0" << std::endl;
-        framePtr->loadArrayElement(dst, "$t0", primaryExpr->getId(), "$t0");
+        framePtr->loadArrayElement(dst, "$t0", primaryExpr->getId(), argumentExprList->at(0));
         framePtr->store(dst, "$t0", destName);
     }
 }

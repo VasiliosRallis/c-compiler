@@ -146,15 +146,63 @@ void Frame::storeArray(std::ostream& dst, const std::string& arrayName, const st
     }
 }
 
-void Frame::loadArrayElement(std::ostream& dst, const std::string& reg, const std::string& arrayName, const std::string& indexReg)const{
-    dst << "lw " << reg << ", " << scopeMap.back().at(arrayName) << "(" << indexReg << ")" << std::endl;
+void Frame::loadArrayElement(std::ostream& dst, const std::string& reg, const std::string& arrayName, const Expr* index){
+    dst << "######## Loading Array Element ########" << std::endl;
+    //Calculate the index
+    std::string indexName = makeName();
+    index->printMipsE(dst, indexName, this);
+    load(dst, "$t0", indexName);
+    //Multiply by 4
+    dst << "sll $t0, $t0, 2" << std::endl;
+    dst << "subu $t1, $fp, $t0" << std::endl;
+    try{
+        dst << "lw " << reg << ", " << scopeMap.back().at(arrayName) << "($t1)" << std::endl;
+    }catch(const std::out_of_range& e){
+            dst << "lui $t1, %hi(" << arrayName << ")" << std::endl;
+            dst << "addiu $t1, $t1, %lo(" << arrayName << ")" << std::endl;
+            dst << "addu $t1, $t1, $t0" << std::endl;
+            dst << "lw " << reg << ", " << "0($t1)" << std::endl;
+    }
+    
+    dst << "######## Done Loading ########" << std::endl;
 }
 
-void Frame::storeArrayElement(std::ostream& dst, const std::string& reg, const std::string& arrayName, const std::string& indexReg)const{
-    dst << "sll " << indexReg << ", " << indexReg << ", 2" << std::endl;
-    dst << "subu " << indexReg << ", $fp, " << indexReg << std::endl;
-    std::cerr << arrayName << std::endl;
-    dst << "sw " << reg << ", " << scopeMap.back().at(arrayName) << "(" << indexReg << ")" << std::endl;
-}       
-
+void Frame::storeArrayElement(std::ostream& dst, const std::string& reg, const PostfixExpr* postfixExpr){
+    dst << "######## Storing Array Element ########" << std::endl;
+    
+    //We have to store so that we don't overwright it
+    std::string safetyStore(makeName());
+    store(dst, reg, safetyStore);
+    
+    //Get the identifier of the array
+    std::string arrayName = postfixExpr->getId();
+    
+    //Evaluate the index of the array element
+    std::string indexName = makeName();
+    postfixExpr->evaluateArgument(dst, indexName, this);
+    load(dst, "$t0", indexName);
+    dst << "sll $t0, $t0, 2" << std::endl;
+    
+    //Check if the array is in local scope
+    if(scopeMap.back().find(arrayName) != scopeMap.back().end()){
+        dst << "subu $t0, $fp, $t0" << std::endl;
+        load(dst, "$t1", safetyStore);
+        dst << "sw $t1, " << scopeMap.back().at(arrayName) << "($t0)" << std::endl;
+    }else{
+        //It must be in Global scope
+        
+        //Find the address of the array
+        dst << "lui $t1, %hi(" << arrayName << ")" << std::endl;
+        dst << "addiu $t1, $t1, %lo(" << arrayName << ")" << std::endl;
+        
+        //Find the address of the element
+        dst << "addu $t1, $t1, $t0" << std::endl;
+                
+        //Store
+        load(dst, "$t2", safetyStore);
+        dst << "sw $t2, 0($t1)" << std::endl;
+    }
+    
+    dst << "######## Done Storing ########" << std::endl;
+}
 

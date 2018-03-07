@@ -6,8 +6,9 @@
 
 class Expr;
 
-#include "ast_real/compiler/frame.hpp"
 #include "ast_real/ast/node.hpp"
+
+class Frame;
 
 class Expr: public Node{
 public:
