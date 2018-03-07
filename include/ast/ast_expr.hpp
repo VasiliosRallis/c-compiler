@@ -105,7 +105,7 @@ public:
         else if(*oper == "++"){            
             postfixExpr->printMipsE(dst,destName,framePtr);
 	        framePtr->load(dst, "$t0", destName);
-            dst << "addi $t0, $t0, 1" << std::endl;     //Negate variable value stored in $t0
+            dst << "addi $t0, $t0, 1" << std::endl;     //Increment value before storing it back 
 	        framePtr->store(dst, "$t0", destName);
             if(dynamic_cast<const PrimaryExpr*>(postfixExpr)){
                 std::string id = dynamic_cast<const PrimaryExpr*>(postfixExpr) ->getId();
@@ -115,7 +115,7 @@ public:
         else if(*oper == "--"){            
             postfixExpr->printMipsE(dst,destName,framePtr);
 	        framePtr->load(dst, "$t0", destName);
-            dst << "addi $t0, $t0, -1" << std::endl;     //Negate variable value stored in $t0
+            dst << "addi $t0, $t0, -1" << std::endl;     //Increment value before storing it back
 	        framePtr->store(dst, "$t0", destName);
             if(dynamic_cast<const PrimaryExpr*>(postfixExpr)){
                 std::string id = dynamic_cast<const PrimaryExpr*>(postfixExpr) ->getId();
