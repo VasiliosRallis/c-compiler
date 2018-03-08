@@ -14,7 +14,7 @@ class Frame;
 #include "ast_real/ast/expr.hpp"
 #include "ast_real/ast/postfixExpr.hpp"
 
-extern std::vector<std::string> g_mips_var;
+extern std::unordered_map<std::string, Type> g_mips_var;
 
 class Frame{
 private:

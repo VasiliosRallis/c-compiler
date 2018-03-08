@@ -8,7 +8,7 @@ OBJ_FILES := $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(SRC_FILES))
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	g++ $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $<
 
-CPPFLAGS += -W -Wall -g -O1
+CPPFLAGS += -W -Wall -g
 
 # This avoids error: ‘fileno’ was not declared in this scope
 CPPFLAGS += -std=c++11

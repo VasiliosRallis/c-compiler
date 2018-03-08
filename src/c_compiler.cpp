@@ -2,15 +2,17 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <unordered_map>
 
 std::vector<std::string> g_variables;
-std::vector<std::string> g_mips_var;
 
 //This vector will contain assembly that must be printed at the end
 //but can't since we are printing in "real-time"
 std::vector<std::string> endPrint;
 
 #include "ast_real/ast/node.hpp"
+
+std::unordered_map<std::string, Type> g_mips_var;
 
 int main(int argc, char* argv[]){
     

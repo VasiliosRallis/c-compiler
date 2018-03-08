@@ -40,49 +40,36 @@ void Frame::load(std::ostream& dst, const std::string reg, const std::string var
         try{
             argTranslator->load(dst, reg, varName);
         }catch(const std::out_of_range& e){
-            bool isGlobal(false);
-            for(int i(0); i < g_mips_var.size() && !isGlobal; ++i){
-                if(varName == g_mips_var.at(i)) isGlobal = true;
-            }
-            if(!isGlobal) std::cerr << "Couldn't find variable in Global vector (mips)" << std::endl;
-            else{
+            if(g_mips_var.find(varName) != g_mips_var.end()){
                 dst << "lui " << reg << ",%hi(" << varName << ")" << std::endl;
                 dst << "lw " << reg <<  ",%lo(" << varName << ")(" << reg << ")" << std::endl;
+                
+            }else{
+                throw(std::runtime_error("Couldn't find " + varName + " in Frame::load"));
             }
         }      
     }
 }
 
 void Frame::store(std::ostream& dst, const std::string reg, const std::string varName, bool force, Type type){
-    bool isGlobal(false);
-    for(int i(0); i < g_mips_var.size() && !isGlobal; ++i){
-        if(varName == g_mips_var.at(i)) isGlobal = true;
-    }
-    if(isGlobal){
-        dst << "lui $t7, %hi(" << varName << ")" << std::endl;
-        dst << "sw " << reg << ",%lo(" << varName << ")($t7)" << std::endl;
-        
-    }else{
-        if(freeWords == 0) addWords(dst, scopeMap.back().size());
-        bool ok = scopeMap.back().insert({varName, nextFreeAddr}).second;
-        
-        if(ok){
+    //This is a tricky case needs care
+    if(force){
+        if(scopeMap.back().find(varName) != scopeMap.back().end()){
+            scopeMap.back().erase(varName);
+            scopeMap.back().insert({varName, nextFreeAddr});
+            typeMap.back().erase(varName);
+            typeMap.back().insert({varName, type});
+
+        }else{
+            if(freeWords == 0) addWords(dst, scopeMap.back().size());
+            scopeMap.back().insert({varName, nextFreeAddr});
             typeMap.back().insert({varName, type});
             nextFreeAddr -= 4;
             freeWords--;
-            
-        }else{
-            //We want to replace the value in the stack and not create a new one
-            if(force){
-                scopeMap.back().erase(varName);
-                scopeMap.back().insert({varName, nextFreeAddr});
-                typeMap.back().erase(varName);
-                typeMap.back().insert({varName, type});
-                nextFreeAddr -= 4;
-                freeWords--;
-            }
         }
-        if(reg[1] == 't' || reg[1] == 'v')
+            
+        //This code will be fixed    
+        if(reg[1] == 't' || reg[1] == 'v' || reg[1] == '2' || reg[1] == '3')
             dst << "sw " << reg << ", " << scopeMap.back().at(varName) << "($fp)\n";
             
         else if(reg[1] == 'f')
@@ -90,6 +77,41 @@ void Frame::store(std::ostream& dst, const std::string reg, const std::string va
           
         else
             assert(0);
+ 
+    }else{
+        if(scopeMap.back().find(varName) != scopeMap.back().end()){
+            //This code will be fixed    
+            if(reg[1] == 't' || reg[1] == 'v' || reg[1] == '2' || reg[1] == '3')
+                dst << "sw " << reg << ", " << scopeMap.back().at(varName) << "($fp)\n";
+                
+            else if(reg[1] == 'f')
+                dst << "swc1 " << reg << ", " << scopeMap.back().at(varName) << "($fp)\n";
+              
+            else
+                assert(0);
+            
+        }else if(g_mips_var.find(varName) != g_mips_var.end()){
+            dst << "lui $t7, %hi(" << varName << ")" << std::endl;
+            dst << "sw " << reg << ",%lo(" << varName << ")($t7)" << std::endl;
+            
+        }else{
+            scopeMap.back().insert({varName, nextFreeAddr});
+            typeMap.back().insert({varName, type});
+            nextFreeAddr -= 4;
+            freeWords--;
+            
+            //This code will be fixed    
+            if(reg[1] == 't' || reg[1] == 'v' || reg[1] == '2' || reg[1] == '3')
+                dst << "sw " << reg << ", " << scopeMap.back().at(varName) << "($fp)\n";
+                
+            else if(reg[1] == 'f')
+                dst << "swc1 " << reg << ", " << scopeMap.back().at(varName) << "($fp)\n";
+              
+            else
+                assert(0);
+           
+        }
+        
     }
 }
 
@@ -244,17 +266,24 @@ void Frame::loadAddr(std::ostream& dst, const std::string& reg, const std::strin
 void Frame::storeType(const std::string& id, const Type type){
     //Check if it is already in the current type scope
     if(typeMap.back().find(id) != typeMap.back().end()){
-        throw std::runtime_error("Tried to store type while id is already in use!");
+        throw std::runtime_error("In Frame::storeType, tried to store " + id + " which is already in use");
     }else{
         typeMap.back().insert({id,type});
     }
 }
 
 Type Frame::loadType(const std::string& id)const{
-    try{
-        return typeMap.back().at(id);
+    try{return typeMap.back().at(id);
         
     }catch(const std::out_of_range& e){
-        return argTranslator->loadType(id);
+        try{return argTranslator->loadType(id);
+            
+        }catch(const std::out_of_range& e){
+            try{return g_mips_var.at(id);
+                
+            }catch(const std::out_of_range& e){
+                throw std::runtime_error("In Frame::loadType, couldn't find " + id);
+            }
+        }
     }
 }

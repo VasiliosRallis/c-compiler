@@ -1,11 +1,10 @@
 #include <vector>
 #include <string>
+#include <unordered_map>
 
 #include "ast_real/ast/directDeclarator.hpp"
 
 class ParameterDeclaration;
-
-extern std::vector<std::string> g_mips_var;
 
 DirectDeclarator::DirectDeclarator(StrPtr _id, StrPtr _s1, const std::vector<const ParameterDeclaration*>* _v1, StrPtr _s2)
     :StringNode(_id), s1(_s1), v1(_v1), s2(_s2){}
@@ -42,5 +41,4 @@ const std::vector<const ParameterDeclaration*>* DirectDeclarator::getParameterLi
 
 void DirectDeclarator::addGlobalMips(std::ostream& dst)const{
     dst << "\t.comm\t" << *id << ",4,4" << std::endl;
-    g_mips_var.push_back(*id);
 }

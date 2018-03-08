@@ -23,10 +23,5 @@ void ArgTranslator::load(std::ostream& dst, const std::string& destName, const s
 }
 
 Type ArgTranslator::loadType(const std::string& id)const{
-    try{
-        return argTypeMap.at(id);
-    
-    }catch(const std::out_of_range& e){
-        throw std::runtime_error("Tried to load type of uknown id!");
-    }
+    return argTypeMap.at(id);
 }

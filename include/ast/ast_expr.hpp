@@ -34,7 +34,7 @@ public:
 	
 	virtual void printMipsE(std::ostream& dst, const std::string& destName, Frame* framePtr = NULL, Type type = Type::NOTHING)const override{
 	    if(dynamic_cast<const IntConst*>(expr)){
-	        int id = dynamic_cast<const IntConst*>(expr)->getId();
+	        std::string id = dynamic_cast<const IntConst*>(expr)->getId();
 	        dst << "li $t0, " << id << "\n";
 	        framePtr->store(dst, "$t0", destName);
 	    }

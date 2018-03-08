@@ -17,7 +17,9 @@ enum class Type{
     NOTHING,
     INT,
     FLOAT,
-    DOUBLE
+    DOUBLE,
+    VOID,
+    CHAR
 };
 
 class Node{
@@ -28,6 +30,8 @@ public:
     virtual void printMips(std::ostream& dst, Frame* framePtr = NULL, Type type = Type::NOTHING)const;
     
     virtual int getLength()const;
+    virtual void addGlobalMips(std::ostream& dst)const;
+    virtual std::string getId()const;
 };
 
 

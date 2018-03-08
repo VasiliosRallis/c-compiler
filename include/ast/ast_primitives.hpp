@@ -6,6 +6,7 @@
 #include <vector>
 #include <sstream>
 #include <cassert>
+#include <unordered_map>
 
 #include "ast_real/ast/node.hpp"
 #include "ast_real/ast/expr.hpp"
@@ -14,7 +15,7 @@
 #include "ast_real/ast/initDeclarator.hpp"
 
 extern std::vector<std::string> g_variables;
-extern std::vector<std::string> g_mips_var;
+extern std::unordered_map<std::string, Type> g_mips_var;
 
 class DeclSpecifier: public StringNode{
 public:
@@ -25,6 +26,7 @@ public:
         if(*id == "int"){return Type::INT;}
         else if(*id == "float"){return Type::FLOAT;}
         else if(*id == "double"){return Type::DOUBLE;}
+        else if(*id == "void"){return Type::VOID;}
         else{assert(false);}
     }
 };
@@ -93,19 +95,15 @@ public:
         }
     }
     
-    void addGlobalMips(std::ostream& dst)const{
+    virtual void addGlobalMips(std::ostream& dst)const override{
         if(initdeclrList != NULL){
             for(int i(0); i < initdeclrList->size(); ++i){
-                if(dynamic_cast<const DirectDeclarator*>(initdeclrList->at(i))){
-                    dynamic_cast<const DirectDeclarator*>(initdeclrList->at(i))->addGlobalMips(dst);
-                }
-                else if(dynamic_cast<const InitDeclarator*>(initdeclrList->at(i))){
-                   dynamic_cast<const InitDeclarator*>(initdeclrList->at(i))->addGlobalMips(dst);
-                }
+                //This will only add the identifier
+                initdeclrList->at(i)->addGlobalMips(dst);
+                g_mips_var.insert({initdeclrList->at(i)->getId(), declrspecList->at(0)->getType()});
             }
         }
     }
-    
     
 };
 
@@ -225,7 +223,8 @@ public:
         dst << directDeclarator->getId() << ":\n";
         
         Frame frame(dst, directDeclarator);
-        frame.storeType("return", declrSpecList->at(0)->getType());  
+        
+        frame.storeType("return", declrSpecList->at(0)->getType());
         
         block->printMips(dst, &frame);
         
@@ -242,7 +241,7 @@ public:
     Program(NodePtr _program, NodePtr _basicProgram)
         :program(_program), basicProgram(_basicProgram){}
         
-    virtual void print(std::ostream& dst) const override{
+    virtual void print(std::ostream& dst)const override{
 	    program->print(dst);
 	    dst << " ";
 	    basicProgram->print(dst);
@@ -261,12 +260,15 @@ public:
     
     virtual void printMips(std::ostream& dst, Frame* framePtr = NULL, Type type = Type::NOTHING)const override{
         if(dynamic_cast<const Declaration*>(program)){
-            dynamic_cast<const Declaration*>(program)->addGlobalMips(dst);
+            program->addGlobalMips(dst);
+            
         }else{
             program->printMips(dst);
+            
         }
         if(dynamic_cast<const Declaration*>(basicProgram)){
-            dynamic_cast<const Declaration*>(basicProgram)->addGlobalMips(dst);
+            basicProgram->addGlobalMips(dst);
+            
         }else{
             basicProgram->printMips(dst);
         }
@@ -284,10 +286,7 @@ public:
     virtual void printPy(std::ostream& dst, int depth = 0) const override{
         dst << *id;
     }
-    
-    int getId()const{
-        return std::stoi(*id);
-    }
+
 };
 
 class Operator: public StringNode{

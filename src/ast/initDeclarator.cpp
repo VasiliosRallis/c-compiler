@@ -84,7 +84,6 @@ void InitDeclarator::addGlobalMips(std::ostream& dst)const{
             asgnExpr->printPy(dst);
             dst << std::endl;
         }
-        g_mips_var.push_back(directDeclarator->getId());
     }else if(exprList != NULL){
         dst << "\t.globl\t" << directDeclarator->getId() << std::endl;
         dst << "\t.data" << std::endl;
@@ -96,7 +95,6 @@ void InitDeclarator::addGlobalMips(std::ostream& dst)const{
             exprList->at(i)->printPy(dst);
             dst << std::endl;
         }
-        g_mips_var.push_back(directDeclarator->getId());
     }
     else{
         assert(false);
