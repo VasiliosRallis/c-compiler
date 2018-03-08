@@ -2,6 +2,8 @@
 #define ast_statement_hpp
 
 #include "ast_real/ast/statement.hpp"
+#include "ast_real/compiler/typeConv.hpp"
+
 class Frame;
 
 class ExprStatement: public Statement{
@@ -68,7 +70,22 @@ public:
                 //Request expression to evaluate itself
                 std::string destName = makeName();
                 p1->printMipsE(dst, destName, framePtr);
-                framePtr->load(dst, "$v0", destName);
+                
+                //Check if types match
+                if(framePtr->loadType("return") == framePtr->loadType(destName)){
+                    framePtr->load(dst, "$v0", destName);
+                    
+                }else{
+                    if(framePtr->loadType(destName) == Type::FLOAT){
+                        framePtr->load(dst, "$f0", destName);
+                        TypeConv::convert(dst, framePtr->loadType("return"), framePtr->loadType(destName), "$v0", "$f0");
+                        
+                    }else{
+                        //Temporary
+                        framePtr->load(dst, "$v0", destName);
+                        //assert(0);
+                    }
+                }
             }else{
                 //Have to find out what is the specification for v0 when the function returns void
                 //For now, I will return 0

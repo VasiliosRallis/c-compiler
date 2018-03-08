@@ -14,11 +14,14 @@ class ArgTranslator;
 class ArgTranslator{
 private:
     std::unordered_map<std::string, std::string> argMap;
+    std::unordered_map<std::string, Type> argTypeMap;
   
 public:
     ArgTranslator(const DirectDeclarator* directDeclarator);
     
     void load(std::ostream& dst, const std::string& destName, const std::string& varName)const;
+    
+    Type loadType(const std::string& id)const;
 };
 
 #endif

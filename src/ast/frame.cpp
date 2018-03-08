@@ -10,8 +10,11 @@ void Frame::addWords(std::ostream& dst, int n){
 Frame::Frame(std::ostream& dst, const DirectDeclarator* directDeclarator)
     :argTranslator(new ArgTranslator(directDeclarator)){
 
-    std::unordered_map<std::string, int> temp;
-    scopeMap.push_back(temp);
+    std::unordered_map<std::string, int> temp1;
+    scopeMap.push_back(temp1);
+    
+    std::unordered_map<std::string, Type> temp2;
+    typeMap.push_back(temp2);
     
     //Allocate the minumum frame
     scopeMap.front().insert({"oldFramePointer", 8});
@@ -28,7 +31,11 @@ Frame::Frame(std::ostream& dst, const DirectDeclarator* directDeclarator)
 
 void Frame::load(std::ostream& dst, const std::string reg, const std::string varName)const{
     try{
-        dst << "lw " << reg << ", " << scopeMap.back().at(varName) << "($fp)\n";
+        if(reg == "$f0"){
+            dst << "lwc1 " << reg << ", " << scopeMap.back().at(varName) << "($fp)\n"; 
+        }else{
+            dst << "lw " << reg << ", " << scopeMap.back().at(varName) << "($fp)\n";
+        } 
     }catch(const std::out_of_range& e){
         try{
             argTranslator->load(dst, reg, varName);
@@ -46,7 +53,7 @@ void Frame::load(std::ostream& dst, const std::string reg, const std::string var
     }
 }
 
-void Frame::store(std::ostream& dst, const std::string reg, const std::string varName, bool force){
+void Frame::store(std::ostream& dst, const std::string reg, const std::string varName, bool force, Type type){
     bool isGlobal(false);
     for(int i(0); i < g_mips_var.size() && !isGlobal; ++i){
         if(varName == g_mips_var.at(i)) isGlobal = true;
@@ -60,6 +67,7 @@ void Frame::store(std::ostream& dst, const std::string reg, const std::string va
         bool ok = scopeMap.back().insert({varName, nextFreeAddr}).second;
         
         if(ok){
+            typeMap.back().insert({varName, type});
             nextFreeAddr -= 4;
             freeWords--;
             
@@ -68,14 +76,16 @@ void Frame::store(std::ostream& dst, const std::string reg, const std::string va
             if(force){
                 scopeMap.back().erase(varName);
                 scopeMap.back().insert({varName, nextFreeAddr});
+                typeMap.back().erase(varName);
+                typeMap.back().insert({varName, type});
                 nextFreeAddr -= 4;
                 freeWords--;
             }
         }
-        if(type == Type::INT || type == Type::NOTHING)
+        if(reg[1] == 't' || reg[1] == 'v')
             dst << "sw " << reg << ", " << scopeMap.back().at(varName) << "($fp)\n";
             
-        else if(type == Type::FLOAT)
+        else if(reg[1] == 'f')
             dst << "swc1 " << reg << ", " << scopeMap.back().at(varName) << "($fp)\n";
           
         else
@@ -85,10 +95,12 @@ void Frame::store(std::ostream& dst, const std::string reg, const std::string va
 
 void Frame::newScope(){
     scopeMap.push_back(scopeMap.back());
+    typeMap.push_back(typeMap.back());
 }
 
 void Frame::deleteScope(){
     scopeMap.pop_back();
+    typeMap.pop_back();
 }
    
 void Frame::clean(std::ostream& dst)const{
@@ -227,4 +239,22 @@ void Frame::loadAddr(std::ostream& dst, const std::string& reg, const std::strin
         dst << "lui " << reg << ", %hi(" << varName << ")" << std::endl;
         dst << "addiu " << reg << ", " << reg << ", %lo(" << varName << ")" << std::endl;
     }       
+}
+
+void Frame::storeType(const std::string& id, const Type type){
+    //Check if it is already in the current type scope
+    if(typeMap.back().find(id) != typeMap.back().end()){
+        throw std::runtime_error("Tried to store type while id is already in use!");
+    }else{
+        typeMap.back().insert({id,type});
+    }
+}
+
+Type Frame::loadType(const std::string& id)const{
+    try{
+        return typeMap.back().at(id);
+        
+    }catch(const std::out_of_range& e){
+        return argTranslator->loadType(id);
+    }
 }

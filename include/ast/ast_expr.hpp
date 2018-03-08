@@ -41,7 +41,7 @@ public:
 	    else if(dynamic_cast<const StringNode*>(expr)){
 	        std::string id = dynamic_cast<const StringNode*>(expr)->getId();
 	        framePtr->load(dst, "$t0", id);
-	        framePtr->store(dst, "$t0", destName);
+	        framePtr->store(dst, "$t0", destName, false, framePtr->loadType(id));
         }
         else if (dynamic_cast<const Expr*>(expr)){
             dynamic_cast<const Expr*>(expr)->printMipsE(dst,destName,framePtr);        
@@ -50,7 +50,7 @@ public:
       
     virtual std::string getId()const override{
         if(dynamic_cast<const StringNode*>(expr)){
-            std::string id = dynamic_cast<const StringNode*>(expr) ->getId() ;
+            std::string id = dynamic_cast<const StringNode*>(expr)->getId() ;
             return id;
         }   
         else{

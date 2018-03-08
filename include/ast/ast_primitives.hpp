@@ -225,7 +225,8 @@ public:
         dst << directDeclarator->getId() << ":\n";
         
         Frame frame(dst, directDeclarator);
-      
+        frame.storeType("return", declrSpecList->at(0)->getType());  
+        
         block->printMips(dst, &frame);
         
         frame.clean(dst);

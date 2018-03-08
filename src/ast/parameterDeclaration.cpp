@@ -1,6 +1,8 @@
 #include "ast_real/ast/parameterDeclaration.hpp"
 
-ParameterDeclaration::ParameterDeclaration(NodePtr _n1, const DirectDeclarator* _n2)
+#include "ast/ast_primitives.hpp"
+
+ParameterDeclaration::ParameterDeclaration(const DeclSpecifier* _n1, const DirectDeclarator* _n2)
     :n1(_n1), n2(_n2){}
 
 void ParameterDeclaration::print(std::ostream& dst)const{
@@ -16,4 +18,8 @@ void ParameterDeclaration::printPy(std::ostream& dst, int depth)const{
 std::string ParameterDeclaration::getId()const{
     if(n2 != NULL) return n2->getId();
     else return std::string("Error: Called getId on Parameter Declaration with no ID");
+}
+
+Type ParameterDeclaration::getType()const{
+    return n1->getType();
 }

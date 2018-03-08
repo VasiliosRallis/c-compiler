@@ -30,6 +30,8 @@ private:
     //store an indetifier a. The int is that address of the frame relative to the $fp
     std::vector<std::unordered_map<std::string, int> > scopeMap;
     
+    std::vector<std::unordered_map<std::string, Type> > typeMap;
+    
     void addWords(std::ostream& dst, int n);
     
     ArgTranslator* const argTranslator;
@@ -39,7 +41,7 @@ public:
     
     void load(std::ostream& dst, const std::string reg, const std::string varName)const;
     
-    void store(std::ostream& dst, const std::string reg, const std::string varName, bool force = false);
+    void store(std::ostream& dst, const std::string reg, const std::string varName, bool force = false, Type type = Type::NOTHING);
     
     void newScope();
     
@@ -56,6 +58,10 @@ public:
     void storeArrayElement(std::ostream& dst, const std::string& reg, const PostfixExpr* postfixExpr);
     
     void loadAddr(std::ostream& dst, const std::string& reg, const std::string& varName)const;
+    
+    void storeType(const std::string& id, const Type type);
+    
+    Type loadType(const std::string& id)const;
 };
 
 static unsigned gUniqueIndex = 0;
