@@ -5,6 +5,9 @@
 
 std::vector<std::string> g_variables;
 std::vector<std::string> g_mips_var;
+
+//This vector will contain assembly that must be printed at the end
+//but can't since we are printing in "real-time"
 std::vector<std::string> endPrint;
 
 #include "ast_real/ast/node.hpp"
@@ -35,6 +38,12 @@ int main(int argc, char* argv[]){
             NodePtr ast = parseAST(argv[2]);
             std::ofstream output(argv[4]);
             ast->printMips(output);
+            
+            //Print the endPrint vector
+            for(auto i = endPrint.begin(); i != endPrint.end(); ++i){
+                output << *i;
+            }
+        
         }
         else{
             std::cout << "ERROR: Flag missing" << std::endl;

@@ -26,9 +26,9 @@ public:
     
     virtual void printPy(std::ostream& dst, int depth = 0)const override;
     
-    virtual void printMipsE(std::ostream& dst, const std::string& destName, Frame* framePtr = NULL)const;
+    virtual void printMipsE(std::ostream& dst, const std::string& destName, Frame* framePtr = NULL, Type type = Type::NOTHING)const;
     
-    void evaluateArgument(std::ostream& dst, const std::string& destName, Frame* framePtr = NULL)const;
+    void evaluateArgument(std::ostream& dst, const std::string& destName, Frame* framePtr = NULL, Type type = Type::NOTHING)const;
     
     virtual std::string getId()const override;
 };

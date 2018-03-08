@@ -32,7 +32,7 @@ public:
         }   
     }
 	
-	virtual void printMipsE(std::ostream& dst, const std::string& destName, Frame* framePtr = NULL)const override{
+	virtual void printMipsE(std::ostream& dst, const std::string& destName, Frame* framePtr = NULL, Type type = Type::NOTHING)const override{
 	    if(dynamic_cast<const IntConst*>(expr)){
 	        int id = dynamic_cast<const IntConst*>(expr)->getId();
 	        dst << "li $t0, " << id << "\n";
@@ -80,7 +80,7 @@ public:
         postfixExpr->printPy(dst);        
     }
     
-    virtual void printMipsE(std::ostream& dst, const std::string& destName, Frame* framePtr = NULL)const override{
+    virtual void printMipsE(std::ostream& dst, const std::string& destName, Frame* framePtr = NULL, Type type = Type::NOTHING)const override{
         if(*oper == "-"){            
             postfixExpr->printMipsE(dst,destName,framePtr);
 	        framePtr->load(dst, "$t0", destName);
@@ -188,7 +188,7 @@ public:
         oper->printPy(dst);
         operand2->printPy(dst);
     }
-    virtual void printMipsE(std::ostream& dst, const std::string& destName, Frame* framePtr = NULL)const override{
+    virtual void printMipsE(std::ostream& dst, const std::string& destName, Frame* framePtr = NULL, Type type = Type::NOTHING)const override{
         std::string n1 = makeName();
         std::string n2 = makeName();
         

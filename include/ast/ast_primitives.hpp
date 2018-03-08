@@ -84,10 +84,10 @@ public:
         }
     }
     
-    void printMips(std::ostream& dst, Frame* framePtr = NULL)const override{
+    void printMips(std::ostream& dst, Frame* framePtr = NULL, Type = Type::NOTHING)const override{
         if(initdeclrList != NULL){
             for(int i(0); i < initdeclrList->size(); ++i){
-                initdeclrList->at(i)->printMips(dst, framePtr);
+                initdeclrList->at(i)->printMips(dst, framePtr, declrspecList->at(0)->getType());
                 if (i < initdeclrList->size() - 1) dst << "\n";
             }
         }
@@ -167,7 +167,7 @@ public:
         }
     }
     
-    virtual void printMips(std::ostream& dst, Frame* framePtr = NULL)const override{
+    virtual void printMips(std::ostream& dst, Frame* framePtr = NULL, Type = Type::NOTHING)const override{
             if(declrList != NULL){
                 for(int i(0); i < declrList->size(); ++i){
                     declrList->at(i)->printMips(dst, framePtr);
@@ -216,7 +216,7 @@ public:
         block->printPyG(dst,depth+1);
     }
     
-    virtual void printMips(std::ostream& dst, Frame* framePtr = NULL)const override{
+    virtual void printMips(std::ostream& dst, Frame* framePtr = NULL, Type type = Type::NOTHING)const override{
         dst << "\t.set noreorder\n";        
         dst << "\t.text\n";
         dst << "\t.align 2 \n";
@@ -258,7 +258,7 @@ public:
 	        dynamic_cast<const Declaration*>(basicProgram)->addGlobal();
     }
     
-    virtual void printMips(std::ostream& dst, Frame* framePtr = NULL)const override{
+    virtual void printMips(std::ostream& dst, Frame* framePtr = NULL, Type type = Type::NOTHING)const override{
         if(dynamic_cast<const Declaration*>(program)){
             dynamic_cast<const Declaration*>(program)->addGlobalMips(dst);
         }else{
@@ -281,7 +281,7 @@ public:
         dst << std::stoi((*id));
     }
     virtual void printPy(std::ostream& dst, int depth = 0) const override{
-        dst << std::stoi((*id));
+        dst << *id;
     }
     
     int getId()const{

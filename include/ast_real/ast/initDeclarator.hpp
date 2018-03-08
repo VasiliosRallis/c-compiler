@@ -23,7 +23,7 @@ public:
     
     virtual void printPy(std::ostream& dst, int depth = 0) const override;
     
-    virtual void printMips(std::ostream& dst, Frame* framePtr)const override;
+    virtual void printMips(std::ostream& dst, Frame* framePtr = NULL, Type type = Type::NOTHING)const override;
     
     void addGlobalMips(std::ostream& dst)const;
     

@@ -1,5 +1,6 @@
 #include "ast_real/ast/initDeclarator.hpp"
 #include <cassert>
+#include <sstream>
 
 extern std::vector<std::string> endPrint;
 
@@ -19,18 +20,44 @@ void InitDeclarator::printPy(std::ostream& dst, int depth)const{
     asgnExpr->printPy(dst);
 }
 
-void InitDeclarator::printMips(std::ostream& dst, Frame* framePtr)const{
+void InitDeclarator::printMips(std::ostream& dst, Frame* framePtr, Type type)const{
     if(asgnExpr != NULL){
-        //Generate a unique name
-        std::string destName = makeName();
-        //Ask the expression to evaluate itself and store its value in the frame, with destName as it's identifier
-        asgnExpr->printMipsE(dst, destName, framePtr);
-        //Temporary store the identifier in $t1
-        framePtr->load(dst, "$t0", destName);
-        //Store it in the frame
-        framePtr->store(dst, "$t0", directDeclarator->getId(), true);
-        
-        //if(
+        if(type == Type::INT){
+            //Generate a unique name
+            std::string destName = makeName();
+            //Ask the expression to evaluate itself and store its value in the frame, with destName as it's identifier
+            asgnExpr->printMipsE(dst, destName, framePtr);
+            //Temporary store the identifier in $t1
+            framePtr->load(dst, "$t0", destName);
+            //Store it in the frame
+            framePtr->store(dst, "$t0", directDeclarator->getId(), true);
+            
+        }else if(type == Type::FLOAT){
+            //Generate label identifier
+            std::string label = std::string("$" + makeName("FLOAT"));
+            
+            //Add the code that needs to be printed at the end of
+            //the assembly
+            endPrint.push_back("\t.rdata\n");
+            endPrint.push_back("\t.align 2\n");
+            endPrint.push_back(label + ":\n");
+            
+            //This might not word for some inputs (non deterministic)
+            std::stringstream ss;
+            asgnExpr->printPy(ss);
+            endPrint.push_back("\t.float " + ss.str() + "\n");
+            
+            //Load the containts of the rdata into a register
+            dst << "lui $t0, %hi(" << label << ")" << std::endl;
+            dst << "lwc1 $f0, %lo(" << label << ")($t0)" << std::endl;
+            
+            //Store the variable in the frame
+            framePtr->store(dst, "$f0", directDeclarator->getId(), true, type);
+            
+            
+        }else{
+            assert(0);
+        }
         
     }
     if(exprList != NULL){

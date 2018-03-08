@@ -1,4 +1,5 @@
 #include "ast_real/compiler/frame.hpp"
+#include "cassert"
 
 void Frame::addWords(std::ostream& dst, int n){
     int bytes = n*4;
@@ -53,13 +54,15 @@ void Frame::store(std::ostream& dst, const std::string reg, const std::string va
     if(isGlobal){
         dst << "lui $t7, %hi(" << varName << ")" << std::endl;
         dst << "sw " << reg << ",%lo(" << varName << ")($t7)" << std::endl;
-    }
-    else{
+        
+    }else{
         if(freeWords == 0) addWords(dst, scopeMap.back().size());
         bool ok = scopeMap.back().insert({varName, nextFreeAddr}).second;
+        
         if(ok){
             nextFreeAddr -= 4;
             freeWords--;
+            
         }else{
             //We want to replace the value in the stack and not create a new one
             if(force){
@@ -68,8 +71,15 @@ void Frame::store(std::ostream& dst, const std::string reg, const std::string va
                 nextFreeAddr -= 4;
                 freeWords--;
             }
-        }    
-        dst << "sw " << reg << ", " << scopeMap.back().at(varName) << "($fp)\n";
+        }
+        if(type == Type::INT || type == Type::NOTHING)
+            dst << "sw " << reg << ", " << scopeMap.back().at(varName) << "($fp)\n";
+            
+        else if(type == Type::FLOAT)
+            dst << "swc1 " << reg << ", " << scopeMap.back().at(varName) << "($fp)\n";
+          
+        else
+            assert(0);
     }
 }
 

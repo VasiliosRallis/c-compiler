@@ -36,7 +36,7 @@ void PostfixExpr::printPy(std::ostream& dst, int depth)const{
     }
 }
 
-void PostfixExpr::printMipsE(std::ostream& dst, const std::string& destName, Frame* framePtr)const{
+void PostfixExpr::printMipsE(std::ostream& dst, const std::string& destName, Frame* framePtr, Type type)const{
     //Check if is is a function call
     if(*oper1 == "("){
         framePtr->saveArguments(dst, argumentExprList);
@@ -68,7 +68,7 @@ void PostfixExpr::printMipsE(std::ostream& dst, const std::string& destName, Fra
     }
 }
 
-void PostfixExpr::evaluateArgument(std::ostream& dst, const std::string& destName, Frame* framePtr)const{
+void PostfixExpr::evaluateArgument(std::ostream& dst, const std::string& destName, Frame* framePtr, Type type)const{
     argumentExprList->at(0)->printMipsE(dst, destName, framePtr);
 }
 

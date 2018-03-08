@@ -24,7 +24,7 @@ public:
 	    if(expr != NULL) expr->printPy(dst, depth);
     }
     
-    virtual void printMips(std::ostream& dst, Frame* framePtr = NULL)const override{
+    virtual void printMips(std::ostream& dst, Frame* framePtr = NULL, Type type = Type::NOTHING)const override{
         if(expr != NULL){
             std::string destName = makeName();        
             expr->printMipsE(dst,destName,framePtr);
@@ -32,7 +32,7 @@ public:
     }
     
     //Expr Statement will also have a printMipsE function...
-    void printMipsE(std::ostream& dst, std::string& destName, Frame* framePtr = NULL)const{
+    void printMipsE(std::ostream& dst, std::string& destName, Frame* framePtr = NULL, Type = Type::NOTHING)const{
         if (expr !=NULL) expr->printMipsE(dst, destName, framePtr);
     }
     
@@ -62,7 +62,7 @@ public:
         if(p1 != NULL) p1->printPy(dst);
     }
     
-    virtual void printMips(std::ostream& dst, Frame* framePtr = NULL)const override{
+    virtual void printMips(std::ostream& dst, Frame* framePtr = NULL, Type type = Type::NOTHING)const override{
         if(*str1 == "return"){
             if(p1 != NULL){
                 //Request expression to evaluate itself
@@ -103,7 +103,7 @@ public:
     
     virtual void printPy(std::ostream& dst, int depth = 0) const override{}
     
-    virtual void printMips(std::ostream& dst, Frame* framePtr = NULL)const override{
+    virtual void printMips(std::ostream& dst, Frame* framePtr = NULL, Type type = Type::NOTHING)const override{
         framePtr->newScope();
         dst << "###### START OF FOR LOOP ######\n";
         
@@ -183,7 +183,7 @@ public:
 
     }
     
-    virtual void printMips(std::ostream& dst, Frame* framePtr = NULL)const override{
+    virtual void printMips(std::ostream& dst, Frame* framePtr = NULL, Type type = Type::NOTHING)const override{
         framePtr->newScope();
         dst << "###### START OF WHILE LOOP ######\n";
         std::string COND = makeName("COND");
@@ -269,7 +269,7 @@ public:
        }
    }
 
-     virtual void printMips(std::ostream& dst, Frame* framePtr = NULL)const override{
+     virtual void printMips(std::ostream& dst, Frame* framePtr = NULL, Type type = Type::NOTHING)const override{
         framePtr->newScope();
         
         std::string destName = makeName();
