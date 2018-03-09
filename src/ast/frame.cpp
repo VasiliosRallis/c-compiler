@@ -69,7 +69,7 @@ void Frame::store(std::ostream& dst, const std::string reg, const std::string va
         }
             
         //This code will be fixed    
-        if(reg[1] == 't' || reg[1] == 'v' || reg[1] == '2' || reg[1] == '3')
+        if(reg[1] == 't' || reg[1] == 'v' || reg[1] == '2' || reg[1] == '3' || reg[1] == 'z')
             dst << "sw " << reg << ", " << scopeMap.back().at(varName) << "($fp)\n";
             
         else if(reg[1] == 'f')
@@ -137,10 +137,11 @@ void Frame::clean(std::ostream& dst)const{
 void Frame::saveArguments(std::ostream& dst, const std::vector<const Expr*>* argumentExprList){
     //Looks compilcated but we need to do it this way so that the $sp doesn't change
     if(argumentExprList != NULL){
+        dst << "###### Storing Arguments" << std::endl;
         //Vector to hold the names of the Variables of the expressions
         std::vector<std::string> argumentNames;
         for(int i(0); i < argumentExprList->size(); ++i){
-            std::string exprName = makeName();
+            std::string exprName = makeName("arg");
             argumentNames.push_back(exprName);
             const Expr* expr = static_cast<const Expr*>(argumentExprList->at(i));
             expr->printMipsE(dst, argumentNames.back(), this);
@@ -150,6 +151,7 @@ void Frame::saveArguments(std::ostream& dst, const std::vector<const Expr*>* arg
         dst << "addiu $sp, $sp, -" << 4*argumentExprList->size() << std::endl;
         //From this point $sp can't change!!!
         for(int i(0); i < argumentNames.size(); ++i){
+                        dst << "###### Storing Arg ######" << std::endl;
             if(i < 4) load(dst, std::string("$a").append(std::to_string(i)), argumentNames.at(i));
             else{
                 //Store the arguments in the correct position of the frame;

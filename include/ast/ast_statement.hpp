@@ -288,7 +288,7 @@ public:
 
      virtual void printMips(std::ostream& dst, Frame* framePtr = NULL, Type type = Type::NOTHING)const override{
         framePtr->newScope();
-        
+        dst << "###### START OF IF STATEMENT ######\n";
         std::string destName = makeName();
         std::string ELSE = makeName(std::string("ELSE"));
         std::string END = makeName(std::string("END"));        
@@ -309,6 +309,7 @@ public:
 
         dst << "$" << END << ":" << std::endl;             
         
+        dst << "###### END OF IF STATEMENT ######\n";
         framePtr->deleteScope();
      }
 

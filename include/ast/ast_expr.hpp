@@ -193,11 +193,19 @@ public:
         std::string n2 = makeName();
         
         //We don't need the first operand if we are doing an assignment
-        if(oper->getId() != "=") operand1->printMipsE(dst,n1,framePtr);
-        operand2->printMipsE(dst,n2,framePtr);
+        if(oper->getId() != "="){ 
+            operand1->printMipsE(dst, n1, framePtr);
+            operand2->printMipsE(dst, n2, framePtr);
+            framePtr->load(dst, "$t0", n1);
+            framePtr->load(dst, "$t1", n2);
         
-        if(oper->getId() != "=") framePtr->load(dst,"$t0",n1);
-        framePtr->load(dst,"$t1",n2);        
+        }else{
+            operand2->printMipsE(dst, n2, framePtr);
+            framePtr->load(dst, "$t1", n2);
+        }
+        
+        //if(oper->getId() != "=") framePtr->load(dst,"$t0",n1);
+        //framePtr->load(dst,"$t1",n2);        
         
         if(oper->getId() == "+"){
             dst << "add $t2, $t0, $t1" << std::endl ;
