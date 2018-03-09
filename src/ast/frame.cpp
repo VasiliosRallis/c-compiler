@@ -68,15 +68,12 @@ void Frame::store(std::ostream& dst, const std::string reg, const std::string va
             freeWords--;
         }
             
-        //This code will be fixed    
-        if(reg[1] == 't' || reg[1] == 'v' || reg[1] == '2' || reg[1] == '3' || reg[1] == 'z' || reg[1] == 'a')
+        //Check if we are storing a floating point register
+        if(reg[1] != 'f')
             dst << "sw " << reg << ", " << scopeMap.back().at(varName) << "($fp)\n";
             
-        else if(reg[1] == 'f')
-            dst << "swc1 " << reg << ", " << scopeMap.back().at(varName) << "($fp)\n";
-          
         else
-            assert(0);
+            dst << "swc1 " << reg << ", " << scopeMap.back().at(varName) << "($fp)\n";
  
     }else{
         if(scopeMap.back().find(varName) != scopeMap.back().end()){
@@ -101,15 +98,12 @@ void Frame::store(std::ostream& dst, const std::string reg, const std::string va
             nextFreeAddr -= 4;
             freeWords--;
             
-            //This code will be fixed    
-            if(reg[1] == 't' || reg[1] == 'v' || reg[1] == '2' || reg[1] == '3' || reg[1] == 'a')
+            //Check if we are storing a floating point register
+            if(reg[1] != 'f')
                 dst << "sw " << reg << ", " << scopeMap.back().at(varName) << "($fp)\n";
                 
-            else if(reg[1] == 'f')
-                dst << "swc1 " << reg << ", " << scopeMap.back().at(varName) << "($fp)\n";
-              
             else
-                assert(0);
+                dst << "swc1 " << reg << ", " << scopeMap.back().at(varName) << "($fp)\n";
            
         }
         
@@ -152,7 +146,6 @@ void Frame::saveArguments(std::ostream& dst, const std::vector<const Expr*>* arg
         dst << "addiu $sp, $sp, -" << 4*argumentExprList->size() << std::endl;
         //From this point $sp can't change!!!
         for(int i(0); i < argumentNames.size(); ++i){
-                        dst << "###### Storing Arg ######" << std::endl;
             if(i < 4) load(dst, std::string("$a").append(std::to_string(i)), argumentNames.at(i));
             else{
                 //Store the arguments in the correct position of the frame;

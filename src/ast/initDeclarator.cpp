@@ -22,11 +22,11 @@ void InitDeclarator::printPy(std::ostream& dst, int depth)const{
 
 void InitDeclarator::printMips(std::ostream& dst, Frame* framePtr, Type type)const{
     if(asgnExpr != NULL){
-        if(type == Type::INT){
+        if(type == Type::INT || type == Type::CHAR){
             //Generate a unique name
             std::string destName = makeName();
             //Ask the expression to evaluate itself and store its value in the frame, with destName as it's identifier
-            asgnExpr->printMipsE(dst, destName, framePtr);
+            asgnExpr->printMipsE(dst, destName, framePtr, type);
             //Temporary store the identifier in $t1
             framePtr->load(dst, "$t0", destName);
             //Store it in the frame
@@ -53,8 +53,6 @@ void InitDeclarator::printMips(std::ostream& dst, Frame* framePtr, Type type)con
             
             //Store the variable in the frame
             framePtr->store(dst, "$f0", directDeclarator->getId(), true, type);
-            
-            
         }else{
             assert(0);
         }

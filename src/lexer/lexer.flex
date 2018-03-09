@@ -98,7 +98,8 @@ std::vector<std::string> translator{
     "T_ARROW",
     "T_DOT",
     "T_SQUARE_LBRACKET",
-    "T_SQUARE_RBRACKET"
+    "T_SQUARE_RBRACKET",
+    "T_CHAR_CONSTANT"
 };
  
 /* End the embedded code section. */
@@ -111,6 +112,9 @@ FLOAT           [0-9]*\.[0-9]+
 S_CHAR          [^\\"\n]
 CHAR_SEQ        {CHAR}+
 STR_LIT         "{CHAR_SEQ}"|""
+
+CHAR_CONSTANT   \'{CHAR}\'
+CHAR            [^\'\n] 
 
 %%
 
@@ -209,6 +213,7 @@ return 		    {yylval.string = new std::string(yytext); return reportToken(T_RETU
 {FLOAT}         {yylval.string = new std::string(yytext); return reportToken(T_INT_CONSTANT, yytext);}
 {IDENTIFIER}	{yylval.string = new std::string(yytext); return reportToken(T_IDENTIFIER, yytext);}
 {STR_LIT}       {yylval.string = new std::string(yytext); return reportToken(T_STR_LIT, yytext);}
+{CHAR_CONSTANT} {yylval.string = new std::string(yytext); return reportToken(T_CHAR_CONSTANT, yytext);}
 
 #.*             {  } //remove preprocessed information
 \/\/.*            {   } // single line comments

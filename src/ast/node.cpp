@@ -21,3 +21,7 @@ void Node::addGlobalMips(std::ostream& dst)const{
 std::string Node::getId()const{
     throw std::runtime_error("Called getId() on class: " + std::string(typeid(*this).name()));
 }
+
+void Node::printMipsE(std::ostream& dst, const std::string& destName, Frame* framePtr, Type type)const{
+    throw std::runtime_error("Called printMipsE() on class: " + std::string(typeid(*this).name()));
+}

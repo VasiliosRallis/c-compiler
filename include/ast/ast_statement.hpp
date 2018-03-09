@@ -170,6 +170,27 @@ public:
     }
     
     virtual void printPy(std::ostream& dst, int depth = 0) const override{}
+    
+    virtual void printMips(std::ostream& dst, Frame* framePtr = NULL, Type type = Type::NOTHING)const override{
+        framePtr->newScope();
+        dst << "###### START OF DO-WHILE LOOP ######\n";
+        
+        std::string START = makeName("START");
+        std::string condition = makeName("condition");
+        
+        dst << "$" << START << ":" << std::endl;
+        statement->printMips(dst, framePtr);
+        
+        expr->printMipsE(dst, condition, framePtr);
+        framePtr->load(dst, "$t0", condition);
+        dst<<"bne $0, $t0, $" << START << std::endl;
+        dst << "nop" << std::endl;
+        
+        dst << "###### END OF WHILE LOOP ######";
+        framePtr->deleteScope();
+    }  
+    
+    
 };
 
 class WhileStatement: public Statement{

@@ -52,7 +52,7 @@
 %token T_INT_CONSTANT T_STR_LIT
 %token T_AMPERSAND T_EXCLAMATION T_TILDE T_INCREMENT T_DECREMENT T_LOGICAL_OR T_LOGICAL_AND T_OR T_AND T_XOR T_EQUALITY T_INEQUALITY
 %token T_SMALLER T_GREATER T_GREATER_EQUAL T_SMALLER_EQUAL T_SHIFT_L T_SHIFT_R T_PLUS T_MINUS T_DIV T_MULT T_MOD
-%token T_ARROW T_DOT T_SQUARE_LBRACKET T_SQUARE_RBRACKET
+%token T_ARROW T_DOT T_SQUARE_LBRACKET T_SQUARE_RBRACKET T_CHAR_CONSTANT
 
 //Non-terminals declaration
 %type <node> PROGRAM EXT_DECLARATION FUNCTION_DEF DECLARATION INIT_DECLARATOR
@@ -72,7 +72,7 @@
 %type <declSpecifier> VAR_TYPE TYPE_QUALIFIER STOR_CLASS_SPEC DECL_SPECIFIER
 
 %type <string> T_INT_CONSTANT
-%type <string> T_IDENTIFIER T_STR_LIT
+%type <string> T_IDENTIFIER T_STR_LIT T_CHAR_CONSTANT
 %type <string> T_INT T_CHAR T_VOID T_SHORT T_LONG T_FLOAT T_DOUBLE T_SIGNED T_UNSIGNED
 %type <string> T_CONST T_VOLATILE T_TYPEDEF T_EXTERN T_STATIC T_AUTO T_REGISTER
 %type <string> T_WHILE T_DO
@@ -233,6 +233,7 @@ DECLR_LIST : DECLARATION	                {$$ = new std::vector<NodePtr>{$1};}
 PRIMARY_EXPR : T_IDENTIFIER	                {$$ = new PrimaryExpr(new StringNode($1));}
 		     | T_INT_CONSTANT               {$$ = new PrimaryExpr(new IntConst($1));}
 		     | T_STR_LIT                    {$$ = new PrimaryExpr(new StringNode($1));}
+		     | T_CHAR_CONSTANT              {$$ = new PrimaryExpr(new StringNode($1));}
 		     | T_LBRACKET EXPR T_RBRACKET   {$$ = new PrimaryExpr($2);}
                
 DECL_SPECIFIER_LIST: DECL_SPECIFIER                     {$$ = new std::vector<const DeclSpecifier*>{$1};}

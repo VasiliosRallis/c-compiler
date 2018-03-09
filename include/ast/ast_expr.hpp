@@ -34,30 +34,34 @@ public:
 	
 	virtual void printMipsE(std::ostream& dst, const std::string& destName, Frame* framePtr = NULL, Type type = Type::NOTHING)const override{
 	    if(dynamic_cast<const IntConst*>(expr)){
-	        std::string id = dynamic_cast<const IntConst*>(expr)->getId();
+	        std::string id = expr->getId();
 	        dst << "li $t0, " << id << "\n";
 	        framePtr->store(dst, "$t0", destName);
 	    }
 	    else if(dynamic_cast<const StringNode*>(expr)){
-	        std::string id = dynamic_cast<const StringNode*>(expr)->getId();
-	        framePtr->load(dst, "$t0", id);
-	        framePtr->store(dst, "$t0", destName, false, framePtr->loadType(id));
-        }
-        else if (dynamic_cast<const Expr*>(expr)){
-            dynamic_cast<const Expr*>(expr)->printMipsE(dst,destName,framePtr);        
+	        if(type == Type::INT || type == Type::NOTHING){
+	            std::string id = expr->getId();
+	            framePtr->load(dst, "$t0", id);
+	            framePtr->store(dst, "$t0", destName, false, framePtr->loadType(id));
+	            
+	        }else if(type == Type::CHAR){
+	            //The id will contain a string 'a' 
+	            std::string id = expr->getId();
+	            int ascii = (int)id[1];
+	            dst << "li $t0, " << ascii << std::endl;
+	            framePtr->store(dst, "$t0", destName);
+	            
+	        }else{
+	            assert(0);
+	        }
+	        
+        }else if (dynamic_cast<const Expr*>(expr)){
+            expr->printMipsE(dst,destName,framePtr);        
         }
     }
       
     virtual std::string getId()const override{
-        if(dynamic_cast<const StringNode*>(expr)){
-            std::string id = dynamic_cast<const StringNode*>(expr)->getId() ;
-            return id;
-        }   
-        else{
-            std::cerr << "Tried to call getId on PrimaryExpr that wasnt stringNode" << std::endl;
-            return "error" ;   
-        } 
-    
+        return expr->getId();
     }
     
 };

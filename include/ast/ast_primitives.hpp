@@ -27,7 +27,8 @@ public:
         else if(*id == "float"){return Type::FLOAT;}
         else if(*id == "double"){return Type::DOUBLE;}
         else if(*id == "void"){return Type::VOID;}
-        else{assert(false);}
+        else if(*id == "char"){return Type::CHAR;}
+        else{assert(0);}
     }
 };
 

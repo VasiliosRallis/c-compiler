@@ -29,6 +29,8 @@ public:
     virtual void printPy(std::ostream& dst, int depth = 0)const;
     virtual void printMips(std::ostream& dst, Frame* framePtr = NULL, Type type = Type::NOTHING)const;
     
+    //Functions that just throw exception
+    virtual void printMipsE(std::ostream& dst, const std::string& destName, Frame* framePtr = NULL, Type type = Type::NOTHING)const;
     virtual int getLength()const;
     virtual void addGlobalMips(std::ostream& dst)const;
     virtual std::string getId()const;
