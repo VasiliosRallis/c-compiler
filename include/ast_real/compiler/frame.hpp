@@ -62,6 +62,12 @@ public:
     void storeType(const std::string& id, const Type type);
     
     Type loadType(const std::string& id)const;
+    
+    //Saves all registers that aren't preserved by function calls
+    //Currenlty only save $a0-$a3
+    void storeRegisters(std::ostream& dst);
+    
+    void loadRegisters(std::ostream& dst)const;
 };
 
 static unsigned gUniqueIndex = 0;

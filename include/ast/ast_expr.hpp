@@ -189,8 +189,8 @@ public:
         operand2->printPy(dst);
     }
     virtual void printMipsE(std::ostream& dst, const std::string& destName, Frame* framePtr = NULL, Type type = Type::NOTHING)const override{
-        std::string n1 = makeName();
-        std::string n2 = makeName();
+        std::string n1 = makeName("binary");
+        std::string n2 = makeName("binary");
         
         //We don't need the first operand if we are doing an assignment
         if(oper->getId() != "="){ 

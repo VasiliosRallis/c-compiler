@@ -39,9 +39,13 @@ void PostfixExpr::printPy(std::ostream& dst, int depth)const{
 void PostfixExpr::printMipsE(std::ostream& dst, const std::string& destName, Frame* framePtr, Type type)const{
     //Check if is is a function call
     if(*oper1 == "("){
+        framePtr->storeRegisters(dst);
+        
         framePtr->saveArguments(dst, argumentExprList);
         dst << "jal " << primaryExpr->getId() << std::endl;
         dst << "nop" << std::endl;
+        
+        framePtr->loadRegisters(dst);
         
         framePtr->store(dst, "$v0", destName);
     }

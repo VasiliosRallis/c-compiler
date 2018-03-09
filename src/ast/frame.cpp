@@ -69,7 +69,7 @@ void Frame::store(std::ostream& dst, const std::string reg, const std::string va
         }
             
         //This code will be fixed    
-        if(reg[1] == 't' || reg[1] == 'v' || reg[1] == '2' || reg[1] == '3' || reg[1] == 'z')
+        if(reg[1] == 't' || reg[1] == 'v' || reg[1] == '2' || reg[1] == '3' || reg[1] == 'z' || reg[1] == 'a')
             dst << "sw " << reg << ", " << scopeMap.back().at(varName) << "($fp)\n";
             
         else if(reg[1] == 'f')
@@ -95,13 +95,14 @@ void Frame::store(std::ostream& dst, const std::string reg, const std::string va
             dst << "sw " << reg << ",%lo(" << varName << ")($t7)" << std::endl;
             
         }else{
+            if(freeWords == 0) addWords(dst, scopeMap.back().size());
             scopeMap.back().insert({varName, nextFreeAddr});
             typeMap.back().insert({varName, type});
             nextFreeAddr -= 4;
             freeWords--;
             
             //This code will be fixed    
-            if(reg[1] == 't' || reg[1] == 'v' || reg[1] == '2' || reg[1] == '3')
+            if(reg[1] == 't' || reg[1] == 'v' || reg[1] == '2' || reg[1] == '3' || reg[1] == 'a')
                 dst << "sw " << reg << ", " << scopeMap.back().at(varName) << "($fp)\n";
                 
             else if(reg[1] == 'f')
@@ -287,5 +288,19 @@ Type Frame::loadType(const std::string& id)const{
                 throw std::runtime_error("In Frame::loadType, couldn't find " + id);
             }
         }
+    }
+}
+
+void Frame::storeRegisters(std::ostream& dst){
+    for(int i(0); i <= 3; ++i){
+        std::string regName = "$a" + std::to_string(i);
+        store(dst, regName, regName);
+    }
+}
+
+void Frame::loadRegisters(std::ostream& dst)const{
+    for(int i(0); i <= 3; ++i){
+        std::string regName = "$a" + std::to_string(i);
+        load(dst, regName, regName);
     }
 }
