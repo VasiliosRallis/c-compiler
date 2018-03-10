@@ -4,7 +4,7 @@ ArgTranslator::ArgTranslator(const DirectDeclarator* directDeclarator){
     const std::vector<const ParameterDeclaration*>* v1 = directDeclarator->getParameterList();
     if(v1 != NULL){
         for(int i(0); i < v1->size(); ++i){
-            argTypeMap.insert({v1->at(i)->getId(), v1->at(i)->getType()});
+            argTypeMap.insert({v1->at(i)->getId(), v1->at(i)->getType(NULL)});
             
             if(i < 4) argMap.insert({v1->at(i)->getId(), std::string("$a").append(std::to_string(i))});
             //Store the address of the argument in the statck relative to the previous $sp

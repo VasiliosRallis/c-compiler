@@ -25,7 +25,7 @@ public:
     
     virtual std::string getId()const;
     
-    Type getType()const; 
+    virtual Type getType(const Frame* framePtr)const override; 
 };
 
 #endif

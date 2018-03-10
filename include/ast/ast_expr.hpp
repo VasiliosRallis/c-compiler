@@ -32,36 +32,62 @@ public:
         }   
     }
 	
-	virtual void printMipsE(std::ostream& dst, const std::string& destName, Frame* framePtr = NULL, Type type = Type::NOTHING)const override{
-	    if(dynamic_cast<const IntConst*>(expr)){
-	        std::string id = expr->getId();
-	        dst << "li $t0, " << id << "\n";
-	        framePtr->store(dst, "$t0", destName);
-	    }
-	    else if(dynamic_cast<const StringNode*>(expr)){
-	        if(type == Type::INT || type == Type::NOTHING){
-	            std::string id = expr->getId();
-	            framePtr->load(dst, "$t0", id);
-	            framePtr->store(dst, "$t0", destName, false, framePtr->loadType(id));
-	            
-	        }else if(type == Type::CHAR){
-	            //The id will contain a string 'a' 
-	            std::string id = expr->getId();
-	            int ascii = (int)id[1];
-	            dst << "li $t0, " << ascii << std::endl;
-	            framePtr->store(dst, "$t0", destName);
-	            
-	        }else{
-	            assert(0);
-	        }
+	virtual void printMipsE(std::ostream& dst, const std::string& destName, Frame* framePtr, Type type)const override{
+        if(dynamic_cast<const StringNode*>(expr)){
+            std::string id = expr->getId();
+	        Type myType = expr->getType(framePtr);
 	        
-        }else if (dynamic_cast<const Expr*>(expr)){
-            expr->printMipsE(dst,destName,framePtr);        
-        }
+	        if(type == Type::INT){
+                if(expr->isIdentifier()){
+	                if(myType == Type::INT || myType == Type::CHAR){
+	                    framePtr->load(dst, "$t0", id);
+	                    framePtr->store(dst, "$t0", destName, type);
+	                
+	                }else if(myType == Type::FLOAT){
+	                    framePtr->load(dst, "$f0", id);
+	                    TypeConv::convert(dst, type, Type::FLOAT, "$t0", "$f0");
+	                    framePtr->store(dst, "$t0", destName, type);
+    	                
+	                }else{assert(0);}
+	                
+	            }else if(myType == Type::INT){
+	                dst << "li $t0, " << id << "\n";
+	                framePtr->store(dst, "$t0", destName, Type::INT);
+	            
+	            }else{assert(0);}
+
+	        }else if(type == Type::CHAR){
+	            if(expr->isIdentifier()){
+	                if(myType == Type::CHAR){
+	                    framePtr->load(dst, "$t0", id);
+	                    framePtr->store(dst, "$t0", destName, Type::CHAR);
+	                    
+	                }else{assert(0);}
+	                
+	                
+	            }else if(myType == Type::CHAR){
+	                int ascii = (int)id[1];
+	                dst << "li $t0, " << ascii << std::endl;
+	                framePtr->store(dst, "$t0", destName, Type::CHAR);
+	                
+	            }else{assert(0);}
+	            
+	        }else{assert(0);}
+	        
+        }else if(dynamic_cast<const Expr*>(expr)){
+            expr->printMipsE(dst, destName, framePtr, type);
+                    
+        }else{assert(0);}
+        
     }
       
     virtual std::string getId()const override{
         return expr->getId();
+    }
+    
+    
+    virtual Type getType(const Frame* framePtr)const override{
+        return expr->getType(framePtr);
     }
     
 };
@@ -84,59 +110,59 @@ public:
         postfixExpr->printPy(dst);        
     }
     
-    virtual void printMipsE(std::ostream& dst, const std::string& destName, Frame* framePtr = NULL, Type type = Type::NOTHING)const override{
+    virtual void printMipsE(std::ostream& dst, const std::string& destName, Frame* framePtr, Type type)const override{
         if(*oper == "-"){            
-            postfixExpr->printMipsE(dst,destName,framePtr);
+            postfixExpr->printMipsE(dst, destName, framePtr, type);
 	        framePtr->load(dst, "$t0", destName);
             dst << "sub $t0, $0, $t0" << std::endl;     //Negate variable value stored in $t0
-	        framePtr->store(dst, "$t0", destName);
+	        framePtr->store(dst, "$t0", destName, type);
         }
         else if(*oper == "+"){            
-            postfixExpr->printMipsE(dst,destName,framePtr);
+            postfixExpr->printMipsE(dst, destName, framePtr, type);
         }
         else if (*oper == "!"){
-            postfixExpr->printMipsE(dst,destName,framePtr);
+            postfixExpr->printMipsE(dst, destName, framePtr, type);
             framePtr->load(dst, "$t0", destName);                    	
             dst << "sltu $t0, $t0, 1" << std::endl;
 	        dst << "andi $t0, $t0, 0x00ff" << std::endl;
-            framePtr-> store(dst, "$t0" , destName);
+            framePtr-> store(dst, "$t0" , destName, type);
         }
         else if(*oper == "~"){
-            postfixExpr->printMipsE(dst,destName,framePtr);
+            postfixExpr->printMipsE(dst,destName,framePtr, type);
             framePtr->load(dst, "$t0", destName);                    	
             dst << "nor  $t0, $t0, $0" << std::endl;
-            framePtr-> store(dst, "$t0" , destName);           
+            framePtr-> store(dst, "$t0", destName, type);           
         }
         else if(*oper == "++"){            
-            postfixExpr->printMipsE(dst,destName,framePtr);
+            postfixExpr->printMipsE(dst, destName, framePtr, type);
 	        framePtr->load(dst, "$t0", destName);
             dst << "addi $t0, $t0, 1" << std::endl;     //Increment value before storing it back 
-	        framePtr->store(dst, "$t0", destName);
+	        framePtr->store(dst, "$t0", destName, type);
             if(dynamic_cast<const PrimaryExpr*>(postfixExpr)){
-                std::string id = dynamic_cast<const PrimaryExpr*>(postfixExpr) ->getId();
-                framePtr->store(dst, "$t0", id);
+                std::string id = postfixExpr->getId();
+                framePtr->store(dst, "$t0", id, type);
             }
         }
         else if(*oper == "--"){            
-            postfixExpr->printMipsE(dst,destName,framePtr);
+            postfixExpr->printMipsE(dst, destName, framePtr, type);
 	        framePtr->load(dst, "$t0", destName);
             dst << "addi $t0, $t0, -1" << std::endl;     //Increment value before storing it back
-	        framePtr->store(dst, "$t0", destName);
+	        framePtr->store(dst, "$t0", destName, type);
             if(dynamic_cast<const PrimaryExpr*>(postfixExpr)){
-                std::string id = dynamic_cast<const PrimaryExpr*>(postfixExpr) ->getId();
-                framePtr->store(dst, "$t0", id);
+                std::string id = postfixExpr->getId();
+                framePtr->store(dst, "$t0", id, type);
             }
         }
         else if(*oper == "&"){
             std::string id(postfixExpr->getId());
             framePtr->loadAddr(dst, "$t0", id);
-            framePtr->store(dst, "$t0", destName);
+            framePtr->store(dst, "$t0", destName, type);
         }
         else if(*oper == "*"){
-            postfixExpr->printMipsE(dst,destName,framePtr);
+            postfixExpr->printMipsE(dst, destName, framePtr, type);
             framePtr->load(dst, "$t0", destName);
             dst << "lw $t0, 0($t0)" << std::endl;
-            framePtr->store(dst, "$t0", destName);
+            framePtr->store(dst, "$t0", destName, type);
         }
     }
     
@@ -192,19 +218,19 @@ public:
         oper->printPy(dst);
         operand2->printPy(dst);
     }
-    virtual void printMipsE(std::ostream& dst, const std::string& destName, Frame* framePtr = NULL, Type type = Type::NOTHING)const override{
+    virtual void printMipsE(std::ostream& dst, const std::string& destName, Frame* framePtr, Type type)const override{
         std::string n1 = makeName("binary");
         std::string n2 = makeName("binary");
         
         //We don't need the first operand if we are doing an assignment
         if(oper->getId() != "="){ 
-            operand1->printMipsE(dst, n1, framePtr);
-            operand2->printMipsE(dst, n2, framePtr);
+            operand1->printMipsE(dst, n1, framePtr, type);
+            operand2->printMipsE(dst, n2, framePtr, type);
             framePtr->load(dst, "$t0", n1);
             framePtr->load(dst, "$t1", n2);
         
         }else{
-            operand2->printMipsE(dst, n2, framePtr);
+            operand2->printMipsE(dst, n2, framePtr, type);
             framePtr->load(dst, "$t1", n2);
         }
         
@@ -267,7 +293,7 @@ public:
         else if(oper->getId() == "="){
             if(dynamic_cast<const PrimaryExpr*>(operand1)){
                 std::string id = dynamic_cast<const PrimaryExpr*>(operand1)->getId();
-                framePtr->store(dst, "$t1", id);
+                framePtr->store(dst, "$t1", id, type);
                 dst << "move $t2, $t1\n";
             }else if(dynamic_cast<const PostfixExpr*>(operand1)){
                 framePtr->storeArrayElement(dst, "$t1", dynamic_cast<const PostfixExpr*>(operand1));
@@ -275,7 +301,19 @@ public:
            }
         }
 
-        framePtr->store(dst,"$t2",destName);
+        framePtr->store(dst, "$t2", destName, type);
+    }
+    
+    Type getType(const Frame* framePtr)const override{
+        Type type1 = operand1->getType(framePtr);
+        Type type2 = operand2->getType(framePtr);
+        
+        if(type1 == type2){
+            return type1;
+            
+        }else{
+            throw std::runtime_error("Called getType() on class BinaryOperation. Types didn't match (haven't impemented this)");
+        }
         
     }
 };

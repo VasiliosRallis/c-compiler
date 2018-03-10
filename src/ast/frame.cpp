@@ -26,7 +26,7 @@ Frame::Frame(std::ostream& dst, const DirectDeclarator* directDeclarator)
     dst << "addiu $sp, $sp, -12\n";
     dst << "sw $fp, 8($sp)\n";
     dst << "sw $31, 4($sp)\n";
-    dst << "move $fp, $sp\n";
+    dst << "move $fp, $sp" << std::endl;
 }
 
 void Frame::load(std::ostream& dst, const std::string reg, const std::string varName)const{
@@ -51,7 +51,7 @@ void Frame::load(std::ostream& dst, const std::string reg, const std::string var
     }
 }
 
-void Frame::store(std::ostream& dst, const std::string reg, const std::string varName, bool force, Type type){
+void Frame::store(std::ostream& dst, const std::string reg, const std::string varName, Type type, bool force){
     //This is a tricky case needs care
     if(force){
         if(scopeMap.back().find(varName) != scopeMap.back().end()){
@@ -138,8 +138,10 @@ void Frame::saveArguments(std::ostream& dst, const std::vector<const Expr*>* arg
         for(int i(0); i < argumentExprList->size(); ++i){
             std::string exprName = makeName("arg");
             argumentNames.push_back(exprName);
-            const Expr* expr = static_cast<const Expr*>(argumentExprList->at(i));
-            expr->printMipsE(dst, argumentNames.back(), this);
+            //const Expr* expr = static_cast<const Expr*>(argumentExprList->at(i));
+            
+            
+            argumentExprList->at(i)->printMipsE(dst, argumentNames.back(), this, argumentExprList->at(i)->getType(this));
         }
         
         //At this point all the expressions have been evaluated and are saved in the stack
@@ -190,7 +192,7 @@ void Frame::loadArrayElement(std::ostream& dst, const std::string& reg, const st
     dst << "######## Loading Array Element ########" << std::endl;
     //Calculate the index
     std::string indexName = makeName();
-    index->printMipsE(dst, indexName, this);
+    index->printMipsE(dst, indexName, this, Type::INT);
     load(dst, "$t0", indexName);
     //Multiply by 4
     dst << "sll $t0, $t0, 2" << std::endl;
@@ -212,14 +214,14 @@ void Frame::storeArrayElement(std::ostream& dst, const std::string& reg, const P
     
     //We have to store so that we don't overwright it
     std::string safetyStore(makeName());
-    store(dst, reg, safetyStore);
+    store(dst, reg, safetyStore, Type::INT);
     
     //Get the identifier of the array
     std::string arrayName = postfixExpr->getId();
     
     //Evaluate the index of the array element
     std::string indexName = makeName();
-    postfixExpr->evaluateArgument(dst, indexName, this);
+    postfixExpr->evaluateArgument(dst, indexName, this, Type::INT   );
     load(dst, "$t0", indexName);
     dst << "sll $t0, $t0, 2" << std::endl;
     
@@ -287,7 +289,7 @@ Type Frame::loadType(const std::string& id)const{
 void Frame::storeRegisters(std::ostream& dst){
     for(int i(0); i <= 3; ++i){
         std::string regName = "$a" + std::to_string(i);
-        store(dst, regName, regName);
+        store(dst, regName, regName, Type::INT);
     }
 }
 

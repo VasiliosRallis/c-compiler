@@ -28,7 +28,7 @@ void DirectDeclarator::printPy(std::ostream& dst, int depth)const{
 
 void DirectDeclarator::printMips(std::ostream& dst, Frame* framePtr, Type type)const{
     //Set the default value for an unitialized variable to zero
-    framePtr->store(dst, "$zero", *id, true, type);
+    framePtr->store(dst, "$zero", *id, Type::INT, true);
 }
 
 std::string DirectDeclarator::getId()const{

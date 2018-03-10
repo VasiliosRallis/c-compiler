@@ -39,7 +39,7 @@ int main(int argc, char* argv[]){
         else if(std::string(argv[1]) == "-S"){
             NodePtr ast = parseAST(argv[2]);
             std::ofstream output(argv[4]);
-            ast->printMips(output);
+            ast->printMips(output, NULL);
             
             //Print the endPrint vector
             for(auto i = endPrint.begin(); i != endPrint.end(); ++i){

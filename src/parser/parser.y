@@ -231,7 +231,7 @@ DECLR_LIST : DECLARATION	                {$$ = new std::vector<NodePtr>{$1};}
 //               | IDENTIFIER_LIST T_COMMA T_IDENTIFIER    {$$ = $1; $1->push_back(new StringNode($3));}
 
 PRIMARY_EXPR : T_IDENTIFIER	                {$$ = new PrimaryExpr(new StringNode($1));}
-		     | T_INT_CONSTANT               {$$ = new PrimaryExpr(new IntConst($1));}
+		     | T_INT_CONSTANT               {$$ = new PrimaryExpr(new StringNode($1));}
 		     | T_STR_LIT                    {$$ = new PrimaryExpr(new StringNode($1));}
 		     | T_CHAR_CONSTANT              {$$ = new PrimaryExpr(new StringNode($1));}
 		     | T_LBRACKET EXPR T_RBRACKET   {$$ = new PrimaryExpr($2);}

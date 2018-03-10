@@ -87,7 +87,7 @@ public:
         }
     }
     
-    void printMips(std::ostream& dst, Frame* framePtr = NULL, Type = Type::NOTHING)const override{
+    void printMips(std::ostream& dst, Frame* framePtr, Type type = Type::ANYTHING)const override{
         if(initdeclrList != NULL){
             for(int i(0); i < initdeclrList->size(); ++i){
                 initdeclrList->at(i)->printMips(dst, framePtr, declrspecList->at(0)->getType());
@@ -166,7 +166,7 @@ public:
         }
     }
     
-    virtual void printMips(std::ostream& dst, Frame* framePtr = NULL, Type = Type::NOTHING)const override{
+    virtual void printMips(std::ostream& dst, Frame* framePtr, Type type = Type::ANYTHING)const override{
             if(declrList != NULL){
                 for(int i(0); i < declrList->size(); ++i){
                     declrList->at(i)->printMips(dst, framePtr);
@@ -215,13 +215,13 @@ public:
         block->printPyG(dst,depth+1);
     }
     
-    virtual void printMips(std::ostream& dst, Frame* framePtr = NULL, Type type = Type::NOTHING)const override{
+    virtual void printMips(std::ostream& dst, Frame* framePtr, Type type = Type::ANYTHING)const override{
         dst << "\t.set noreorder\n";        
         dst << "\t.text\n";
         dst << "\t.align 2 \n";
         dst << "\t.globl ";
         dst << directDeclarator->getId() << "\n";
-        dst << directDeclarator->getId() << ":\n";
+        dst << directDeclarator->getId() << ":" << std::endl;
         
         Frame frame(dst, directDeclarator);
         
@@ -259,19 +259,19 @@ public:
 	        dynamic_cast<const Declaration*>(basicProgram)->addGlobal();
     }
     
-    virtual void printMips(std::ostream& dst, Frame* framePtr = NULL, Type type = Type::NOTHING)const override{
+    virtual void printMips(std::ostream& dst, Frame* framePtr, Type type = Type::ANYTHING)const override{
         if(dynamic_cast<const Declaration*>(program)){
             program->addGlobalMips(dst);
             
         }else{
-            program->printMips(dst);
+            program->printMips(dst, NULL);
             
         }
         if(dynamic_cast<const Declaration*>(basicProgram)){
             basicProgram->addGlobalMips(dst);
             
         }else{
-            basicProgram->printMips(dst);
+            basicProgram->printMips(dst, NULL);
         }
     }
 };

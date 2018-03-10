@@ -25,6 +25,10 @@ public:
     void addGlobal()const;
     
     std::string getId()const;
+    
+    virtual Type getType(const Frame* framePtr)const override;
+    
+    virtual bool isIdentifier()const override;
 
 };
 

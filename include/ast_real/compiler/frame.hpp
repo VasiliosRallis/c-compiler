@@ -41,7 +41,7 @@ public:
     
     void load(std::ostream& dst, const std::string reg, const std::string varName)const;
     
-    void store(std::ostream& dst, const std::string reg, const std::string varName, bool force = false, Type type = Type::NOTHING);
+    void store(std::ostream& dst, const std::string reg, const std::string varName, Type type, bool force = false);
     
     void newScope();
     

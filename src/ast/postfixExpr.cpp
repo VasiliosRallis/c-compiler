@@ -47,33 +47,33 @@ void PostfixExpr::printMipsE(std::ostream& dst, const std::string& destName, Fra
         
         framePtr->loadRegisters(dst);
         
-        framePtr->store(dst, "$v0", destName);
+        framePtr->store(dst, "$v0", destName, type);
     }
     if(*oper1 == "["){
         //Trying to access element of an array;
         framePtr->loadArrayElement(dst, "$t0", primaryExpr->getId(), argumentExprList->at(0));
-        framePtr->store(dst, "$t0", destName);
+        framePtr->store(dst, "$t0", destName, type);
     }
     else if(*oper1 == "++"){            
-            primaryExpr->printMipsE(dst,destName,framePtr);
+            primaryExpr->printMipsE(dst,destName,framePtr, type);
 	        framePtr->load(dst, "$t0", destName);
-	        framePtr->store(dst, "$t0", destName);
+	        framePtr->store(dst, "$t0", destName, type);
             dst << "addi $t0, $t0, 1" << std::endl;
             std::string id2 = primaryExpr->getId();     // Wondering if there are problems with this, "5++;" Not valid in C89
-            framePtr->store(dst, "$t0", id2);
+            framePtr->store(dst, "$t0", id2, type);
     }
     else if(*oper1 == "--"){            
-            primaryExpr->printMipsE(dst,destName,framePtr);
+            primaryExpr->printMipsE(dst,destName,framePtr, type);
 	        framePtr->load(dst, "$t0", destName);
-	        framePtr->store(dst, "$t0", destName);
+	        framePtr->store(dst, "$t0", destName, type);
             dst << "addi $t0, $t0, -1" << std::endl;
             std::string id2 = primaryExpr->getId();     // Wondering if there are problems with this, "5--;" Not valid in C89
-            framePtr->store(dst, "$t0", id2);
+            framePtr->store(dst, "$t0", id2, type);
     }
 }
 
 void PostfixExpr::evaluateArgument(std::ostream& dst, const std::string& destName, Frame* framePtr, Type type)const{
-    argumentExprList->at(0)->printMipsE(dst, destName, framePtr);
+    argumentExprList->at(0)->printMipsE(dst, destName, framePtr, type);
 }
 
 std::string PostfixExpr::getId()const{

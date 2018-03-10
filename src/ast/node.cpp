@@ -25,3 +25,11 @@ std::string Node::getId()const{
 void Node::printMipsE(std::ostream& dst, const std::string& destName, Frame* framePtr, Type type)const{
     throw std::runtime_error("Called printMipsE() on class: " + std::string(typeid(*this).name()));
 }
+
+Type Node::getType(const Frame* framePtr)const{
+    throw std::runtime_error("Called getType() on class: " + std::string(typeid(*this).name()));
+}
+
+bool Node::isIdentifier()const{
+    throw std::runtime_error("Called idIdentifier() on class: " + std::string(typeid(*this).name()));
+}

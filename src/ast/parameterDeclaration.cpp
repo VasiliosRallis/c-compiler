@@ -20,6 +20,6 @@ std::string ParameterDeclaration::getId()const{
     else return std::string("Error: Called getId on Parameter Declaration with no ID");
 }
 
-Type ParameterDeclaration::getType()const{
+Type ParameterDeclaration::getType(const Frame* framePtr)const{
     return n1->getType();
 }

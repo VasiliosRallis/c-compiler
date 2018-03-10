@@ -26,16 +26,16 @@ public:
 	    if(expr != NULL) expr->printPy(dst, depth);
     }
     
-    virtual void printMips(std::ostream& dst, Frame* framePtr = NULL, Type type = Type::NOTHING)const override{
+    virtual void printMips(std::ostream& dst, Frame* framePtr, Type type = Type::ANYTHING)const override{
         if(expr != NULL){
-            std::string destName = makeName();        
-            expr->printMipsE(dst,destName,framePtr);
+            std::string destName = makeName();
+            //Temporary use Type::INT not really sure what it expects        
+            expr->printMipsE(dst, destName, framePtr, Type::INT);
         }
     }
     
-    //Expr Statement will also have a printMipsE function...
-    void printMipsE(std::ostream& dst, std::string& destName, Frame* framePtr = NULL, Type = Type::NOTHING)const{
-        if (expr !=NULL) expr->printMipsE(dst, destName, framePtr);
+    void printMipsE(std::ostream& dst, std::string& destName, Frame* framePtr, Type type)const{
+        if (expr != NULL) expr->printMipsE(dst, destName, framePtr, Type::INT); //This Type::INT has to be verified
     }
     
 };
@@ -64,28 +64,14 @@ public:
         if(p1 != NULL) p1->printPy(dst);
     }
     
-    virtual void printMips(std::ostream& dst, Frame* framePtr = NULL, Type type = Type::NOTHING)const override{
+    virtual void printMips(std::ostream& dst, Frame* framePtr, Type type = Type::ANYTHING)const override{
         if(*str1 == "return"){
             if(p1 != NULL){
                 //Request expression to evaluate itself
                 std::string destName = makeName();
-                p1->printMipsE(dst, destName, framePtr);
+                p1->printMipsE(dst, destName, framePtr, framePtr->loadType("return"));
+                framePtr->load(dst, "$v0", destName);
                 
-                //Check if types match
-                if(framePtr->loadType("return") == framePtr->loadType(destName)){
-                    framePtr->load(dst, "$v0", destName);
-                    
-                }else{
-                    if(framePtr->loadType(destName) == Type::FLOAT){
-                        framePtr->load(dst, "$f0", destName);
-                        TypeConv::convert(dst, framePtr->loadType("return"), framePtr->loadType(destName), "$v0", "$f0");
-                        
-                    }else{
-                        //Temporary
-                        framePtr->load(dst, "$v0", destName);
-                        //assert(0);
-                    }
-                }
             }else{
                 //Have to find out what is the specification for v0 when the function returns void
                 //For now, I will return 0
@@ -120,7 +106,7 @@ public:
     
     virtual void printPy(std::ostream& dst, int depth = 0) const override{}
     
-    virtual void printMips(std::ostream& dst, Frame* framePtr = NULL, Type type = Type::NOTHING)const override{
+    virtual void printMips(std::ostream& dst, Frame* framePtr, Type type = Type::ANYTHING)const override{
         framePtr->newScope();
         dst << "###### START OF FOR LOOP ######\n";
         
@@ -129,17 +115,17 @@ public:
         std::string condition = makeName("condition");
         std::string exprName = makeName();        
         
-        state1->printMips(dst,framePtr);
+        state1->printMips(dst, framePtr);
         dst << "b $" << COND << std::endl;       
         dst << "nop" << std::endl;
         
         dst << "$" << START << ":" << std::endl;
         state3->printMips(dst, framePtr);
         
-        if(expr != NULL) expr->printMipsE(dst, exprName, framePtr);
+        if(expr != NULL) expr->printMipsE(dst, exprName, framePtr, Type::INT);
         
         dst << "$" << COND << ":" << std::endl;
-        state2->printMipsE(dst, condition, framePtr);
+        state2->printMipsE(dst, condition, framePtr, Type::INT);
         framePtr->load(dst, "$t0", condition);
 
         dst<<"bne $0, $t0, $" << START << std::endl;
@@ -171,7 +157,7 @@ public:
     
     virtual void printPy(std::ostream& dst, int depth = 0) const override{}
     
-    virtual void printMips(std::ostream& dst, Frame* framePtr = NULL, Type type = Type::NOTHING)const override{
+    virtual void printMips(std::ostream& dst, Frame* framePtr, Type type = Type::ANYTHING)const override{
         framePtr->newScope();
         dst << "###### START OF DO-WHILE LOOP ######\n";
         
@@ -181,7 +167,7 @@ public:
         dst << "$" << START << ":" << std::endl;
         statement->printMips(dst, framePtr);
         
-        expr->printMipsE(dst, condition, framePtr);
+        expr->printMipsE(dst, condition, framePtr, Type::INT);
         framePtr->load(dst, "$t0", condition);
         dst<<"bne $0, $t0, $" << START << std::endl;
         dst << "nop" << std::endl;
@@ -221,7 +207,7 @@ public:
 
     }
     
-    virtual void printMips(std::ostream& dst, Frame* framePtr = NULL, Type type = Type::NOTHING)const override{
+    virtual void printMips(std::ostream& dst, Frame* framePtr, Type type = Type::ANYTHING)const override{
         framePtr->newScope();
         dst << "###### START OF WHILE LOOP ######\n";
         std::string COND = makeName("COND");
@@ -235,7 +221,7 @@ public:
         statement->printMips(dst, framePtr);
         
         dst << "$" << COND << ":" << std::endl;
-        expr->printMipsE(dst, condition, framePtr);
+        expr->printMipsE(dst, condition, framePtr, Type::INT);
         framePtr->load(dst, "$t0", condition);
         dst<<"bne $0, $t0, $" << START << std::endl;
         dst << "nop" << std::endl;
@@ -307,13 +293,13 @@ public:
        }
    }
 
-     virtual void printMips(std::ostream& dst, Frame* framePtr = NULL, Type type = Type::NOTHING)const override{
+     virtual void printMips(std::ostream& dst, Frame* framePtr, Type type = Type::ANYTHING)const override{
         framePtr->newScope();
         dst << "###### START OF IF STATEMENT ######\n";
         std::string destName = makeName();
         std::string ELSE = makeName(std::string("ELSE"));
         std::string END = makeName(std::string("END"));        
-        expr->printMipsE(dst, destName, framePtr);
+        expr->printMipsE(dst, destName, framePtr, Type::INT);
         
         framePtr->load(dst,"$t0" , destName);
         dst<<"beq $t0, $0, $"<< ELSE << std::endl;

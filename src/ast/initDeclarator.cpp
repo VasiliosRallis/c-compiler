@@ -30,7 +30,7 @@ void InitDeclarator::printMips(std::ostream& dst, Frame* framePtr, Type type)con
             //Temporary store the identifier in $t1
             framePtr->load(dst, "$t0", destName);
             //Store it in the frame
-            framePtr->store(dst, "$t0", directDeclarator->getId(), true);
+            framePtr->store(dst, "$t0", directDeclarator->getId(), type, true);
             
         }else if(type == Type::FLOAT){
             //Generate label identifier
@@ -52,7 +52,7 @@ void InitDeclarator::printMips(std::ostream& dst, Frame* framePtr, Type type)con
             dst << "lwc1 $f0, %lo(" << label << ")($t0)" << std::endl;
             
             //Store the variable in the frame
-            framePtr->store(dst, "$f0", directDeclarator->getId(), true, type);
+            framePtr->store(dst, "$f0", directDeclarator->getId(), type, true);
         }else{
             assert(0);
         }
