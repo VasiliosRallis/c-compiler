@@ -263,8 +263,9 @@ public:
             if(framePtr == NULL) return addrToType(g_mips_var.at(getId()));
             else return addrToType(postfixExpr->getType(framePtr));
            
-        }else if(*oper == "-"){
+        }else if(*oper == "-" || *oper == "!" || *oper == "+" || *oper == "++" || *oper == "--" || *oper == "~"){
             return postfixExpr->getType(framePtr);
+        
             
         }else{assert(0);}
     }
@@ -423,54 +424,50 @@ public:
                 dst << "move $t2, $t1" << std::endl;
            }
         }
-
+        
+        //We only convert if type mismatch between type(LHS) and destType(RHS) 
         if(type == Type::DOUBLE){
-            if(destType == Type::DOUBLE){
-                framePtr->store(dst, "$f4", destName, Type::DOUBLE);
-                
-            }else if(destType == Type::FLOAT){
+            if(destType == Type::FLOAT){
                 TypeConv::convert(dst, Type::DOUBLE, Type::FLOAT, "$f4", "$f4");
-                framePtr->store(dst, "$f4", destName, Type::DOUBLE);
                 
             }else if(destType == Type::INT){
                 TypeConv::convert(dst, Type::DOUBLE, Type::INT, "$f4", "$t2");
-                framePtr->store(dst, "$f4", destName, Type::DOUBLE);
                 
+            }else if(destType == Type::DOUBLE){
+                //No need to convert, kept here to not assert   
             }else{assert(0);}
-            
+
+            framePtr->store(dst, "$f4", destName, Type::DOUBLE);
+
         }else if(type == Type::FLOAT){
             if(destType == Type::DOUBLE){
                 TypeConv::convert(dst, Type::FLOAT, Type::DOUBLE, "$f4", "$f4");
-                framePtr->store(dst, "$f4", destName, Type::FLOAT);
-                
-            }else if(destType == Type::FLOAT){
-                framePtr->store(dst, "$f4", destName, Type::FLOAT);
-                
+                               
             }else if(destType == Type::INT){
                 TypeConv::convert(dst, Type::FLOAT, Type::INT, "$f4", "$t2");
-                framePtr->store(dst, "$f4", destName, Type::FLOAT);
                 
+            }else if(destType == Type::FLOAT){
+                //No need to convert, kept here to not assert       
             }else{assert(0);}
+
+            framePtr->store(dst, "$f4", destName, Type::FLOAT);
                     
         }else if(type == Type::INT || type == Type::CHAR){
             if(destType == Type::DOUBLE){
                 TypeConv::convert(dst, Type::INT, Type::DOUBLE, "$t2", "$f4");
-                if(type == Type::CHAR)
-                    dst << "andi $t2, $t2, 0xFF" << std::endl; 
-                framePtr->store(dst, "$t2", destName, Type::INT);
-                
+                                
             }else if(destType == Type::FLOAT){
                 TypeConv::convert(dst, Type::INT, Type::FLOAT, "$t2", "$f4");   
-                if(type == Type::CHAR)
-                    dst << "andi $t2, $t2, 0xFF" << std::endl;
-                framePtr->store(dst, "$t2", destName, Type::INT);
                 
             }else if(destType == Type::INT){
-                if(type == Type::CHAR)
-                    dst << "andi $t2, $t2, 0xFF" << std::endl;
-                framePtr->store(dst, "$t2", destName, Type::INT);
-                
+                //No need to convert, kept here to not assert              
             }else{assert(0);}
+
+            if(type == Type::CHAR){
+                    dst << "andi $t2, $t2, 0xFF" << std::endl;
+            }
+ 
+            framePtr->store(dst, "$t2", destName, Type::INT);
               
 
         }else{assert(0);}
