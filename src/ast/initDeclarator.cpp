@@ -2,6 +2,7 @@
 #include <cassert>
 #include <sstream>
 
+extern bool isAddr(const Type type);
 extern std::vector<std::string> endPrint;
 
 InitDeclarator::InitDeclarator(const DirectDeclarator* _directDeclarator, const Expr* _asgnExpr, const std::vector<const Expr*>* _exprList)
@@ -59,43 +60,8 @@ void InitDeclarator::printMips(std::ostream& dst, Frame* framePtr, Type type)con
         
     }
     if(exprList != NULL){
-        framePtr->storeArray(dst, directDeclarator->getId(), exprList, true);
-    }
-}
-
-void InitDeclarator::addGlobalMips(std::ostream& dst)const{
-    if(asgnExpr != NULL){
-        //Check if we are dealing with a pointer
-        if(asgnExpr->isAddr() == true){
-            dst << "\t.globl\t" << directDeclarator->getId() << std::endl;
-            dst << "\t.align 2" << std::endl;
-            dst << "\t.size\t" << directDeclarator->getId() << ", 4" << std::endl;
-            dst << directDeclarator->getId() << ":" << std::endl;
-            dst << "\t.word\t" << asgnExpr->getId() << std::endl;
-        }else{     
-            dst << "\t.globl\t" << directDeclarator->getId() << std::endl;
-            dst << "\t.data" << std::endl;
-            dst << "\t.align 2" << std::endl;
-            dst << "\t.size\t" << directDeclarator->getId() << ", 4" << std::endl;
-            dst << directDeclarator->getId() << ":" << std::endl;
-            dst << "\t.word\t";
-            asgnExpr->printPy(dst);
-            dst << std::endl;
-        }
-    }else if(exprList != NULL){
-        dst << "\t.globl\t" << directDeclarator->getId() << std::endl;
-        dst << "\t.data" << std::endl;
-        dst << "\t.align 2" << std::endl;
-        dst << "\t.size\t" << directDeclarator->getId() << ", " << exprList->size()*4<< std::endl;
-        dst << directDeclarator->getId() << ":" << std::endl;
-        for(int i(0); i < exprList->size(); ++i){
-            dst << "\t.word\t";
-            exprList->at(i)->printPy(dst);
-            dst << std::endl;
-        }
-    }
-    else{
-        assert(false);
+        //Have to think about types
+        framePtr->storeArray(dst, directDeclarator->getId(), exprList, type, true);
     }
 }
 
@@ -106,3 +72,67 @@ std::string InitDeclarator::getId()const{
 void InitDeclarator::addGlobal()const{
     g_variables.push_back(directDeclarator->getId());
 }
+
+void InitDeclarator::printGMips(std::ostream& dst, Type type)const{
+    std::string id = directDeclarator->getId();
+    if(asgnExpr != NULL){
+        Type myType = asgnExpr->getType(NULL);
+
+        
+        if(type == Type::INT){
+            dst << "\t.globl\t" << id << std::endl;
+            dst << "\t.data" << std::endl;
+            dst << "\t.align 2" << std::endl;
+            dst << "\t.size\t" << id << ", 4" << std::endl;
+            dst << id << ":" << std::endl;
+            
+            if(myType == Type::INT){
+                dst << "\t.word\t" <<  asgnExpr->eval() << std::endl;
+            
+            }
+            else{
+                std::cerr << "Type: " << (int)myType << std::endl;
+                assert(0);
+            }
+        }else if(isAddr(type)){
+            dst << "\t.globl\t" << id << std::endl;
+            dst << "\t.section	.data.rel.local,\"aw\",@progbits" << std::endl;
+            dst << "\t.align 2" << std::endl;
+            dst << "\t.size\t" << id << ", 4" << std::endl;
+            dst << id << ":" << std::endl;
+       
+            if(isAddr(myType)){
+                dst << "\t.word\t" << asgnExpr->getId() << std::endl;
+                
+            }else{assert(0);}
+            
+        
+        }else{assert(0);}
+    }else if(exprList != NULL){
+        Type myType = exprList->at(0)->getType(NULL);
+        
+        if(type == Type::INT){
+            dst << "\t.globl\t" << id << std::endl;
+            dst << "\t.data" << std::endl;
+            dst << "\t.align 2" << std::endl;
+            dst << "\t.size\t" << id << ", " << exprList->size()*4<< std::endl;
+            dst << id << ":" << std::endl;
+            
+            if(myType == Type::INT){
+                for(int i(0); i < exprList->size(); ++i){
+                    int constant = exprList->at(i)->eval();
+                    dst << "\t.word\t" << constant << std::endl;
+                }
+            }else{
+                std::cerr << "Type: " << (int)myType << std::endl;
+                assert(0);
+            }
+        }else{assert(0);}   
+    }
+    
+    g_mips_var.insert({id, type});   
+}
+
+bool InitDeclarator::isPointer()const{
+    return directDeclarator->isPointer();
+}       

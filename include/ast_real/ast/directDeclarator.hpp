@@ -30,8 +30,9 @@ public:
     
     const std::vector<const ParameterDeclaration*>* getParameterList()const;
     
-    void addGlobalMips(std::ostream& dst)const;
+    void printGMips(std::ostream& dst, Type type)const override;
     
+    bool isPointer()const override;
 };
 
 #endif

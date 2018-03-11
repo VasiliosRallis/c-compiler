@@ -13,7 +13,7 @@ class Frame;
 class Expr: public Node{
 public:
     virtual void printMipsE(std::ostream& dst, const std::string& destName, Frame* framePtr, Type type)const;
-    virtual bool isAddr()const;
+    //virtual bool isAddr()const;
 };
 
 #endif

@@ -39,7 +39,7 @@ Type StringNode::getType(const Frame* framePtr)const{
             return Type::INT;
         
         }else{
-            return Type::FLOAT;
+            return Type::DOUBLE;
         }
     
     }else if(isalpha(id->front()) || id->front() == '_'){

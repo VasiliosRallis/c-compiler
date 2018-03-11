@@ -159,7 +159,7 @@ void Frame::saveArguments(std::ostream& dst, const std::vector<const Expr*>* arg
 }
 
 
-void Frame::storeArray(std::ostream& dst, const std::string& arrayName, const std::vector<const Expr*>* argumentExprList, bool force){
+void Frame::storeArray(std::ostream& dst, const std::string& arrayName, const std::vector<const Expr*>* argumentExprList, const Type type, bool force){
     if(argumentExprList != NULL){
         //Allocate enough space for the array
         while(freeWords < argumentExprList->size()) addWords(dst, scopeMap.back().size());
@@ -167,6 +167,7 @@ void Frame::storeArray(std::ostream& dst, const std::string& arrayName, const st
         if(ok){
             //No shadowing
             scopeMap.back().insert({arrayName, nextFreeAddr});
+            typeMap.back().insert({arrayName, type});
             for(int i(0); i < argumentExprList->size(); ++i){
                 dst << "li $t0, " << argumentExprList->at(i)->getId() << std::endl;
                 dst << "sw $t0, " << scopeMap.back().at(arrayName) - 4*i << "($fp)" << std::endl;
@@ -178,6 +179,8 @@ void Frame::storeArray(std::ostream& dst, const std::string& arrayName, const st
             for(int i(0); i < argumentExprList->size(); ++i){
                 scopeMap.back().erase(arrayName);
                 scopeMap.back().insert({arrayName, nextFreeAddr});
+                typeMap.back().erase(arrayName);
+                typeMap.back().insert({arrayName, type});
                 dst << "li $t0, " << argumentExprList->at(i)->getId() << std::endl;
                 dst << "sw $t0, " << scopeMap.back().at(arrayName) - 4*i << "($fp)" << std::endl;
                 nextFreeAddr -= 4;

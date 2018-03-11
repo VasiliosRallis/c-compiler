@@ -1,6 +1,8 @@
 #include "ast_real/ast/postfixExpr.hpp"
 #include <typeinfo>
 
+extern std::unordered_map<std::string, Type> function_type;
+
 PostfixExpr::PostfixExpr(const Expr* _primaryExpr, StrPtr _oper1, const std::vector<const Expr*>* _argumentExprList, StrPtr _oper2)
     :primaryExpr(_primaryExpr), oper1(_oper1), argumentExprList(_argumentExprList), oper2(_oper2){}
     
@@ -80,3 +82,15 @@ std::string PostfixExpr::getId()const{
     return primaryExpr->getId();
 }
 
+Type PostfixExpr::getType(const Frame* framePtr)const{
+    if(*oper1 == "("){
+        try{
+            return function_type.at(primaryExpr->getId());
+        }catch(std::exception& e){
+            throw std::runtime_error("Called getType() in class PostfixExpr. Couldn't find function id in function_type map");
+        }
+        
+    }else{
+        return primaryExpr->getType(framePtr);
+    }
+}

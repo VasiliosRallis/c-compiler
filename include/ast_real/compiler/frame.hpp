@@ -51,7 +51,7 @@ public:
     
     void saveArguments(std::ostream& dst, const std::vector<const Expr*>* argExprList);
     
-    void storeArray(std::ostream& dst, const std::string& arrayName, const std::vector<const Expr*>* argumentExprList, bool force = false);
+    void storeArray(std::ostream& dst, const std::string& arrayName, const std::vector<const Expr*>* argumentExprList, const Type type, bool force = false);
     
     void loadArrayElement(std::ostream& dst, const std::string& reg, const std::string& arrayName, const Expr* index);
     

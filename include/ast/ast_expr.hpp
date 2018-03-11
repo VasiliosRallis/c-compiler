@@ -39,7 +39,7 @@ public:
 	        
 	        if(type == Type::INT){
                 if(expr->isIdentifier()){
-	                if(myType == Type::INT || myType == Type::CHAR){
+	                if(myType == Type::INT || myType == Type::CHAR || isAddr(myType)){
 	                    framePtr->load(dst, "$t0", id);
 	                    framePtr->store(dst, "$t0", destName, type);
 	                
@@ -72,6 +72,31 @@ public:
 	                
 	            }else{assert(0);}
 	            
+	        }else if(isAddr(type)){
+	            if(expr->isIdentifier()){
+                    if(myType == Type::CHAR || myType == Type::INT || isAddr(myType)){	                    
+	                    framePtr->load(dst, "$t0", id);
+	                    framePtr->store(dst, "$t0", destName, type);
+	                
+	                }else{assert(0);}
+	                
+	            }else{
+	                if(myType == Type::INT){
+	                    dst << "li $t0, " << id << std::endl;
+	                    framePtr->store(dst, "$t0", destName, type);
+	                    
+	                }else if(myType == Type::CHAR){
+	                    int ascii = (int)id[1];
+	                    dst << "li $t0, " << ascii << std::endl;
+	                    framePtr->store(dst, "$t0", destName, type);
+	                    
+	                }else{assert(0);}   
+	            }            
+	        }else if(myType == Type::DOUBLE){
+	            if(expr->isIdentifier()){}
+	                
+	        
+	        
 	        }else{assert(0);}
 	        
         }else if(dynamic_cast<const Expr*>(expr)){
@@ -80,7 +105,33 @@ public:
         }else{assert(0);}
         
     }
-      
+    
+    double eval()const override{
+        if(dynamic_cast<const StringNode*>(expr)){
+            std::string id = expr->getId();
+            Type myType = expr->getType(NULL);
+            
+            if(expr->isIdentifier()){
+                //We need it to be a constant in global declarations
+                assert(0);
+                
+            }else{ 
+                if(myType == Type::INT || myType == Type::FLOAT || myType == Type::DOUBLE){
+                    return std::stod(id);
+                
+                }else if(myType == Type::CHAR){
+                    int ascii = (int)id[1];
+                    return ascii;
+                    
+                }else{assert(0);}
+            }
+        
+        }else if(dynamic_cast<const Expr*>(expr)){
+            return expr->eval();
+        
+        }else{assert(0);}
+    }
+                     
     virtual std::string getId()const override{
         return expr->getId();
     }
@@ -88,6 +139,10 @@ public:
     
     virtual Type getType(const Frame* framePtr)const override{
         return expr->getType(framePtr);
+    }
+    
+    bool isIdentifier()const override{
+        return expr->isIdentifier();
     }
     
 };
@@ -156,24 +211,45 @@ public:
         else if(*oper == "&"){
             std::string id(postfixExpr->getId());
             framePtr->loadAddr(dst, "$t0", id);
-            framePtr->store(dst, "$t0", destName, type);
+            framePtr->store(dst, "$t0", destName, typeToAddr(type));
+            
         }
         else if(*oper == "*"){
-            postfixExpr->printMipsE(dst, destName, framePtr, type);
+            postfixExpr->printMipsE(dst, destName, framePtr, typeToAddr(type));
             framePtr->load(dst, "$t0", destName);
             dst << "lw $t0, 0($t0)" << std::endl;
             framePtr->store(dst, "$t0", destName, type);
         }
     }
     
-    virtual bool isAddr()const override{
-        if(*oper == "&") return true;
-        else return false;
-    }
+    //virtual bool isAddr()const override{
+    //    if(*oper == "&") return true;
+    //    else return false;
+    //}
     
     virtual std::string getId()const override{
         return postfixExpr->getId();
     }
+    
+    Type getType(const Frame* framePtr)const override{
+        if(*oper == "&"){; 
+            if(framePtr == NULL) return typeToAddr(g_mips_var.at(getId()));
+            else return typeToAddr(postfixExpr->getType(framePtr));
+            
+        }else if(*oper == "*"){
+            if(framePtr == NULL) return addrToType(g_mips_var.at(getId()));
+            else return addrToType(postfixExpr->getType(framePtr));
+           
+        }else if(*oper == "-"){
+            return postfixExpr->getType(framePtr);
+            
+        }else{assert(0);}
+    }
+    
+    bool isIdentifier()const override{
+        return postfixExpr->isIdentifier();
+    }
+    
 };
 
 class ConditionalExpr: public Expr{
@@ -222,23 +298,46 @@ public:
         std::string n1 = makeName("binary");
         std::string n2 = makeName("binary");
         
-        //We don't need the first operand if we are doing an assignment
-        if(oper->getId() != "="){ 
-            operand1->printMipsE(dst, n1, framePtr, type);
-            operand2->printMipsE(dst, n2, framePtr, type);
-            framePtr->load(dst, "$t0", n1);
-            framePtr->load(dst, "$t1", n2);
+        Type destType;
+        if(operand1->getType(framePtr) == Type::DOUBLE || operand2->getType(framePtr) == Type::DOUBLE)
+            destType = Type::DOUBLE;
+        else if(operand1->getType(framePtr) == Type::FLOAT || operand2->getType(framePtr) == Type::FLOAT)
+            destType = Type::FLOAT;
+        else destType = Type::INT;
         
+         //We don't need the first operand if we are doing an assignment
+        if(oper->getId() != "="){
+            if(destType == Type::INT){ 
+                operand1->printMipsE(dst, n1, framePtr, destType);
+                operand2->printMipsE(dst, n2, framePtr, destType);
+                framePtr->load(dst, "$t0", n1);
+                framePtr->load(dst, "$t1", n2);
+            
+            }else{
+                operand1->printMipsE(dst, n1, framePtr, destType);
+                operand2->printMipsE(dst, n2, framePtr, destType);
+                framePtr->load(dst, "$f0", n1);
+                framePtr->load(dst, "$f2", n2);
+            }
         }else{
-            operand2->printMipsE(dst, n2, framePtr, type);
-            framePtr->load(dst, "$t1", n2);
+            if(destType == Type::INT){
+                operand2->printMipsE(dst, n2, framePtr, destType);
+                framePtr->load(dst, "$t1", n2);
+                
+            }else{
+                operand2->printMipsE(dst, n2, framePtr, destType);
+                framePtr->load(dst, "$f2", n2);
+            }
         }
-        
-        //if(oper->getId() != "=") framePtr->load(dst,"$t0",n1);
-        //framePtr->load(dst,"$t1",n2);        
-        
+
         if(oper->getId() == "+"){
-            dst << "add $t2, $t0, $t1" << std::endl ;
+            if(destType == Type::INT){
+                dst << "add $t2, $t0, $t1" << std::endl;
+                
+            }else{
+                dst << "add.s $f4, $f0, $f2" << std::endl;
+                
+            }
         }
         else if(oper->getId() == "-"){
             dst << "sub $t2, $t0, $t1" << std:: endl;
@@ -292,16 +391,61 @@ public:
         }
         else if(oper->getId() == "="){
             if(dynamic_cast<const PrimaryExpr*>(operand1)){
-                std::string id = dynamic_cast<const PrimaryExpr*>(operand1)->getId();
+                std::string id = operand1->getId();
                 framePtr->store(dst, "$t1", id, type);
-                dst << "move $t2, $t1\n";
+                dst << "move $t2, $t1" << std::endl;
+                
             }else if(dynamic_cast<const PostfixExpr*>(operand1)){
                 framePtr->storeArrayElement(dst, "$t1", dynamic_cast<const PostfixExpr*>(operand1));
                 dst << "move $t2, $t1" << std::endl;
            }
         }
 
-        framePtr->store(dst, "$t2", destName, type);
+        if(type == Type::DOUBLE){
+            if(destType == Type::DOUBLE){
+                framePtr->store(dst, "$f4", destName, Type::DOUBLE);
+                
+            }else if(destType == Type::FLOAT){
+                TypeConv::convert(dst, Type::DOUBLE, Type::FLOAT, "$f4", "$f4");
+                framePtr->store(dst, "$f4", destName, Type::DOUBLE);
+                
+            }else if(destType == Type::INT){
+                TypeConv::convert(dst, Type::DOUBLE, Type::INT, "$f4", "$t2");
+                framePtr->store(dst, "$f4", destName, Type::DOUBLE);
+                
+            }else{assert(0);}
+            
+        }else if(type == Type::FLOAT){
+            if(destType == Type::DOUBLE){
+                TypeConv::convert(dst, Type::FLOAT, Type::DOUBLE, "$f4", "$f4");
+                framePtr->store(dst, "$f4", destName, Type::FLOAT);
+                
+            }else if(destType == Type::FLOAT){
+                framePtr->store(dst, "$f4", destName, Type::FLOAT);
+                
+            }else if(destType == Type::INT){
+                TypeConv::convert(dst, Type::FLOAT, Type::INT, "$f4", "$t2");
+                framePtr->store(dst, "$f4", destName, Type::FLOAT);
+                
+            }else{assert(0);}
+                    
+        }else if(type == Type::INT){
+            if(destType == Type::DOUBLE){
+                TypeConv::convert(dst, Type::INT, Type::DOUBLE, "$t2", "$f4");
+                framePtr->store(dst, "$t2", destName, Type::INT);
+                
+            }else if(destType == Type::FLOAT){
+                TypeConv::convert(dst, Type::INT, Type::FLOAT, "$t2", "$f4");   
+                framePtr->store(dst, "$t2", destName, Type::INT);
+                
+            }else if(destType == Type::INT){
+                framePtr->store(dst, "$t2", destName, Type::INT);
+                
+            }else{assert(0);}
+            
+            
+        }else{assert(0);}
+
     }
     
     Type getType(const Frame* framePtr)const override{
@@ -315,6 +459,23 @@ public:
             throw std::runtime_error("Called getType() on class BinaryOperation. Types didn't match (haven't impemented this)");
         }
         
+    }
+    
+    double eval()const override{
+        if(oper->getId() == "+")
+            return operand1->eval() + operand2->eval();
+        
+        else if(oper->getId() == "-")
+            return operand1->eval() - operand2->eval();
+            
+        else if(oper->getId() == "*")
+            return operand1->eval() * operand2->eval();
+            
+        else if(oper->getId() == "/")
+            return operand1->eval() / operand2->eval();
+            
+        else
+            throw std::runtime_error("Called eval() on class: BinaryOperation. Operator " + oper->getId() + " not supported yet");
     }
 };
 

@@ -31,6 +31,8 @@ public:
     void evaluateArgument(std::ostream& dst, const std::string& destName, Frame* framePtr, Type type)const;
     
     virtual std::string getId()const override;
+    
+    Type getType(const Frame* framePtr)const override;
 };
 
 #endif

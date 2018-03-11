@@ -1,6 +1,7 @@
 #include <vector>
 #include <string>
 #include <unordered_map>
+#include <cassert>
 
 #include "ast_real/ast/directDeclarator.hpp"
 
@@ -39,6 +40,29 @@ const std::vector<const ParameterDeclaration*>* DirectDeclarator::getParameterLi
     return v1;
 }
 
-void DirectDeclarator::addGlobalMips(std::ostream& dst)const{
-    dst << "\t.comm\t" << *id << ",4,4" << std::endl;
+void DirectDeclarator::printGMips(std::ostream& dst, Type type)const{
+    if(type == Type::CHAR){
+        dst << "\t.comm\t" << *id << ",1,1" << std::endl;
+    
+    }else if (type == Type::INT || type == Type::FLOAT || isAddr(type)){
+        dst << "\t.comm\t" << *id << ",4,4" << std::endl;
+        
+    }else if (type == Type::DOUBLE){
+        dst << "\t.comm\t" << *id << ",8,8" << std::endl;
+        
+    }else{
+        std::cerr << "Type: " << (int)type << std::endl;
+        assert(0);
+    }
+    
+    g_mips_var.insert({*id, type});
+}
+
+bool DirectDeclarator::isPointer()const{
+    if(s1 != NULL){
+        if(*s1 == "*") return true;
+        else return false;
+    }else{
+        return false;
+    }
 }

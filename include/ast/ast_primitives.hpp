@@ -16,6 +16,7 @@
 
 extern std::vector<std::string> g_variables;
 extern std::unordered_map<std::string, Type> g_mips_var;
+extern std::unordered_map<std::string, Type> function_type;
 
 class DeclSpecifier: public StringNode{
 public:
@@ -96,16 +97,18 @@ public:
         }
     }
     
-    virtual void addGlobalMips(std::ostream& dst)const override{
+    virtual void printGMips(std::ostream& dst, Type type)const override{
         if(initdeclrList != NULL){
             for(int i(0); i < initdeclrList->size(); ++i){
-                //This will only add the identifier
-                initdeclrList->at(i)->addGlobalMips(dst);
-                g_mips_var.insert({initdeclrList->at(i)->getId(), declrspecList->at(0)->getType()});
+                if(initdeclrList->at(i)->isPointer()){
+                    initdeclrList->at(i)->printGMips(dst, typeToAddr(declrspecList->at(0)->getType()));
+                
+                }else{
+                    initdeclrList->at(i)->printGMips(dst, declrspecList->at(0)->getType());
+                }          
             }
         }
     }
-    
 };
 
 class Block: public Node{
@@ -216,6 +219,9 @@ public:
     }
     
     virtual void printMips(std::ostream& dst, Frame* framePtr, Type type = Type::ANYTHING)const override{
+        //Add the return type to global map
+        function_type.insert({directDeclarator->getId(), declrSpecList->at(0)->getType()});
+        
         dst << "\t.set noreorder\n";        
         dst << "\t.text\n";
         dst << "\t.align 2 \n";
@@ -261,33 +267,19 @@ public:
     
     virtual void printMips(std::ostream& dst, Frame* framePtr, Type type = Type::ANYTHING)const override{
         if(dynamic_cast<const Declaration*>(program)){
-            program->addGlobalMips(dst);
+            program->printGMips(dst, Type::ANYTHING);
             
         }else{
             program->printMips(dst, NULL);
             
         }
         if(dynamic_cast<const Declaration*>(basicProgram)){
-            basicProgram->addGlobalMips(dst);
+            basicProgram->printGMips(dst, Type::ANYTHING);
             
         }else{
             basicProgram->printMips(dst, NULL);
         }
     }
-};
-
-class IntConst: public StringNode{
-public:
-    IntConst(StrPtr _id)
-        :StringNode(_id){}
-        
-    virtual void print(std::ostream& dst) const override{
-        dst << std::stoi((*id));
-    }
-    virtual void printPy(std::ostream& dst, int depth = 0) const override{
-        dst << *id;
-    }
-
 };
 
 class Operator: public StringNode{

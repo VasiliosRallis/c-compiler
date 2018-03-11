@@ -13,6 +13,7 @@ std::vector<std::string> endPrint;
 #include "ast_real/ast/node.hpp"
 
 std::unordered_map<std::string, Type> g_mips_var;
+std::unordered_map<std::string, Type> function_type;
 
 int main(int argc, char* argv[]){
     

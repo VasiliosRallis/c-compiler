@@ -25,11 +25,13 @@ public:
     
     virtual void printMips(std::ostream& dst, Frame* framePtr, Type type = Type::ANYTHING)const override;
     
-    void addGlobalMips(std::ostream& dst)const;
-    
     std::string getId()const;
     
     void addGlobal()const;
+    
+    void printGMips(std::ostream& dst, Type type)const override;
+    
+    bool isPointer()const override;
 };
 
 #endif
