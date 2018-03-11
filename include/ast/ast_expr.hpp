@@ -54,6 +54,11 @@ public:
 	                dst << "li $t0, " << id << "\n";
 	                framePtr->store(dst, "$t0", destName, Type::INT);
 	            
+	            }else if(myType == Type::CHAR){
+	                int ascii = (int)id[1];
+	                dst << "li $t0, " << ascii << std::endl;
+	                framePtr->store(dst, "$t0", destName, Type::CHAR);
+	            
 	            }else{assert(0);}
 
 	        }else if(type == Type::CHAR){
@@ -92,10 +97,28 @@ public:
 	                    
 	                }else{assert(0);}   
 	            }            
-	        }else if(myType == Type::DOUBLE){
-	            if(expr->isIdentifier()){}
+	        }else if(type == Type::DOUBLE){
+	            if(expr->isIdentifier()){assert(0);}
 	                
-	        
+	        }else if(type == Type::FLOAT){
+	            if(expr->isIdentifier()){
+	                if(myType == Type::CHAR || myType == Type::INT || isAddr(myType)){
+	                    framePtr->load(dst, "$t0", id);
+	                    TypeConv::convert(dst, Type::FLOAT, Type::INT, "$f0", "$t0");
+	                    framePtr->store(dst, "f0", destName, type);
+	                    
+	                }else if(myType == Type::FLOAT){
+                        framePtr->load(dst, "$f0", id);
+                        framePtr->store(dst, "$f0", destName, type);
+                        
+                    }else if(myType == Type::DOUBLE){
+                        framePtr->load(dst, "$f0", id);
+                        TypeConv::convert(dst, Type::FLOAT, Type::DOUBLE, "$f0", "$f0");
+                        framePtr->store(dst, "$f0", destName, type);
+                        
+                    }else{assert(0);}
+                    
+                }else{assert(0);}
 	        
 	        }else{assert(0);}
 	        
@@ -429,21 +452,27 @@ public:
                 
             }else{assert(0);}
                     
-        }else if(type == Type::INT){
+        }else if(type == Type::INT || type == Type::CHAR){
             if(destType == Type::DOUBLE){
                 TypeConv::convert(dst, Type::INT, Type::DOUBLE, "$t2", "$f4");
+                if(type == Type::CHAR)
+                    dst << "andi $t2, $t2, 0xFF" << std::endl; 
                 framePtr->store(dst, "$t2", destName, Type::INT);
                 
             }else if(destType == Type::FLOAT){
                 TypeConv::convert(dst, Type::INT, Type::FLOAT, "$t2", "$f4");   
+                if(type == Type::CHAR)
+                    dst << "andi $t2, $t2, 0xFF" << std::endl;
                 framePtr->store(dst, "$t2", destName, Type::INT);
                 
             }else if(destType == Type::INT){
+                if(type == Type::CHAR)
+                    dst << "andi $t2, $t2, 0xFF" << std::endl;
                 framePtr->store(dst, "$t2", destName, Type::INT);
                 
             }else{assert(0);}
-            
-            
+              
+
         }else{assert(0);}
 
     }

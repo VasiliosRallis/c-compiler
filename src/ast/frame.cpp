@@ -31,7 +31,7 @@ Frame::Frame(std::ostream& dst, const DirectDeclarator* directDeclarator)
 
 void Frame::load(std::ostream& dst, const std::string reg, const std::string varName)const{
     try{
-        if(reg == "$f0"){
+        if(reg[1] == 'f' && reg[2] != 'p'){
             dst << "lwc1 " << reg << ", " << scopeMap.back().at(varName) << "($fp)\n"; 
         }else{
             dst << "lw " << reg << ", " << scopeMap.back().at(varName) << "($fp)\n";
