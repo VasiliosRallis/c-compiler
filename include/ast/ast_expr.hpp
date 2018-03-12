@@ -369,8 +369,37 @@ public:
 
         if(oper->getId() == "+"){
             if(destType == Type::INT){
-                dst << "add $t2, $t0, $t1" << std::endl;
                 
+                //Pointer arithmetic
+                if(isAddr(operand1->getType(framePtr)) && !isAddr(operand2->getType(framePtr))){
+                
+                    if(operand1->getType(framePtr) != Type::DOUBLE_ADDR){
+                        //Multiply the operand by 4
+                        dst << "sll $t1, $t1, 2" << std::endl;
+                        
+                    }else{
+                        //Multiply the operand by 8
+                        dst << "sll $t1, $t1, 3" << std::endl;      
+                    }
+                    
+                    //If the pointer is local we have to subtract the index and not add it
+                    if(g_mips_var.find(operand1->getId()) == g_mips_var.end()){dst << "sub $t1, $zero, $t1" << std::endl;}
+                    
+                }else if(isAddr(operand2->getType(framePtr)) && !isAddr(operand1->getType(framePtr))){
+    
+                    if(operand2->getType(framePtr) != Type::DOUBLE_ADDR){
+                        //Multiply the operand by 4
+                        dst << "sll $t2, $t2, 2" << std::endl;
+                        
+                    }else{
+                        //Multiply the operand by 8
+                        dst << "sll $t2, $t2, 3" << std::endl;      
+                    }
+                    if(g_mips_var.find(operand1->getId()) == g_mips_var.end()){dst << "sub $t1, $zero, $t1" << std::endl;}
+                }else{} //Do nothing          
+                
+                dst << "add $t2, $t0, $t1" << std::endl;
+                   
             }else{
                 dst << "add.s $f4, $f0, $f2" << std::endl;
                 
