@@ -527,6 +527,11 @@ public:
         else
             throw std::runtime_error("Called eval() on class: BinaryOperation. Operator " + oper->getId() + " not supported yet");
     }
+    
+    bool isIdentifier()const override{
+        //If either is identifier, we return true
+        return (operand1->isIdentifier() || operand2->isIdentifier());
+    }
 };
 
 class CastExpr: public Expr{

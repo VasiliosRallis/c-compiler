@@ -34,7 +34,9 @@ void InitDeclarator::printMips(std::ostream& dst, Frame* framePtr, Type type)con
             framePtr->store(dst, "$t0", directDeclarator->getId(), type, true);
             
         }else if(type == Type::FLOAT){
+            //We have to check if the Asgn Expr is a constant and only perform this if its constant
             //Generate label identifier
+            if(!(asgnExpr->isIdentifier())){
             std::string label = std::string("$" + makeName("FLOAT"));
             
             //Add the code that needs to be printed at the end of
@@ -54,6 +56,18 @@ void InitDeclarator::printMips(std::ostream& dst, Frame* framePtr, Type type)con
             
             //Store the variable in the frame
             framePtr->store(dst, "$f0", directDeclarator->getId(), type, true);
+            }
+            else{
+            //EVAL EXPR AND store into LHS Declarator
+            std::string destName = makeName();
+            //Ask the expression to evaluate itself and store its value in the frame, with destName as it's identifier
+            asgnExpr->printMipsE(dst, destName, framePtr, type);
+            //Temporary store the identifier in $f0
+            framePtr->load(dst, "$f0", destName);
+            //Store it in the frame
+            framePtr->store(dst, "$f0", directDeclarator->getId(), type, true);
+
+            }
         }else{
             assert(0);
         }
