@@ -490,6 +490,30 @@ public:
             }        
         }
         
+        /** LOGICAL OPERATOR SECTION **/
+        else if (oper->getId() == "&&") { // Bitwise Operations do not work on double or floats
+            if(destType == Type::INT){            
+                dst << "sltu $t3, $0, $t0" << std::endl;
+                dst << "sltu $t4, $0, $t1" << std::endl;
+                dst << "and $t2, $t3, $t4" << std::endl;    
+                // If either one is 0 t3/t4 will be not set i.e 0 and result of anding with 0 is 0
+            }
+            else {
+                assert(0); //Have not implemented for other types
+            }        
+        }
+        else if (oper->getId() == "||") { // Bitwise Operations do not work on double or floats
+            if(destType == Type::INT){            
+                dst << "sltu $t3, $0, $t0" << std::endl;
+                dst << "sltu $t4, $0, $t1" << std::endl;
+                dst << "or $t2, $t3, $t4" << std::endl;
+                // If either one is nonzero t3/t4 will be set i.e 1 and result of oring with 1 is 1
+            }
+            else {
+                assert(0); // Have not implemented for other types
+            }        
+        }        
+        
         else if(oper->getId() == "="){
             if(dynamic_cast<const PrimaryExpr*>(operand1)){
                 
