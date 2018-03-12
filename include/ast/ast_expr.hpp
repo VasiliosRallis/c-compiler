@@ -329,7 +329,8 @@ public:
         
          //We don't need to eval the first operand if we are doing an assignment
         if(oper->getId() != "="){
-            //If not an assignment, we have to evaluate the types based on the more general one
+            //If not an assignment, we have to evaluate the types based on the more general one, 
+            //Char uses int operations too
             if(operand1->getType(framePtr) == Type::DOUBLE || operand2->getType(framePtr) == Type::DOUBLE)
                 destType = Type::DOUBLE;
             else if(operand1->getType(framePtr) == Type::FLOAT || operand2->getType(framePtr) == Type::FLOAT)
@@ -366,6 +367,8 @@ public:
                 framePtr->load(dst, "$f2", n2);
             }
         }
+
+        /**ARITHMETIC OPERATIONS SECTION**/
 
         if(oper->getId() == "+"){
             if(destType == Type::INT){
@@ -431,6 +434,33 @@ public:
         else if (oper->getId() == ">>") {
             dst << "srav $t2, $t0, $t1" << std::endl;   // if unsigned we have to use srlv instead
         }
+        
+        /** BITWISE OPERATOR SECTIONS **/
+        else if (oper->getId() == "&") { // Bitwise Operations do not work on double or floats
+            if(destType == Type::INT){            
+                dst << "and $t2, $t0, $t1" << std::endl;
+            }
+            else {
+                throw std::runtime_error("Called BinaryOperation of Bitwise AND " + oper->getId() + " on Non-Integer Types that doesnt exist");   
+            }        
+        }
+        else if (oper->getId() == "|") { // Bitwise Operations do not work on double or floats
+            if(destType == Type::INT){            
+                dst << "or $t2, $t0, $t1" << std::endl;
+            }
+            else {
+                throw std::runtime_error("Called BinaryOperation of Bitwise OR " + oper->getId() + " on Non-Integer Types that doesnt exist");   
+            }        
+        }
+        else if (oper->getId() == "^") { // Bitwise Operations do not work on double or floats
+            if(destType == Type::INT){            
+                dst << "xor $t2, $t0, $t1" << std::endl;
+            }
+            else {
+                throw std::runtime_error("Called BinaryOperation of Bitwise XOR " + oper->getId() + " on Non-Integer Types that doesnt exist");   
+            }        
+        }
+        
         else if(oper->getId() == "="){
             if(dynamic_cast<const PrimaryExpr*>(operand1)){
                 
