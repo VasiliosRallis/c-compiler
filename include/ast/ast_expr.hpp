@@ -323,14 +323,16 @@ public:
         std::string n2 = makeName("binary");
         
         Type destType;
-        if(operand1->getType(framePtr) == Type::DOUBLE || operand2->getType(framePtr) == Type::DOUBLE)
-            destType = Type::DOUBLE;
-        else if(operand1->getType(framePtr) == Type::FLOAT || operand2->getType(framePtr) == Type::FLOAT)
-            destType = Type::FLOAT;
-        else destType = Type::INT;
         
-         //We don't need the first operand if we are doing an assignment
+         //We don't need to eval the first operand if we are doing an assignment
         if(oper->getId() != "="){
+            //If not an assignment, we have to evaluate the types based on the more general one
+            if(operand1->getType(framePtr) == Type::DOUBLE || operand2->getType(framePtr) == Type::DOUBLE)
+                destType = Type::DOUBLE;
+            else if(operand1->getType(framePtr) == Type::FLOAT || operand2->getType(framePtr) == Type::FLOAT)
+                destType = Type::FLOAT;
+            else destType = Type::INT;
+
             if(destType == Type::INT){ 
                 operand1->printMipsE(dst, n1, framePtr, destType);
                 operand2->printMipsE(dst, n2, framePtr, destType);
@@ -344,6 +346,14 @@ public:
                 framePtr->load(dst, "$f2", n2);
             }
         }else{
+            // ASSUMPTION MADE HERE: If it is an assignment, destType should be evaluated based on operand 2 then downcasted/upcasted if necessary
+            destType = operand2->getType(framePtr);
+
+            //TEMPFIX : check if RHS OF assignment is an addr, if yes convert using addrtotype, TEMPFIX NEEDS TO BE RE EVALUATED            
+            if(isAddr(destType)){
+                destType =addrToType(destType);
+            }
+                
             if(destType == Type::INT){
                 operand2->printMipsE(dst, n2, framePtr, destType);
                 framePtr->load(dst, "$t1", n2);
@@ -416,8 +426,15 @@ public:
         else if(oper->getId() == "="){
             if(dynamic_cast<const PrimaryExpr*>(operand1)){
                 std::string id = operand1->getId();
-                framePtr->store(dst, "$t1", id, type);
-                dst << "move $t2, $t1" << std::endl;
+               
+                if(destType == Type::INT){
+                    framePtr->store(dst, "$t1", id, type);
+                    dst << "move $t2, $t1" << std::endl;
+                }
+                else{
+                    framePtr->store(dst, "$f2", id, type);
+                    dst << "mov.s $f4, $f2" << std::endl;
+                }                
                 
             }else if(dynamic_cast<const PostfixExpr*>(operand1)){
                 framePtr->storeArrayElement(dst, "$t1", dynamic_cast<const PostfixExpr*>(operand1));

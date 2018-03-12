@@ -69,9 +69,17 @@ public:
             if(p1 != NULL){
                 //Request expression to evaluate itself
                 std::string destName = makeName();
-                p1->printMipsE(dst, destName, framePtr, framePtr->loadType("return"));
-                framePtr->load(dst, "$v0", destName);
-                
+                Type retType = framePtr->loadType("return");
+                p1->printMipsE(dst, destName, framePtr, retType);
+
+                //Return value should be in $f0 not $2($v0) if return type is float/double
+                if(retType == Type::FLOAT || retType == Type::DOUBLE){
+                    framePtr->load(dst, "$f0", destName);
+                }
+                else{
+                    framePtr->load(dst, "$v0", destName);
+                }
+
             }else{
                 //Have to find out what is the specification for v0 when the function returns void
                 //For now, I will return 0
