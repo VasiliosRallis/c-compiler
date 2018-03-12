@@ -377,7 +377,12 @@ public:
             dst << "sub $t2, $t0, $t1" << std:: endl;
         }
         else if(oper->getId() == "*"){
-            dst<< "mul $t2, $t0, $t1" << std :: endl;
+            if(destType == Type::INT){
+                dst<< "mul $t2, $t0, $t1" << std :: endl;
+            }
+            else{
+                dst <<"mul.s $f4, $f0, $f2" << std::endl;
+            }
         }
         else if (oper->getId() == "/"){
             dst<<"div $t0, $t1" << std:: endl;
@@ -492,6 +497,8 @@ public:
     }
     
     Type getType(const Frame* framePtr)const override{
+        // Kayne : Not sure if its a problem - do we need to check if its assignment, if not assignment, just upcast, if assignment of different types what to do?
+
         Type type1 = operand1->getType(framePtr);
         Type type2 = operand2->getType(framePtr);
         
