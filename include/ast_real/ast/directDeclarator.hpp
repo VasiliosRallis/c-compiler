@@ -11,14 +11,17 @@ class DirectDeclarator;
 #include "ast_real/ast/stringNode.hpp"
 #include "ast_real/ast/parameterDeclaration.hpp"
 
+class Expr;
+
 class DirectDeclarator: public StringNode{
 private:
     StrPtr s1;
     const std::vector<const ParameterDeclaration*>* v1;
     StrPtr s2;
-
+    const Expr* expr;
+    
 public:
-    DirectDeclarator(StrPtr _id, StrPtr _s1, const std::vector<const ParameterDeclaration*>* _v1, StrPtr _s2);
+    DirectDeclarator(StrPtr _id, StrPtr _s1, const std::vector<const ParameterDeclaration*>* _v1, StrPtr _s2, const Expr* expr);
         
     virtual void print(std::ostream& dst)const override;
     

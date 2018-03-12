@@ -236,10 +236,9 @@ public:
         else if(*oper == "&"){
             std::string id(postfixExpr->getId());
             framePtr->loadAddr(dst, "$t0", id);
-            framePtr->store(dst, "$t0", destName, typeToAddr(type));
+            framePtr->store(dst, "$t0", destName, typeToAddr(postfixExpr->getType(framePtr)));
             
-        }
-        else if(*oper == "*"){
+        }else if(*oper == "*"){
             postfixExpr->printMipsE(dst, destName, framePtr, typeToAddr(type));
             framePtr->load(dst, "$t0", destName);
             dst << "lw $t0, 0($t0)" << std::endl;

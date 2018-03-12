@@ -33,7 +33,6 @@ src/parser/parser.tab.cpp src/parser/parser.tab.hpp : src/parser/parser.y
 	
    
 clean :
-	rm -r tests/c/out
 	rm -r tests/python/out
 	rm -r tests/assemble/out
 	find . -name "*.o" -type f -delete

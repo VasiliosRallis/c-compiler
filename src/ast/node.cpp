@@ -2,6 +2,7 @@
 
 #include <stdexcept>
 #include <typeinfo>
+#include <iostream>
 
 void Node::printPy(std::ostream& dst, int depth)const{}
 
@@ -61,7 +62,10 @@ Type typeToAddr(const Type type){
     else if(type == Type::VOID) return Type::VOID_ADDR;
     else if(type == Type::CHAR) return Type::CHAR_ADDR;
     else if(type == Type::STRING) return Type::STRING_ADDR;
-    else assert(0);
+    else{
+        std::cerr << "Type: " << (int)type << std::endl;
+        assert(0);
+    }
 }
 
 Type addrToType(const Type type){
