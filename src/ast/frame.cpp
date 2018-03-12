@@ -162,59 +162,95 @@ void Frame::saveArguments(std::ostream& dst, const std::vector<const Expr*>* arg
 
 void Frame::storeArray(std::ostream& dst, const std::string& arrayName, const std::vector<const Expr*>* argumentExprList, const Type type, bool force){
     if(argumentExprList != NULL){
-        //Allocate enough space for the array
-        while(freeWords < argumentExprList->size()) addWords(dst, scopeMap.back().size());
-        bool ok = scopeMap.back().insert({arrayName, nextFreeAddr}).second;
-        if(ok){
-            //No shadowing
-            scopeMap.back().insert({arrayName, nextFreeAddr});
-            typeMap.back().insert({arrayName, type});
-            for(int i(0); i < argumentExprList->size(); ++i){
-                dst << "li $t0, " << argumentExprList->at(i)->getId() << std::endl;
-                dst << "sw $t0, " << scopeMap.back().at(arrayName) - 4*i << "($fp)" << std::endl;
-                nextFreeAddr -= 4;
-                freeWords--;
-            }
-        }else{
-            //Shadowing
-            for(int i(0); i < argumentExprList->size(); ++i){
+        //Allocate enough space for the array (and for the pointer to the array)
+        while(freeWords < argumentExprList->size() + 1) addWords(dst, scopeMap.back().size());
+        
+        std::vector<std::string> elementName;
+        Type elementType = addrToType(type);
+        
+        //Calculate the value of all the elements
+        dst << "###### CALCULATING ARRAY ELEMENTS ######" << std::endl;
+        for(int i(0); i < argumentExprList->size(); ++i){
+            elementName.push_back(makeName());
+            argumentExprList->at(i)->printMipsE(dst, elementName.back(), this, elementType);
+        }
+        dst << "###### FINISHED CALCULATING ELEMENTS ######" << std::endl;
+        
+        if(force){
+            if(scopeMap.back().find(arrayName) != scopeMap.back().end()){
                 scopeMap.back().erase(arrayName);
                 scopeMap.back().insert({arrayName, nextFreeAddr});
                 typeMap.back().erase(arrayName);
                 typeMap.back().insert({arrayName, type});
-                dst << "li $t0, " << argumentExprList->at(i)->getId() << std::endl;
-                dst << "sw $t0, " << scopeMap.back().at(arrayName) - 4*i << "($fp)" << std::endl;
-                nextFreeAddr -= 4;
-                freeWords--;
+
+            }else{
+                scopeMap.back().insert({arrayName, nextFreeAddr});
+                typeMap.back().insert({arrayName, type});
             }
+            
+            nextFreeAddr -= 4;
+            freeWords--;
                 
+        }else{
+            if(scopeMap.back().find(arrayName) != scopeMap.back().end()){
+                
+                //Do nothing (everything is do further down)
+                
+            }else{assert(0);}    
         }
-    }
+        
+        dst << "###### CALCULATING ADDRESS OF ARRAY ######" << std::endl;
+        //Calculate the address of the first element
+        dst << "addi $t0, $fp, " << nextFreeAddr << std::endl;
+                                 
+        //Store the pointer to the array (don't call the store function because it might affect the addr)
+        dst << "sw $t0, " << scopeMap.back().at(arrayName) << "($fp)" << std::endl;
+        
+        dst << "###### STORING ARRAY ELEMENTS ######" << std::endl;
+        //Store the elements of the array
+        for(int i(0); i < argumentExprList->size(); ++i){
+            load(dst, "$t0", elementName.at(i));
+            
+            //The element of the array is lost we can only access it with the pointer
+            store(dst, "$t0", makeName(), elementType);   
+        }
+        dst << "###### FINISHED STORING ARRAY ELEMENTS ######" << std::endl;
+        
+    }else{assert(0);} //Haven't implemented it yet
 }
 
 void Frame::loadArrayElement(std::ostream& dst, const std::string& reg, const std::string& arrayName, const Expr* index){
-    dst << "######## Loading Array Element ########" << std::endl;
+    dst << "######## LOADING ARRAY ELEMENT ########" << std::endl;
+    
     //Calculate the index
     std::string indexName = makeName();
     index->printMipsE(dst, indexName, this, Type::INT);
     load(dst, "$t0", indexName);
     //Multiply by 4
     dst << "sll $t0, $t0, 2" << std::endl;
-    dst << "subu $t1, $fp, $t0" << std::endl;
-    try{
-        dst << "lw " << reg << ", " << scopeMap.back().at(arrayName) << "($t1)" << std::endl;
-    }catch(const std::out_of_range& e){
-            dst << "lui $t1, %hi(" << arrayName << ")" << std::endl;
-            dst << "addiu $t1, $t1, %lo(" << arrayName << ")" << std::endl;
-            dst << "addu $t1, $t1, $t0" << std::endl;
-            dst << "lw " << reg << ", " << "0($t1)" << std::endl;
+    
+    //Check if array is in frame
+    if(scopeMap.back().find(arrayName) != scopeMap.back().end()){
+        //Calculate the pointer to the element
+        load(dst, "$t1", arrayName);
+        dst << "subu $t1, $t1, $t0" << std::endl;
+    
+        //Load the element
+        dst << "lw " << reg << ", 0($t1)" << std::endl;
+        
+    }else{
+        //Array is global
+        dst << "lui $t1, %hi(" << arrayName << ")" << std::endl;
+        dst << "addiu $t1, $t1, %lo(" << arrayName << ")" << std::endl;
+        dst << "addu $t1, $t1, $t0" << std::endl;
+        dst << "lw " << reg << ", " << "0($t1)" << std::endl;
     }
     
-    dst << "######## Done Loading ########" << std::endl;
+    dst << "######## DONE LOADING ########" << std::endl;
 }
 
 void Frame::storeArrayElement(std::ostream& dst, const std::string& reg, const PostfixExpr* postfixExpr){
-    dst << "######## Storing Array Element ########" << std::endl;
+    dst << "######## STORING ARRAY ELEMENT ########" << std::endl;
     
     //We have to store so that we don't overwright it
     std::string safetyStore(makeName());
@@ -225,31 +261,33 @@ void Frame::storeArrayElement(std::ostream& dst, const std::string& reg, const P
     
     //Evaluate the index of the array element
     std::string indexName = makeName();
-    postfixExpr->evaluateArgument(dst, indexName, this, Type::INT   );
+    postfixExpr->evaluateArgument(dst, indexName, this, Type::INT);
     load(dst, "$t0", indexName);
     dst << "sll $t0, $t0, 2" << std::endl;
-    
+        
     //Check if the array is in local scope
     if(scopeMap.back().find(arrayName) != scopeMap.back().end()){
-        dst << "subu $t0, $fp, $t0" << std::endl;
-        load(dst, "$t1", safetyStore);
-        dst << "sw $t1, " << scopeMap.back().at(arrayName) << "($t0)" << std::endl;
-    }else{
-        //It must be in Global scope
+        //Load the pointer to the array
+        load(dst, "$t1", arrayName);
         
+        dst << "subu $t0, $t1, $t0" << std::endl;
+        load(dst, "$t1", safetyStore);
+        dst << "sw $t1, 0($t0)" << std::endl;
+    }
+    else{
         //Find the address of the array
         dst << "lui $t1, %hi(" << arrayName << ")" << std::endl;
         dst << "addiu $t1, $t1, %lo(" << arrayName << ")" << std::endl;
         
         //Find the address of the element
-        dst << "addu $t1, $t1, $t0" << std::endl;
+        dst << "addu $t0, $t1, $t0" << std::endl;
                 
         //Store
-        load(dst, "$t2", safetyStore);
-        dst << "sw $t2, 0($t1)" << std::endl;
+        load(dst, "$t1", safetyStore);
+        dst << "sw $t1, 0($t0)" << std::endl;
     }
     
-    dst << "######## Done Storing ########" << std::endl;
+    dst << "######## DONE STORING ########" << std::endl;
 }
 
 void Frame::loadAddr(std::ostream& dst, const std::string& reg, const std::string& varName)const{

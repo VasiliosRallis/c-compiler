@@ -105,13 +105,13 @@ INIT_DECLARATOR: DIRECT_DECLARATOR                          {$$ = $1;}          
 		       | DIRECT_DECLARATOR T_EQUAL T_LCURLBRACKET ARGUMENT_EXPR_LIST T_RCURLBRACKET {$$ = new InitDeclarator($1, NULL, $4);}
 		       
 
-DIRECT_DECLARATOR: T_IDENTIFIER                                             {$$ = new DirectDeclarator($1, NULL, NULL, NULL);}  
-		         | T_IDENTIFIER T_LBRACKET T_RBRACKET                       {$$ = new DirectDeclarator($1, $2, NULL, $3);}// function declaration : int f() ;
+DIRECT_DECLARATOR: T_IDENTIFIER                                             {$$ = new DirectDeclarator($1, NULL, NULL, NULL, NULL);}  
+		         | T_IDENTIFIER T_LBRACKET T_RBRACKET                       {$$ = new DirectDeclarator($1, $2, NULL, $3, NULL);}// function declaration : int f() ;
 //		         | DIRECT_DECLARATOR T_LBRACKET IDENTIFIER_LIST T_RBRACKET  {$$ = new DirectDeclarator($1, $2, $3, $4);} // Not sure if need this int f(a,b);
-		         | T_IDENTIFIER T_LBRACKET PARAMETER_LIST T_RBRACKET        {$$ = new DirectDeclarator($1, $2, $3, $4);} // function declaration : int f(int a, int b) ;
-		         | T_IDENTIFIER T_SQUARE_LBRACKET EXPR T_SQUARE_RBRACKET    {$$ = new DirectDeclarator($1, $2, NULL, $4);}
-		         | T_IDENTIFIER T_SQUARE_LBRACKET T_SQUARE_RBRACKET         {$$ = new DirectDeclarator($1, $2, NULL, $3);}
-		         | T_MULT T_IDENTIFIER                                      {$$ = new DirectDeclarator($2, $1, NULL, NULL);}
+		         | T_IDENTIFIER T_LBRACKET PARAMETER_LIST T_RBRACKET        {$$ = new DirectDeclarator($1, $2, $3, $4, NULL);} // function declaration : int f(int a, int b) ;
+		         | T_IDENTIFIER T_SQUARE_LBRACKET EXPR T_SQUARE_RBRACKET    {$$ = new DirectDeclarator($1, $2, NULL, $4, $3);}
+		         | T_IDENTIFIER T_SQUARE_LBRACKET T_SQUARE_RBRACKET         {$$ = new DirectDeclarator($1, $2, NULL, $3, NULL);}
+		         | T_MULT T_IDENTIFIER                                      {$$ = new DirectDeclarator($2, $1, NULL, NULL, NULL);}
 		         
 PARAMETER_LIST: PARAMETER_DECL                          {$$ = new std::vector<const ParameterDeclaration*>{$1};}    // 
               | PARAMETER_LIST T_COMMA PARAMETER_DECL   {$$ = $1; $1->push_back($3);}           // Inside brackets of ( int x, int y)

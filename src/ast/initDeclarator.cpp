@@ -23,12 +23,12 @@ void InitDeclarator::printPy(std::ostream& dst, int depth)const{
 
 void InitDeclarator::printMips(std::ostream& dst, Frame* framePtr, Type type)const{
     if(asgnExpr != NULL){
-        if(type == Type::INT || type == Type::CHAR){
+        if(type == Type::INT || type == Type::CHAR || isAddr(type)){
             //Generate a unique name
             std::string destName = makeName();
             //Ask the expression to evaluate itself and store its value in the frame, with destName as it's identifier
             asgnExpr->printMipsE(dst, destName, framePtr, type);
-            //Temporary store the identifier in $t1
+            //Temporary store the identifier in $t0
             framePtr->load(dst, "$t0", destName);
             //Store it in the frame
             framePtr->store(dst, "$t0", directDeclarator->getId(), type, true);
@@ -74,8 +74,14 @@ void InitDeclarator::printMips(std::ostream& dst, Frame* framePtr, Type type)con
         
     }
     if(exprList != NULL){
-        //Have to think about types
-        framePtr->storeArray(dst, directDeclarator->getId(), exprList, type, true);
+        if(!isAddr(type)){
+            //This should never happen
+            assert(0);
+   
+        }else{
+            framePtr->storeArray(dst, directDeclarator->getId(), exprList, type, true);
+            
+        }
     }
 }
 
@@ -122,26 +128,45 @@ void InitDeclarator::printGMips(std::ostream& dst, Type type)const{
             
         
         }else{assert(0);}
-    }else if(exprList != NULL){
-        Type myType = exprList->at(0)->getType(NULL);
         
-        if(type == Type::INT){
+    }else if(exprList != NULL){
+        if(!isAddr(type)){
+            //This should never happen
+            assert(0);
+            
+        }else{
             dst << "\t.globl\t" << id << std::endl;
             dst << "\t.data" << std::endl;
             dst << "\t.align 2" << std::endl;
-            dst << "\t.size\t" << id << ", " << exprList->size()*4<< std::endl;
-            dst << id << ":" << std::endl;
             
-            if(myType == Type::INT){
+            if(type == Type::INT_ADDR || type == Type::CHAR_ADDR || type == Type::FLOAT_ADDR){
+                dst << "\t.size\t" << id << ", " << exprList->size()*4<< std::endl;
+                dst << id << ":" << std::endl;
+                    
                 for(int i(0); i < exprList->size(); ++i){
-                    int constant = exprList->at(i)->eval();
-                    dst << "\t.word\t" << constant << std::endl;
+                    Type myType = exprList->at(i)->getType(NULL);
+                    
+                    if(myType == Type::INT || myType == Type::DOUBLE){
+                        if(type == Type::INT_ADDR){
+                            //This will automatically truncate
+                            int constant = exprList->at(i)->eval();
+                            dst << "\t.word\t" << constant << std::endl;   
+                        
+                        }else{
+                            double constant = exprList->at(i)->eval();
+                            dst << "\t.word\t" << constant << std::endl;
+                            
+                        }
+                    }else if(myType == Type::CHAR){
+                        std::string id = exprList->at(i)->getId();
+                        int ascii = id[1];
+                        dst << "\t.word\t" << ascii << std::endl;
+                    
+                    }else{assert(0);}   
                 }
-            }else{
-                std::cerr << "Type: " << (int)myType << std::endl;
-                assert(0);
-            }
-        }else{assert(0);}   
+                
+            }else{assert(0);}
+        }
     }
     
     g_mips_var.insert({id, type});   
