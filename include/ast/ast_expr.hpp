@@ -529,9 +529,7 @@ public:
     }
     
     Type getType(const Frame* framePtr)const override{
-        // Kayne : Not sure if its a problem - do we need to check if its assignment, if not assignment, just upcast, if assignment of different types what to do?
-        // Bill: I think we have to return the type of the left operand
-        
+        //Return left operand's type if is assignment
         if(oper->getId() == "="){
             return operand1->getType(framePtr);
             
