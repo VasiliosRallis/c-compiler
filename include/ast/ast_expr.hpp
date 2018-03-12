@@ -37,6 +37,8 @@ public:
             std::string id = expr->getId();
 	        Type myType = expr->getType(framePtr);
 	        
+	        if(type == Type::ANYTHING) type = expr->getType(framePtr);
+	        
 	        if(type == Type::INT){
                 if(expr->isIdentifier()){
 	                if(myType == Type::INT || myType == Type::CHAR || isAddr(myType)){
@@ -105,7 +107,7 @@ public:
 	                if(myType == Type::CHAR || myType == Type::INT || isAddr(myType)){
 	                    framePtr->load(dst, "$t0", id);
 	                    TypeConv::convert(dst, Type::FLOAT, Type::INT, "$f0", "$t0");
-	                    framePtr->store(dst, "f0", destName, type);
+	                    framePtr->store(dst, "$f0", destName, type);
 	                    
 	                }else if(myType == Type::FLOAT){
                         framePtr->load(dst, "$f0", id);
@@ -322,6 +324,8 @@ public:
         std::string n1 = makeName("binary");
         std::string n2 = makeName("binary");
         
+        bool doLater = false;
+        
         Type destType;
         
          //We don't need to eval the first operand if we are doing an assignment
@@ -430,22 +434,36 @@ public:
         }
         else if(oper->getId() == "="){
             if(dynamic_cast<const PrimaryExpr*>(operand1)){
+                
+                doLater = true;
+                //Do nothing (this case is now handled later so that we don't repeat the code
+                
+                if(destType == Type::INT)
+                    dst << "move $t2, $t1" << std::endl;
+                else
+                    dst << "mov.s $f4, $f2" << std::endl;
+                
+                
+                /*
                 std::string id = operand1->getId();
                
                 if(destType == Type::INT){
-                    framePtr->store(dst, "$t1", id, type);
                     dst << "move $t2, $t1" << std::endl;
                 }
                 else{
+                    //Have to do conversions here
                     framePtr->store(dst, "$f2", id, type);
                     dst << "mov.s $f4, $f2" << std::endl;
                 }                
-                
+                */
             }else if(dynamic_cast<const PostfixExpr*>(operand1)){
                 framePtr->storeArrayElement(dst, "$t1", dynamic_cast<const PostfixExpr*>(operand1));
                 dst << "move $t2, $t1" << std::endl;
            }
         }
+        
+        //Really important for when we have exprStatement (e.g. double x = 3; x = 1 + 2;)
+        if(type == Type::ANYTHING) type = operand1->getType(framePtr);
         
         //We only convert if type mismatch between type(LHS) and destType(RHS) 
         if(type == Type::DOUBLE){
@@ -460,6 +478,7 @@ public:
             }else{assert(0);}
 
             framePtr->store(dst, "$f4", destName, Type::DOUBLE);
+            if(doLater) framePtr->store(dst, "$f4", operand1->getId(), Type::DOUBLE);
 
         }else if(type == Type::FLOAT){
             if(destType == Type::DOUBLE){
@@ -473,6 +492,7 @@ public:
             }else{assert(0);}
 
             framePtr->store(dst, "$f4", destName, Type::FLOAT);
+            if(doLater) framePtr->store(dst, "$f4", operand1->getId(), Type::FLOAT);
                     
         }else if(type == Type::INT || type == Type::CHAR){
             if(destType == Type::DOUBLE){
@@ -488,25 +508,39 @@ public:
             if(type == Type::CHAR){
                     dst << "andi $t2, $t2, 0xFF" << std::endl;
             }
- 
+
             framePtr->store(dst, "$t2", destName, Type::INT);
+            if(doLater) framePtr->store(dst, "$t2", operand1->getId(), Type::INT);
               
 
+        }else if(isAddr(type)){
+            if(destType == Type::DOUBLE || destType == Type::FLOAT){
+                //This should never happen
+                assert(0);
+                
+            }else{
+                //Don't need to convert simply transfer whatever we got as an addr
+                framePtr->store(dst, "$t2", destName, type);
+                if(doLater) framePtr->store(dst, "$t2", operand1->getId(), type);
+            }
+            
         }else{assert(0);}
 
     }
     
     Type getType(const Frame* framePtr)const override{
         // Kayne : Not sure if its a problem - do we need to check if its assignment, if not assignment, just upcast, if assignment of different types what to do?
-
-        Type type1 = operand1->getType(framePtr);
-        Type type2 = operand2->getType(framePtr);
+        // Bill: I think we have to return the type of the left operand
         
-        if(type1 == type2){
-            return type1;
+        if(oper->getId() == "="){
+            return operand1->getType(framePtr);
             
         }else{
-            throw std::runtime_error("Called getType() on class BinaryOperation. Types didn't match (haven't impemented this)");
+            if(operand1->getType(framePtr) == Type::DOUBLE || operand2->getType(framePtr) == Type::DOUBLE)
+                return(Type::DOUBLE);
+            else if(operand1->getType(framePtr) == Type::FLOAT || operand2->getType(framePtr) == Type::FLOAT)
+                return(Type::FLOAT);
+            else return(Type::INT);   
         }
         
     }

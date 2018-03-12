@@ -79,14 +79,13 @@ void Frame::store(std::ostream& dst, const std::string reg, const std::string va
     }else{
         if(scopeMap.back().find(varName) != scopeMap.back().end()){
             //This code will be fixed    
-            if(reg[1] == 't' || reg[1] == 'v' || reg[1] == '2' || reg[1] == '3')
-                dst << "sw " << reg << ", " << scopeMap.back().at(varName) << "($fp)\n";
-                
-            else if(reg[1] == 'f')
+            if(reg[1] == 'f' && reg[2] != 'p'){
                 dst << "swc1 " << reg << ", " << scopeMap.back().at(varName) << "($fp)\n";
-              
-            else
-                assert(0);
+                dst << "nop" << std::endl;
+                
+            }else{
+                dst << "sw " << reg << ", " << scopeMap.back().at(varName) << "($fp)\n";
+            }
             
         }else if(g_mips_var.find(varName) != g_mips_var.end()){
             dst << "lui $t7, %hi(" << varName << ")" << std::endl;
@@ -100,12 +99,13 @@ void Frame::store(std::ostream& dst, const std::string reg, const std::string va
             freeWords--;
             
             //Check if we are storing a floating point register
-            if(reg[1] != 'f')
+            if(reg[1] == 'f' && reg[2] != 'p'){
+                dst << "swc1 " << reg << ", " << scopeMap.back().at(varName) << "($fp)\n";
+                dst << "nop" << std::endl;                
+            }else{
                 dst << "sw " << reg << ", " << scopeMap.back().at(varName) << "($fp)\n";
                 
-            else
-                dst << "swc1 " << reg << ", " << scopeMap.back().at(varName) << "($fp)\n";
-           
+            }
         }
         
     }

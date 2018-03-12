@@ -28,14 +28,13 @@ public:
     
     virtual void printMips(std::ostream& dst, Frame* framePtr, Type type = Type::ANYTHING)const override{
         if(expr != NULL){
-            std::string destName = makeName();
-            //Temporary use Type::INT not really sure what it expects        
-            expr->printMipsE(dst, destName, framePtr, Type::INT);
+            std::string destName = makeName();       
+            expr->printMipsE(dst, destName, framePtr, Type::ANYTHING);
         }
     }
     
     void printMipsE(std::ostream& dst, std::string& destName, Frame* framePtr, Type type)const{
-        if (expr != NULL) expr->printMipsE(dst, destName, framePtr, Type::INT); //This Type::INT has to be verified
+        if (expr != NULL) expr->printMipsE(dst, destName, framePtr, Type::ANYTHING);
     }
     
 };
