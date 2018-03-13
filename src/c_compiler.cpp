@@ -14,6 +14,7 @@ std::vector<std::string> endPrint;
 
 std::unordered_map<std::string, Type> g_mips_var;
 std::unordered_map<std::string, Type> function_type;
+std::unordered_map<std::string, Type> function_decl;
 
 int main(int argc, char* argv[]){
     

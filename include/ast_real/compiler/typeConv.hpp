@@ -13,6 +13,7 @@ public:
 private:
     static void cIntFloat(std::ostream& dst, const std::string& outReg, const std::string& inReg);
     static void cFloatInt(std::ostream& dst, const std::string& outReg, const std::string& inReg);   
+    static void cIntDouble(std::ostream& dst, const std::string& outReg, const std::string& inReg);
 };
 
 #endif

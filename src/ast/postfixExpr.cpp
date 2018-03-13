@@ -4,6 +4,7 @@
 #include "ast_real/compiler/typeConv.hpp"
 
 extern std::unordered_map<std::string, Type> function_type;
+extern std::unordered_map<std::string, Type> function_decl;
 
 PostfixExpr::PostfixExpr(const Expr* _primaryExpr, StrPtr _oper1, const std::vector<const Expr*>* _argumentExprList, StrPtr _oper2)
     :primaryExpr(_primaryExpr), oper1(_oper1), argumentExprList(_argumentExprList), oper2(_oper2){}
@@ -46,8 +47,16 @@ void PostfixExpr::printMipsE(std::ostream& dst, const std::string& destName, Fra
         framePtr->storeRegisters(dst);
         
         framePtr->saveArguments(dst, argumentExprList);
-        dst << "jal " << primaryExpr->getId() << std::endl;
-        dst << "nop" << std::endl;
+        
+        if(function_decl.find(primaryExpr->getId()) != function_decl.end()){
+            dst << "lw $t0, %call16(" << primaryExpr->getId() << ")($28)" << std::endl;
+            dst << "jalr $t0" << std::endl;
+            
+        }else{ 
+            dst << "jal " << primaryExpr->getId() << std::endl;
+            dst << "nop" << std::endl;
+            
+        }
         
         framePtr->loadRegisters(dst);
         

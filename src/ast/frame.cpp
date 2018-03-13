@@ -32,8 +32,22 @@ Frame::Frame(std::ostream& dst, const DirectDeclarator* directDeclarator)
 void Frame::load(std::ostream& dst, const std::string reg, const std::string varName)const{
     try{
         if(reg[1] == 'f' && reg[2] != 'p'){
-            dst << "lwc1 " << reg << ", " << scopeMap.back().at(varName) << "($fp)\n";
-            dst <<"nop" << std::endl; 
+            if(loadType(varName) == Type::FLOAT){   
+                dst << "lwc1 " << reg << ", " << scopeMap.back().at(varName) << "($fp)\n";
+                dst <<"nop" << std::endl;
+            
+            }else if(loadType(varName) == Type::DOUBLE){
+                 dst << "lwc1 " << reg << ", " << scopeMap.back().at(varName) << "($fp)\n";
+                 dst << "nop" << std::endl;
+                 
+                //This will give the register number
+                int a = std::atoi(reg.substr(2).c_str());
+                ++a;
+                dst << "lwc1 " << std::string(reg.substr(0,2).append(std::to_string(a))) << ", " << scopeMap.back().at(varName)- 4  << "($fp)" << std::endl;
+                dst << "nop" << std::endl;
+                
+            }else{assert(0);}   
+                 
         }else{
             dst << "lw " << reg << ", " << scopeMap.back().at(varName) << "($fp)\n";
         } 
@@ -44,8 +58,7 @@ void Frame::load(std::ostream& dst, const std::string reg, const std::string var
             if(g_mips_var.find(varName) != g_mips_var.end()){
                 
                 //Check if we are loading a global floating point
-                if(reg[1] == 'f' && reg[2] != 'p'){
-                    
+                if(reg[1] == 'f' && reg[2] != 'p'){    
                     //TODO never use $t9 again
                     dst << "lui $t9 " << ",%hi(" << varName << ")" << std::endl;
                     dst << "lwc1 " << reg <<  ",%lo(" << varName << ")($t9)" << std::endl;
@@ -73,7 +86,7 @@ void Frame::store(std::ostream& dst, const std::string reg, const std::string va
             typeMap.back().insert({varName, type});
 
         }else{
-            if(freeWords == 0) addWords(dst, scopeMap.back().size());
+            if(freeWords == 1) addWords(dst, scopeMap.back().size());
             scopeMap.back().insert({varName, nextFreeAddr});
             typeMap.back().insert({varName, type});
             nextFreeAddr -= 4;
@@ -81,12 +94,29 @@ void Frame::store(std::ostream& dst, const std::string reg, const std::string va
         }
             
         //Check if we are storing a floating point register
-        if(reg[1] != 'f')
-            dst << "sw " << reg << ", " << scopeMap.back().at(varName) << "($fp)\n";
+        if(reg[1] == 'f' && reg[2] != 'p'){
+        
+            if(type == Type::FLOAT){
+                dst << "swc1 " << reg << ", " << scopeMap.back().at(varName) << "($fp)\n";
+                
+            }else if(type == Type::DOUBLE){
+             
+                dst << "swc1 " << reg << ", " << scopeMap.back().at(varName)  << "($fp)" << std::endl;
+                dst << "nop" << std::endl;
+                
+                //This will give the register number
+                int a = std::atoi(reg.substr(2).c_str());
+                ++a;
+                dst << "swc1 " << std::string(reg.substr(0,2).append(std::to_string(a))) << ", "<< scopeMap.back().at(varName) - 4 << "($fp)" << std::endl;
+                dst << "nop" << std::endl;
             
-        else
-            dst << "swc1 " << reg << ", " << scopeMap.back().at(varName) << "($fp)\n";
+            //Should not happen
+            }else{assert(0);}
+
+        }else{
+            dst << "sw " << reg << ", " << scopeMap.back().at(varName) << "($fp)\n";
  
+        }
     }else{
         if(scopeMap.back().find(varName) != scopeMap.back().end()){
             //This code will be fixed    

@@ -47,11 +47,11 @@ public:
 	                    framePtr->load(dst, "$t0", id);
 	                    framePtr->store(dst, "$t0", destName, type);
 	                
-	                }else if(myType == Type::FLOAT){
+	                }else if(myType == Type::FLOAT || myType == Type::DOUBLE){
 	                    framePtr->load(dst, "$f0", id);
-	                    TypeConv::convert(dst, type, Type::FLOAT, "$t0", "$f0");
+	                    TypeConv::convert(dst, type, myType, "$t0", "$f0");
 	                    framePtr->store(dst, "$t0", destName, type);
-    	                
+	                
 	                }else{assert(0);}
 	                
 	            }else if(myType == Type::INT){
@@ -242,7 +242,7 @@ public:
         else if(*oper == "++"){            
             postfixExpr->printMipsE(dst, destName, framePtr, type);
 	        framePtr->load(dst, "$t0", destName);
-            dst << "addi $t0, $t0, 1" << std::endl;     //Increment value before storing it back 
+            dst << "addi $t0, $t0, 1" << std::endl;     //Increment value before storing it back
 	        framePtr->store(dst, "$t0", destName, type);
             if(dynamic_cast<const PrimaryExpr*>(postfixExpr)){
                 std::string id = postfixExpr->getId();
@@ -299,6 +299,16 @@ public:
     
     bool isIdentifier()const override{
         return postfixExpr->isIdentifier();
+    }
+    
+    double eval()const override{
+        if(*oper == "+"){
+            return postfixExpr->eval();
+            
+        }else if(*oper == "-"){
+            return -postfixExpr->eval();
+            
+        }else{assert(0);}
     }
     
 };

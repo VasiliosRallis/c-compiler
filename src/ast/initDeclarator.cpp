@@ -46,9 +46,7 @@ void InitDeclarator::printMips(std::ostream& dst, Frame* framePtr, Type type)con
             endPrint.push_back(label + ":\n");
             
             //This might not word for some inputs (non deterministic)
-            std::stringstream ss;
-            asgnExpr->printPy(ss);
-            endPrint.push_back("\t.float " + ss.str() + "\n");
+            endPrint.push_back("\t.float " + std::to_string((float)asgnExpr->eval()) + "\n");
             
             //Load the containts of the rdata into a register
             dst << "lui $t0, %hi(" << label << ")" << std::endl;
@@ -67,6 +65,27 @@ void InitDeclarator::printMips(std::ostream& dst, Frame* framePtr, Type type)con
             //Store it in the frame
             framePtr->store(dst, "$f0", directDeclarator->getId(), type, true);
 
+            }
+        }else if(type == Type::DOUBLE){
+            if(asgnExpr->isIdentifier()){
+                std::string destName = makeName();
+                asgnExpr->printMipsE(dst, destName, framePtr, type);
+                framePtr->load(dst, "$f0", destName);
+                framePtr->store(dst, "$f0", directDeclarator->getId(), type, true);
+                
+            }else{
+                std::string label = std::string("$" + makeName("DOUBLE"));
+                
+                endPrint.push_back("\t.rdata\n");
+                endPrint.push_back("\t.align 2\n");
+                endPrint.push_back(label + ":\n");
+                endPrint.push_back("\t.double " + std::to_string((asgnExpr->eval())) + "\n");
+                
+                dst << "lui $t0, %hi(" << label << ")" << std::endl;
+                dst << "lwc1 $f0, %lo(" << label << " + 4)($t0)" << std::endl;
+                dst << "lwc1 $f1, %lo(" << label << ")($t0)" << std::endl;
+                
+                framePtr->store(dst, "$f0", directDeclarator->getId(), type, true);   
             }
         }else{
             assert(0);
