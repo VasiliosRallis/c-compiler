@@ -409,7 +409,12 @@ public:
             }
         }
         else if(oper->getId() == "-"){
-            dst << "sub $t2, $t0, $t1" << std:: endl;
+            if(destType == Type::INT){
+                dst << "sub $t2, $t0, $t1" << std:: endl;
+            }
+            else{
+                dst << "sub.s $f4, $f0, $f2" << std::endl;
+            }
         }
         else if(oper->getId() == "*"){
             if(destType == Type::INT){
@@ -420,16 +425,43 @@ public:
             }
         }
         else if (oper->getId() == "/"){
-            dst<<"div $t0, $t1" << std:: endl;
-            dst<<"mflo $t2" << std::endl;
+            if(destType == Type::INT){
+                dst<<"div $t0, $t1" << std:: endl;
+                dst<<"mflo $t2" << std::endl;
+            }
+            else{
+                dst<<"div.s $f4, $f0, $f2" <<std::endl;
+            }
         }
         else if (oper->getId() == "%"){
-            dst<<"div $t0, $t1" << std:: endl;
-            dst<<"mfhi $t2" << std::endl;
+            if(destType == Type::INT){
+                dst<<"div $t0, $t1" << std:: endl;
+                dst<<"mfhi $t2" << std::endl;
+            }
+            else{
+                throw std::runtime_error("Invalid BinaryOperation of % " + oper->getId() + " on Non-Integer Types");
+            }
         }
         else if (oper->getId() == "==") {
-            dst << "xor $t2, $t0, $t1" << std::endl;
-            dst << "sltu $t2, $t2, 1" << std::endl;    
+            if(destType == Type::INT){
+                dst << "xor $t2, $t0, $t1" << std::endl;
+                dst << "sltu $t2, $t2, 1" << std::endl;
+            }
+            else{
+                std::string branchlabel = std::string("$" + makeName("BRANCH"));
+                dst << "li $t3, 1" << std::endl;
+                dst << "mtc1 $t3, $f6" << std::endl; //Move t3 into $f6 Dest Reg is $f6, 2nd opearand
+                dst << "cvt.s.w $f4, $f6" << std::endl;
+                dst << "c.eq.s $f2,$f0" << std :: endl; // if equal, flag 1 set
+	            dst << "nop" << std::endl;
+	            dst << "bc1t "<< branchlabel << std::endl; // branch if flag 1 set
+	            dst << "nop" << std::endl;
+                // IF NOT EQUAL, perform this, and set $f4 output reg to 0
+                dst << "mtc1 $0, $f6" << std::endl;
+                dst << "cvt.s.w $f4, $f6" << std::endl;
+                dst << branchlabel << ":" << std::endl;
+            
+            }    
         }
         else if (oper->getId() == "!=") {
             dst << "xor $t2, $t0, $t1" << std::endl;
