@@ -40,11 +40,11 @@ void Node::printGMips(std::ostream& dst, Type type)const{
 }
 
 double Node::eval()const{
-    throw("Called eval() on class: " + std::string(typeid(*this).name()));
+    throw std::runtime_error("Called eval() on class: " + std::string(typeid(*this).name()));
 }
 
 bool Node::isPointer()const{
-    throw("Called isAddr() on class: " + std::string(typeid(*this).name()));
+    throw std::runtime_error("Called isAddr() on class: " + std::string(typeid(*this).name()));
 }
 
 

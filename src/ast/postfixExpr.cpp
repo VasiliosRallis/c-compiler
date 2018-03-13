@@ -1,6 +1,8 @@
 #include "ast_real/ast/postfixExpr.hpp"
 #include <typeinfo>
 
+#include "ast_real/compiler/typeConv.hpp"
+
 extern std::unordered_map<std::string, Type> function_type;
 
 PostfixExpr::PostfixExpr(const Expr* _primaryExpr, StrPtr _oper1, const std::vector<const Expr*>* _argumentExprList, StrPtr _oper2)
@@ -54,7 +56,21 @@ void PostfixExpr::printMipsE(std::ostream& dst, const std::string& destName, Fra
     if(*oper1 == "["){
         //Trying to access element of an array;
         framePtr->loadArrayElement(dst, "$t0", primaryExpr->getId(), argumentExprList->at(0));
-        framePtr->store(dst, "$t0", destName, type);
+        Type elementType = addrToType(primaryExpr->getType(framePtr));
+        
+        if(type == Type::INT){
+            if(elementType == Type::INT || elementType == Type::CHAR){
+                //Do nothing
+                
+            }else if(elementType == Type::FLOAT){
+                dst << "mtc1 $t0, $f0" << std::endl;
+                TypeConv::convert(dst, Type::INT, Type::FLOAT, "$t0", "$f0");
+                
+            }else{assert(0);} //Haven't implemented it yet
+            
+        }else{assert(0);} //Haven't implemented it yet
+        
+        framePtr->store(dst, "$t0", destName, addrToType(primaryExpr->getType(framePtr)));
     }
     else if(*oper1 == "++"){            
             primaryExpr->printMipsE(dst,destName,framePtr, type);

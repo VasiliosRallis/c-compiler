@@ -42,8 +42,19 @@ void Frame::load(std::ostream& dst, const std::string reg, const std::string var
             argTranslator->load(dst, reg, varName);
         }catch(const std::out_of_range& e){
             if(g_mips_var.find(varName) != g_mips_var.end()){
-                dst << "lui " << reg << ",%hi(" << varName << ")" << std::endl;
-                dst << "lw " << reg <<  ",%lo(" << varName << ")(" << reg << ")" << std::endl;
+                
+                //Check if we are loading a global floating point
+                if(reg[1] == 'f' && reg[2] != 'p'){
+                    
+                    //TODO never use $t9 again
+                    dst << "lui $t9 " << ",%hi(" << varName << ")" << std::endl;
+                    dst << "lwc1 " << reg <<  ",%lo(" << varName << ")($t9)" << std::endl;
+                    dst << "nop" << std::endl;
+                    
+                }else{
+                    dst << "lui " << reg << ",%hi(" << varName << ")" << std::endl;
+                    dst << "lw " << reg <<  ",%lo(" << varName << ")(" << reg << ")" << std::endl;
+                }
                 
             }else{
                 throw(std::runtime_error("Couldn't find " + varName + " in Frame::load"));

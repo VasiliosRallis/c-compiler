@@ -52,3 +52,17 @@ bool StringNode::isIdentifier()const{
     if(isalpha(id->front()) || id->front() == '_') return true;
     else return false;
 }
+
+double StringNode::eval()const{
+    Type myType = getType(NULL);
+    
+    if(myType == Type::INT || myType == Type::DOUBLE){
+        return std::stod(*id);
+        
+    }else if(myType == Type::CHAR){
+        int ascii = (*id)[1];
+        return ascii;
+    
+    //This should never happen    
+    }else{assert(0);}
+}

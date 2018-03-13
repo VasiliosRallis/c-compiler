@@ -4,6 +4,8 @@
 #include "ast_real/compiler/frame.hpp"
 #include <cassert>
 
+extern std::vector<std::string> endPrint;
+
 class PrimaryExpr: public Expr{
 private:
     NodePtr expr; //This can be everything a stringConst an intConst (might lead to future issues)
@@ -120,8 +122,32 @@ public:
                         
                     }else{assert(0);}
                     
-                }else{assert(0);}
-	        
+                }else{
+                    if(myType == Type::INT || myType == Type::CHAR){
+                        dst << "li $t0, " << expr->eval() << std::endl;
+                        TypeConv::convert(dst, Type::FLOAT, Type::INT, "$f0", "$t0");
+                        framePtr->store(dst, "$f0", destName, type);
+                    
+                    //Since it is a constant, it has to be double (i.e. not float)    
+                    }else if(myType == Type::DOUBLE){
+                        //Set up for label of float constant
+                        endPrint.push_back("\t.rdata\n");
+                        endPrint.push_back("\t.align 2\n");
+                        
+                        //Create the label
+                        std::string label = makeName("FLOAT");
+                        endPrint.push_back(label + ":\n");
+                        endPrint.push_back("\t.float\t" + std::to_string((float)expr->eval()) + "\n");
+                        
+                        //Load the float
+                        dst << "lui $t0, %hi(" + label + ")\n";
+                        dst << "lwc1 $f0, %lo(" + label + ")($t0)" << std::endl;
+                        dst << "nop" << std::endl;
+                        
+                        framePtr->store(dst, "$f0", destName, type);
+                        
+                    }else{assert(0);}
+                }        
 	        }else{assert(0);}
 	        
         }else if(dynamic_cast<const Expr*>(expr)){

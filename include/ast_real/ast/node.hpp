@@ -27,7 +27,8 @@ enum class Type{
     DOUBLE_ADDR,
     VOID_ADDR,
     CHAR_ADDR,
-    STRING_ADDR
+    STRING_ADDR,
+    ADDR_ADDR
 };
 
 bool isAddr(const Type type);

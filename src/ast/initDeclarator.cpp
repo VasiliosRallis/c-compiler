@@ -98,11 +98,11 @@ void InitDeclarator::printGMips(std::ostream& dst, Type type)const{
     if(asgnExpr != NULL){
         Type myType = asgnExpr->getType(NULL);
 
+        dst << "\t.globl\t" << id << std::endl;
         
         if(type == Type::INT){
-            dst << "\t.globl\t" << id << std::endl;
-            dst << "\t.data" << std::endl;
             dst << "\t.align 2" << std::endl;
+            dst << "\t.data" << std::endl;
             dst << "\t.size\t" << id << ", 4" << std::endl;
             dst << id << ":" << std::endl;
             
@@ -126,7 +126,24 @@ void InitDeclarator::printGMips(std::ostream& dst, Type type)const{
                 
             }else{assert(0);}
             
-        
+        }else if(type == Type::FLOAT){
+            dst << "\t.align 2" << std::endl;
+            dst << "\t.data" << std::endl;
+            dst << "\t.size\t" << id << ", 4" << std::endl;
+            dst << id << ":" << std::endl;
+            
+            if(myType == Type::INT){
+                dst << "\t.float\t" << asgnExpr->eval() << std::endl;
+                
+            }else if(myType == Type::CHAR){
+                int ascii = (int)id[1];
+                dst << "\t.float\t" << ascii << std::endl;
+                
+            }else if(myType == Type::DOUBLE){
+                dst << "\t.float\t" << (float)asgnExpr->eval() << std::endl;
+                    
+            }else{assert(0);}
+            
         }else{assert(0);}
         
     }else if(exprList != NULL){
@@ -139,6 +156,7 @@ void InitDeclarator::printGMips(std::ostream& dst, Type type)const{
             dst << "\t.data" << std::endl;
             dst << "\t.align 2" << std::endl;
             
+            //BILL::We are storing characters in 4 bytes instead of 1 (n.b. might cause problems)
             if(type == Type::INT_ADDR || type == Type::CHAR_ADDR || type == Type::FLOAT_ADDR){
                 dst << "\t.size\t" << id << ", " << exprList->size()*4<< std::endl;
                 dst << id << ":" << std::endl;
@@ -152,12 +170,22 @@ void InitDeclarator::printGMips(std::ostream& dst, Type type)const{
                             int constant = exprList->at(i)->eval();
                             dst << "\t.word\t" << constant << std::endl;   
                         
-                        }else{
+                        }else if(type == Type::CHAR_ADDR){
+                            char constant = exprList->at(i)->eval();
+                            dst << "\t.word\t" << (int)constant << std::endl;
+                               
+                        }else if(type == Type::FLOAT_ADDR){
+                            float constant = exprList->at(i)->eval();
+                            dst << "\t.float\t" << constant << std::endl;
+                        
+                        }else if(type == Type::DOUBLE_ADDR){
                             double constant = exprList->at(i)->eval();
-                            dst << "\t.word\t" << constant << std::endl;
+                            dst << "\t.double\t" << constant << std::endl;
                             
-                        }
+                        }else{assert(0);}
+                        
                     }else if(myType == Type::CHAR){
+                        //Don't care about what type of array we have
                         std::string id = exprList->at(i)->getId();
                         int ascii = id[1];
                         dst << "\t.word\t" << ascii << std::endl;

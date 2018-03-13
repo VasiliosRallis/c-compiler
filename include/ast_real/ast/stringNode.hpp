@@ -29,7 +29,8 @@ public:
     virtual Type getType(const Frame* framePtr)const override;
     
     virtual bool isIdentifier()const override;
-
+    
+    double eval()const override;
 };
 
 #endif
