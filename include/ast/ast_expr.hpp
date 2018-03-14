@@ -406,11 +406,39 @@ public:
                     
                     dst << b1 << ":" << std::endl;
                     dst << "move $t2, $0" << std::endl;
-                    dst << b2 << ":" << std::endl;
-                       
+                    dst << b2 << ":" << std::endl;                  
                 }
-                else {
-                    assert(0); //Have not implemented for other types
+                else { 
+                    dst << "mtc1 $0, $f6" << std::endl;
+	                dst << "nop" << std::endl;
+                    dst << "cvt.s.w $f6, $f6" << std::endl;
+
+                    dst << "li $t0, 1" << std::endl;
+                    dst << "mtc1 $t0, $f8" << std::endl;
+	                dst << "nop" << std::endl;
+                    dst << "cvt.s.w $f8, $f8" << std::endl;                    
+                    //$f6, $f8 now have decimal values 0 and 1 in single Float representations.                     
+                        
+                    dst << "c.eq.s $f0, $f6" << std::endl;
+                    dst << "nop" << std::endl;
+                    dst << "bc1t " << b1 << std ::endl;
+                    dst << "nop" << std::endl << std::endl;
+                    //if LH operand is zero, result is definitely 0, thus branch to b1 do not evaluate RH operand
+
+                    operand2->printMipsE(dst, n2, framePtr, destType);
+                    framePtr->load(dst, "$f2", n2);
+                    dst << "c.eq.s $f2, $f6" << std::endl;
+                    dst << "nop" << std::endl;
+                    dst << "bc1t " << b1 << std ::endl;
+                    dst << "nop" << std::endl << std::endl;
+
+                    dst << "mov.s $f4, $f8" << std:: endl;
+                    dst << "b " << b2 << std::endl;
+                    dst << "nop" << std::endl << std::endl;
+                    
+                    dst << b1 << ":" << std::endl;
+                    dst << "mov.s $f4, $f6" << std::endl;
+                    dst << b2 << ":" << std::endl;                  
                 }
             
             }
@@ -432,14 +460,42 @@ public:
                     dst << b2 << ":" << std::endl;
                     dst << "move $t2, $0" << std:: endl;
                     
-                    dst << b3 << ":" << std::endl;
-                                   
-                       
+                    dst << b3 << ":" << std::endl; 
                 }
                 else {
-                    assert(0); //Have not implemented for other types
-                }
+                    dst << "mtc1 $0, $f6" << std::endl;
+	                dst << "nop" << std::endl;
+                    dst << "cvt.s.w $f6, $f6" << std::endl;
 
+                    dst << "li $t0, 1" << std::endl;
+                    dst << "mtc1 $t0, $f8" << std::endl;
+	                dst << "nop" << std::endl;
+                    dst << "cvt.s.w $f8, $f8" << std::endl;                    
+                    //$f6, $f8 now have decimal values 0 and 1 in single Float representations.
+                    
+                    dst << "c.eq.s $f0, $f6" << std::endl;
+                    dst << "nop" << std::endl;
+                    dst << "bc1f " << b1 << std::endl;  //if LH operand is nonzero, result is definitely 1, thus branch to b1, do not evaluate RH operand
+                    dst << "nop" << std::endl << std::endl;
+                    
+                    operand2->printMipsE(dst, n2, framePtr, destType);
+                    framePtr->load(dst, "$f2", n2);             // IF LH operand 0 we Eval RH operand and store into $f2
+                    dst << "c.eq.s $f2, $f6" << std::endl;
+                    dst << "nop" << std::endl;
+                    dst << "bc1t " << b2 << std::endl;  // IF RH Operand Also = 0, result is 0 branch to b2,  else goes into b1 and load into $t2 =1
+                    dst << "nop" << std::endl << std::endl;
+                    
+                    dst << b1 << ":" << std::endl;
+                    dst << "mov.s $f4, $f8" << std::endl;
+                    dst << "b " << b3 << std::endl;
+                    dst << "nop" << std::endl << std::endl; 
+                    
+                    dst << b2 << ":" << std::endl;
+                    dst << "mov.s $f4, $f6" << std:: endl;
+                    
+                    dst << b3 << ":" << std::endl;
+                    
+                }
             }
             else { assert(0);} // SHOULD NVR HAPPEN
         }
