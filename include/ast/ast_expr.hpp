@@ -59,7 +59,17 @@ public:
 	                framePtr->store(dst, "$t0", destName, Type::INT);
 	            
 	            }else if(myType == Type::CHAR){
-	                int ascii = (int)id[1];
+	                int ascii;
+	                
+	                //Handle escape sequence (e.g. /000 = NULL)
+	                if(id[1] == '\\'){
+	                    if(id[2] == 'x') ascii = std::stoi(id.substr(3), nullptr, 16);
+	                        
+	                    else ascii = std::stoi(id.substr(3), nullptr, 8);
+	                        
+	                }else{
+	                    ascii = (int)id[1];
+                    }
 	                dst << "li $t0, " << ascii << std::endl;
 	                framePtr->store(dst, "$t0", destName, Type::CHAR);
 	            
@@ -75,7 +85,17 @@ public:
 	                
 	                
 	            }else if(myType == Type::CHAR){
-	                int ascii = (int)id[1];
+	                int ascii;
+	                
+	                //Handle escape sequence (e.g. /000 = NULL)
+	                if(id[1] == '\\'){
+	                    if(id[2] == 'x') ascii = std::stoi(id.substr(3), nullptr, 16);
+	                        
+	                    else ascii = std::stoi(id.substr(3), nullptr, 8);
+	                        
+	                }else{
+	                    ascii = (int)id[1];
+                    }
 	                dst << "li $t0, " << ascii << std::endl;
 	                framePtr->store(dst, "$t0", destName, Type::CHAR);
 	                
@@ -171,8 +191,19 @@ public:
                     return std::stod(id);
                 
                 }else if(myType == Type::CHAR){
-                    int ascii = (int)id[1];
-                    return ascii;
+	                int ascii;
+	                
+	                //Handle escape sequence (e.g. /000 = NULL)
+	                if(id[1] == '\\'){
+	                    if(id[2] == 'x') ascii = std::stoi(id.substr(3), nullptr, 16);
+	                        
+	                    else ascii = std::stoi(id.substr(3), nullptr, 8);
+	                        
+	                }else{
+	                    ascii = (int)id[1];
+                    }
+	                
+	                return ascii;
                     
                 }else{assert(0);}
             }
@@ -267,7 +298,17 @@ public:
         }else if(*oper == "*"){
             postfixExpr->printMipsE(dst, destName, framePtr, typeToAddr(type));
             framePtr->load(dst, "$t0", destName);
-            dst << "lw $t0, 0($t0)" << std::endl;
+            
+            Type exprType = postfixExpr->getType(framePtr);
+            
+            if(exprType == Type::INT_ADDR || exprType == Type::FLOAT_ADDR){
+                dst << "lw $t0, 0($t0)" << std::endl;
+                
+            }else if(exprType == Type::CHAR_ADDR){
+                dst << "lb $t0, 0($t0)" << std::endl;
+                
+            }else{assert(0);}
+            
             framePtr->store(dst, "$t0", destName, type);
         }
     }
@@ -520,14 +561,25 @@ public:
         }
         else{
             //The rest of Binary operators :we have to evaluate the types based on the more general one, 
-            //Char uses int operations too
-            if(operand1->getType(framePtr) == Type::DOUBLE || operand2->getType(framePtr) == Type::DOUBLE)
+            //Resolve destType for && and || Operations
+            
+            if(operand1->getType(framePtr) == Type::DOUBLE || operand2->getType(framePtr) == Type::DOUBLE){
                 destType = Type::DOUBLE;
-            else if(operand1->getType(framePtr) == Type::FLOAT || operand2->getType(framePtr) == Type::FLOAT)
+                
+            }else if(operand1->getType(framePtr) == Type::FLOAT || operand2->getType(framePtr) == Type::FLOAT){
                 destType = Type::FLOAT;
-            else destType = Type::INT;
-
-            if(destType == Type::INT){ 
+                
+            }else if(isAddr(operand1->getType(framePtr)) || isAddr(operand2->getType(framePtr))){
+                if(isAddr(operand1->getType(framePtr))){
+                    destType = operand1->getType(framePtr);
+                   
+                }else{
+                    destType = operand2->getType(framePtr);
+                }
+            
+            }else{destType = Type::INT;}
+            
+            if(destType == Type::INT || isAddr(destType)){ 
                 operand1->printMipsE(dst, n1, framePtr, destType);
                 operand2->printMipsE(dst, n2, framePtr, destType);
                 framePtr->load(dst, "$t0", n1);
@@ -544,34 +596,39 @@ public:
         /**ARITHMETIC OPERATIONS SECTION**/
 
         if(oper->getId() == "+"){
-            if(destType == Type::INT){
+            if(destType == Type::INT || isAddr(destType)){
                 
                 //Pointer arithmetic
                 if(isAddr(operand1->getType(framePtr)) && !isAddr(operand2->getType(framePtr))){
-                
-                    if(operand1->getType(framePtr) != Type::DOUBLE_ADDR){
-                        //Multiply the operand by 4
+                    
+                    Type elementType = addrToType(operand1->getType(framePtr));
+                    
+                    if(elementType == Type::INT || elementType == Type::FLOAT){
                         dst << "sll $t1, $t1, 2" << std::endl;
                         
-                    }else{
-                        //Multiply the operand by 8
-                        dst << "sll $t1, $t1, 3" << std::endl;      
-                    }
-                    
-                    //If the pointer is local we have to subtract the index and not add it
-                    if(g_mips_var.find(operand1->getId()) == g_mips_var.end()){dst << "sub $t1, $zero, $t1" << std::endl;}
+                    }else if(elementType == Type::DOUBLE){
+                        dst << "sll $t1, $t1, 3" << std::endl;
+                        
+                    }else if(elementType == Type::CHAR){
+                        //Do nothing
+                        
+                    }else{assert(0);}
                     
                 }else if(isAddr(operand2->getType(framePtr)) && !isAddr(operand1->getType(framePtr))){
     
-                    if(operand2->getType(framePtr) != Type::DOUBLE_ADDR){
-                        //Multiply the operand by 4
-                        dst << "sll $t2, $t2, 2" << std::endl;
+                    Type elementType = addrToType(operand2->getType(framePtr));
+                    
+                    if(elementType == Type::INT || elementType == Type::FLOAT){
+                        dst << "sll $t0, $t0, 2" << std::endl;
                         
-                    }else{
-                        //Multiply the operand by 8
-                        dst << "sll $t2, $t2, 3" << std::endl;      
-                    }
-                    if(g_mips_var.find(operand1->getId()) == g_mips_var.end()){dst << "sub $t1, $zero, $t1" << std::endl;}
+                    }else if(elementType == Type::DOUBLE){
+                        dst << "sll $t0, $t0, 3" << std::endl;
+                        
+                    }else if(elementType == Type::CHAR){
+                        //Do nothing
+                        
+                    }else{assert(0);}
+                    
                 }else{} //Do nothing          
                 
                 dst << "add $t2, $t0, $t1" << std::endl;
@@ -884,11 +941,21 @@ public:
             return operand1->getType(framePtr);
             
         }else{
-            if(operand1->getType(framePtr) == Type::DOUBLE || operand2->getType(framePtr) == Type::DOUBLE)
-                return(Type::DOUBLE);
-            else if(operand1->getType(framePtr) == Type::FLOAT || operand2->getType(framePtr) == Type::FLOAT)
-                return(Type::FLOAT);
-            else return(Type::INT);   
+            if(operand1->getType(framePtr) == Type::DOUBLE || operand2->getType(framePtr) == Type::DOUBLE){
+                return Type::DOUBLE;
+                
+            }else if(operand1->getType(framePtr) == Type::FLOAT || operand2->getType(framePtr) == Type::FLOAT){
+                return Type::FLOAT;
+                
+            }else if(isAddr(operand1->getType(framePtr)) || isAddr(operand2->getType(framePtr))){
+                if(isAddr(operand1->getType(framePtr))){
+                    return operand1->getType(framePtr);
+                   
+                }else{
+                    return operand2->getType(framePtr);
+                }
+            
+            }else{return Type::INT;}  
         }
         
     }

@@ -51,6 +51,7 @@ void PostfixExpr::printMipsE(std::ostream& dst, const std::string& destName, Fra
         if(function_decl.find(primaryExpr->getId()) != function_decl.end()){
             dst << "lw $t0, %call16(" << primaryExpr->getId() << ")($28)" << std::endl;
             dst << "jalr $t0" << std::endl;
+            dst << "nop" << std::endl;
             
         }else{ 
             dst << "jal " << primaryExpr->getId() << std::endl;

@@ -67,7 +67,7 @@ public:
         if(*str1 == "return"){
             if(p1 != NULL){
                 //Request expression to evaluate itself
-                std::string destName = makeName();
+                std::string destName = makeName("RETURN");
                 Type retType = framePtr->loadType("return");
                 p1->printMipsE(dst, destName, framePtr, retType);
 

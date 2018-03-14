@@ -114,7 +114,13 @@ CHAR_SEQ        {CHAR}+
 STR_LIT         "{CHAR_SEQ}"|""
 
 CHAR_CONSTANT   \'{CHAR}\'
-CHAR            [^\'\n] 
+CHAR            [^\'\n]|{CHAR_ESCAPE}
+CHAR_ESCAPE     {CHAR_OCT}|{CHAR_HEX}
+CHAR_OCT        \\{OCT_DIGIT}+
+CHAR_HEX        \\x{HEX_DIGIT}+
+OCT_DIGIT       [0-7]
+HEX_DIGIT       [0-9a-fA-F]
+
 
 %%
 
