@@ -9,4 +9,4 @@ tests/out
 tmp/
 *.s
 *.exe
-tests/assemble/out
+tests/assemble/out*
