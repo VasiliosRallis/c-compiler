@@ -623,8 +623,8 @@ public:
             else{
                 std::string branchlabel = std::string("$" + makeName("BRANCH"));
                 dst << "li $t3, 1" << std::endl;
-                dst << "mtc1 $t3, $f6" << std::endl; //Move t3 into $f6 Dest Reg is $f6, 2nd opearand
-                dst << "cvt.s.w $f4, $f6" << std::endl;
+                dst << "mtc1 $t3, $f6" << std::endl; //Move t3 into $f6 Dest Reg is $f6
+                dst << "cvt.s.w $f4, $f6" << std::endl; // $f4 has value 1
                 dst << "c.eq.s $f2,$f0" << std :: endl; // if equal, flag 1 set
 	            dst << "nop" << std::endl;
 	            dst << "bc1t "<< branchlabel << std::endl; // branch if flag 1 set
@@ -637,8 +637,26 @@ public:
             }    
         }
         else if (oper->getId() == "!=") {
-            dst << "xor $t2, $t0, $t1" << std::endl;
-            dst << "sltu $t2, $0, $t2" << std::endl;    
+            if(destType == Type::INT){
+                dst << "xor $t2, $t0, $t1" << std::endl;
+                dst << "sltu $t2, $0, $t2" << std::endl;
+            }
+            else{
+                std::string branchlabel = std::string("$" + makeName("BRANCH"));
+                dst << "li $t3, 1" << std::endl;
+                dst << "mtc1 $t3, $f8" << std::endl;
+                dst << "cvt.s.w $f4, $f8" << std::endl; // $f4 i.e output has decimal value 1 in float representation
+
+                dst << "c.eq.s $f2,$f0" << std :: endl; // if 2 operands not equal, flag 1 false
+	            dst << "nop" << std::endl;
+	            dst << "bc1f "<< branchlabel << std::endl; // branch if flag 1 false
+	            dst << "nop" << std::endl;
+                // IF EQUAL,Do not branch, perform this, and set $f4 output reg to 0
+                dst << "mtc1 $0, $f6" << std::endl;
+                dst << "cvt.s.w $f4, $f6" << std::endl;
+                dst << branchlabel << ":" << std::endl;
+                      
+            }    
         }
         else if (oper->getId() == "<") {
             dst << "slt $t2, $t0, $t1" << std::endl;
