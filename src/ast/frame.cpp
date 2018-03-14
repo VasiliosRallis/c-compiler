@@ -174,16 +174,18 @@ void Frame::clean(std::ostream& dst)const{
 void Frame::saveArguments(std::ostream& dst, const std::vector<const Expr*>* argumentExprList){
     //Looks compilcated but we need to do it this way so that the $sp doesn't change
     if(argumentExprList != NULL){
-        dst << "###### Storing Arguments" << std::endl;
+        dst << "###### Storing Arguments ######" << std::endl;
         //Vector to hold the names of the Variables of the expressions
         std::vector<std::string> argumentNames;
+        
         for(int i(0); i < argumentExprList->size(); ++i){
             std::string exprName = makeName("arg");
             argumentNames.push_back(exprName);
+            
             //const Expr* expr = static_cast<const Expr*>(argumentExprList->at(i));
-            
-            
-            argumentExprList->at(i)->printMipsE(dst, argumentNames.back(), this, argumentExprList->at(i)->getType(this));
+           
+            argumentExprList->at(i)->printMipsE(dst, argumentNames.back(), this, Type::ANYTHING);
+            dst << "## Was here " << argumentExprList->size() << std::endl;
         }
         
         addWords(dst, argumentExprList->size());

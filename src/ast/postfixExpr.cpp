@@ -44,24 +44,45 @@ void PostfixExpr::printPy(std::ostream& dst, int depth)const{
 void PostfixExpr::printMipsE(std::ostream& dst, const std::string& destName, Frame* framePtr, Type type)const{
     //Check if is is a function call
     if(*oper1 == "("){
+        std::string id = primaryExpr->getId();
+        
         framePtr->storeRegisters(dst);
         
         framePtr->saveArguments(dst, argumentExprList);
         
-        if(function_decl.find(primaryExpr->getId()) != function_decl.end()){
-            dst << "lw $t0, %call16(" << primaryExpr->getId() << ")($28)" << std::endl;
+        if(function_decl.find(id) != function_decl.end()){
+            dst << "lw $t0, %call16(" << id << ")($28)" << std::endl;
             dst << "jalr $t0" << std::endl;
             dst << "nop" << std::endl;
             
         }else{ 
-            dst << "jal " << primaryExpr->getId() << std::endl;
+            dst << "jal " << id << std::endl;
             dst << "nop" << std::endl;
             
         }
         
         framePtr->loadRegisters(dst);
         
-        framePtr->store(dst, "$v0", destName, type);
+        Type rType;
+        if(function_type.find(id) != function_type.end()){
+            rType = function_type.at(id);
+            
+        }else if(function_decl.find(id) != function_decl.end()){
+            rType = function_decl.at(id);
+        
+        //Should never happen    
+        }else{assert(0);}
+        
+        if(rType == Type::INT || isAddr(rType) || rType == Type::CHAR){
+            framePtr->store(dst, "$v0", destName, type);
+            
+        }else if(rType == Type::FLOAT){
+            framePtr->store(dst, "$f0", destName, type);
+        
+        }else if(rType == Type::VOID){
+            //Do nothing
+        //Haven't implemented double yet    
+        }else{assert(0);}
     }
     if(*oper1 == "["){
         //Trying to access element of an array;
@@ -110,12 +131,13 @@ std::string PostfixExpr::getId()const{
 
 Type PostfixExpr::getType(const Frame* framePtr)const{
     if(*oper1 == "("){
-        try{
-            return function_type.at(primaryExpr->getId());
-        }catch(std::exception& e){
-            throw std::runtime_error("Called getType() in class PostfixExpr. Couldn't find function id in function_type map");
-        }
-        
+        try{return function_type.at(primaryExpr->getId());}
+            catch(std::exception& e){
+                try{return function_decl.at(primaryExpr->getId());}
+                    catch(std::exception& e){
+                        throw std::runtime_error("Called getType() in class PostfixExpr. Couldn't find function id in function_type map");
+                    }
+            }    
     }else{
         return primaryExpr->getType(framePtr);
     }

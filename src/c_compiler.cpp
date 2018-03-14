@@ -13,6 +13,14 @@ std::vector<std::string> endPrint;
 #include "ast_real/ast/node.hpp"
 
 std::unordered_map<std::string, Type> g_mips_var;
+
+//Bill: We are probably going to have to store the type of the arguments to the
+//function as well. Might have to use another vector 
+//(We have to know the type so we know exaclty how to pass them)
+
+//std::unordered_map<std::string, std::vector<Type> > function_type;
+//std::unordered_map<std::string, std::vector<Type> > function_decl;
+
 std::unordered_map<std::string, Type> function_type;
 std::unordered_map<std::string, Type> function_decl;
 

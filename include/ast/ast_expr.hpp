@@ -55,7 +55,7 @@ public:
 	                }else{assert(0);}
 	                
 	            }else if(myType == Type::INT){
-	                dst << "li $t0, " << id << "\n";
+	                dst << "li $t0, " << id << std::endl;
 	                framePtr->store(dst, "$t0", destName, Type::INT);
 	            
 	            }else if(myType == Type::CHAR){
@@ -121,8 +121,7 @@ public:
 	                    
 	                }else{assert(0);}   
 	            }            
-	        }else if(type == Type::DOUBLE){
-	            if(expr->isIdentifier()){assert(0);}
+	        }else if(type == Type::DOUBLE){{assert(0);}
 	                
 	        }else if(type == Type::FLOAT){
 	            if(expr->isIdentifier()){

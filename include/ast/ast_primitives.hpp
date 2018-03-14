@@ -224,6 +224,8 @@ public:
     
     virtual void printMips(std::ostream& dst, Frame* framePtr, Type type = Type::ANYTHING)const override{
         //Add the return type to global map
+        
+        
         function_type.insert({directDeclarator->getId(), declrSpecList->at(0)->getType()});
         
         dst << "\t.set noreorder\n";        
