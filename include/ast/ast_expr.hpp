@@ -539,8 +539,8 @@ public:
             }
             else { assert(0);} // SHOULD NVR HAPPEN
         }
-        else if(oper->getId() == "="){
-            //We don't need to eval the first operand if we are doing an assignment
+        else if(oper->getId() == "=" ){
+            //We don't need to eval the first operand if we are doing a normal assignment
             // ASSUMPTION MADE HERE: If it is an assignment, destType should be evaluated based on operand 2 then downcasted/upcasted if necessary
             destType = operand2->getType(framePtr);
 
@@ -560,7 +560,7 @@ public:
         }
         else{
             //The rest of Binary operators :we have to evaluate the types based on the more general one, 
-            //Resolve destType for && and || Operations
+            //Assign EXPR like += , *= etc falls here too as x*=2.3 is similar to x = x*2.3 where we resolve RHS via float
             
             if(operand1->getType(framePtr) == Type::DOUBLE || operand2->getType(framePtr) == Type::DOUBLE){
                 destType = Type::DOUBLE;
@@ -805,10 +805,20 @@ public:
             }
         }
         else if (oper->getId() == "<<") {
-            dst << "sllv $t2, $t0, $t1" << std::endl;
+            if(destType == Type::INT){
+                dst << "sllv $t2, $t0, $t1" << std::endl;
+            }
+            else{ 
+                throw std::runtime_error("Called BinaryOperation of Left Shift " + oper->getId() + " on Non-Integer Types"); 
+            } 
         }
         else if (oper->getId() == ">>") {
-            dst << "srav $t2, $t0, $t1" << std::endl;   // if unsigned we have to use srlv instead
+            if(destType == Type::INT){
+                dst << "srav $t2, $t0, $t1" << std::endl;   // if unsigned we have to use srlv instead
+            }
+            else{ 
+                throw std::runtime_error("Called BinaryOperation of Right Shift " + oper->getId() + " on Non-Integer Types");
+            } 
         }
         
         /** BITWISE OPERATOR SECTIONS **/
@@ -837,34 +847,34 @@ public:
             }        
         }      
         
+        /** ASGN OPERATORS **/
         else if(oper->getId() == "="){
             if(dynamic_cast<const PrimaryExpr*>(operand1)){
                 
                 doLater = true;
                 //Do nothing (this case is now handled later so that we don't repeat the code
-                
-                if(destType == Type::INT)
-                    dst << "move $t2, $t1" << std::endl;
-                else
-                    dst << "mov.s $f4, $f2" << std::endl;
-                
-                
-                /*
-                std::string id = operand1->getId();
                
                 if(destType == Type::INT){
                     dst << "move $t2, $t1" << std::endl;
                 }
                 else{
-                    //Have to do conversions here
-                    framePtr->store(dst, "$f2", id, type);
                     dst << "mov.s $f4, $f2" << std::endl;
                 }                
-                */
+
             }else if(dynamic_cast<const PostfixExpr*>(operand1)){
                 framePtr->storeArrayElement(dst, "$t1", dynamic_cast<const PostfixExpr*>(operand1));
                 dst << "move $t2, $t1" << std::endl;
            }
+        }
+        else if(oper->getId() == "+="){
+            doLater = true;
+            if(destType == Type::INT){
+                dst << "addu $t2, $t0, $t1" << std::endl;   // Addu Unsigned add used as we ignore trap if overflow, what C does
+            }
+            else{
+                dst << "add.s $f4, $f0, $f2" << std::endl;
+            }
+        
         }
         // TODO : DO NOT ASSERT ELSE HERE! CUZ ITS POSSIBLE FOR LOGICAL OPERATORS TO END UP IN THIS ELSE (SPECIAL CASE)
         
