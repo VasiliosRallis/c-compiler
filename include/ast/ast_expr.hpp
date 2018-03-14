@@ -362,10 +362,108 @@ public:
         bool doLater = false;
         
         Type destType;
-        
-         //We don't need to eval the first operand if we are doing an assignment
-        if(oper->getId() != "="){
-            //If not an assignment, we have to evaluate the types based on the more general one, 
+
+        /** LOGICAL OPERATOR SECTION **/
+        //SPECIAL CASES HERE REQUIRE BRANCHES AND NOT EVAL RHS IF LHS IS 0 in AND or 1 in OR Operation
+        if (oper->getId() == "&&" || oper->getId() == "||" ) {
+
+            //Resolve destType for && and || Operations
+            if(operand1->getType(framePtr) == Type::DOUBLE || operand2->getType(framePtr) == Type::DOUBLE)
+                destType = Type::DOUBLE;
+            else if(operand1->getType(framePtr) == Type::FLOAT || operand2->getType(framePtr) == Type::FLOAT)
+                destType = Type::FLOAT;
+            else destType = Type::INT;
+            
+            //Only Evaluate LH operand first and see if Shortcircuited!
+            if(destType == Type::INT){ 
+                operand1->printMipsE(dst, n1, framePtr, destType);
+                framePtr->load(dst, "$t0", n1);
+            
+            }else{
+                operand1->printMipsE(dst, n1, framePtr, destType);
+                framePtr->load(dst, "$f0", n1);
+            }
+
+            std::string b1 = std::string("$" + makeName("LOGICALB"));
+            std::string b2 = std::string("$" + makeName("LOGICALB"));
+            std::string b3 = std::string("$" + makeName("LOGICALB"));
+            
+            if(oper->getId() == "&&"){
+            
+                if(destType == Type::INT){            
+                    dst << "beq $t0, $0, " << b1 << std::endl;
+                    dst << "nop" << std::endl << std::endl;
+                    //if LH operand is zero, result is definitely 0, thus branch to b1 do not evaluate RH operand
+
+                    operand2->printMipsE(dst, n2, framePtr, destType);
+                    framePtr->load(dst, "$t1", n2);
+                    dst << "beq $t1, $0, " << b1 << std::endl;
+                    dst << "nop" << std::endl << std::endl;
+
+                    dst << "li $t2, 1" << std:: endl;
+                    dst << "b " << b2 << std::endl;
+                    dst << "nop" << std::endl << std::endl;
+                    
+                    dst << b1 << ":" << std::endl;
+                    dst << "move $t2, $0" << std::endl;
+                    dst << b2 << ":" << std::endl;
+                       
+                }
+                else {
+                    assert(0); //Have not implemented for other types
+                }
+            
+            }
+            else if(oper->getId() == "||"){
+                if(destType == Type::INT){            
+                    dst << "bne $t0, $0, " << b1 << std::endl;  //if LH operand is nonzero, result is definitely 1, thus branch to b1, do not evaluate RH operand
+                    dst << "nop" << std::endl << std::endl;
+                    
+                    operand2->printMipsE(dst, n2, framePtr, destType);
+                    framePtr->load(dst, "$t1", n2);             // IF LH operand 0 we Eval RH operand and store into $t1
+                    dst << "beq $t1, $0, " << b2 << std::endl;  // IF RH Operand Also = 0, result is 0 branch to b2,  else goes into b1 and load into $t2 =1
+                    dst << "nop" << std::endl << std::endl;
+                    
+                    dst << b1 << ":" << std::endl;
+                    dst << "li $t2, 1" << std::endl;
+                    dst << "b " << b3 << std::endl;
+                    dst << "nop" << std::endl << std::endl; 
+                    
+                    dst << b2 << ":" << std::endl;
+                    dst << "move $t2, $0" << std:: endl;
+                    
+                    dst << b3 << ":" << std::endl;
+                                   
+                       
+                }
+                else {
+                    assert(0); //Have not implemented for other types
+                }
+
+            }
+            else { assert(0);} // SHOULD NVR HAPPEN
+        }
+        else if(oper->getId() == "="){
+            //We don't need to eval the first operand if we are doing an assignment
+            // ASSUMPTION MADE HERE: If it is an assignment, destType should be evaluated based on operand 2 then downcasted/upcasted if necessary
+            destType = operand2->getType(framePtr);
+
+            //TEMPFIX : check if RHS OF assignment is an addr, if yes convert using addrtotype, TEMPFIX NEEDS TO BE RE EVALUATED            
+            if(isAddr(destType)){
+                destType =addrToType(destType);
+            }
+                
+            if(destType == Type::INT){
+                operand2->printMipsE(dst, n2, framePtr, destType);
+                framePtr->load(dst, "$t1", n2);
+                
+            }else{
+                operand2->printMipsE(dst, n2, framePtr, destType);
+                framePtr->load(dst, "$f2", n2);
+            }
+        }
+        else{
+            //The rest of Binary operators :we have to evaluate the types based on the more general one, 
             //Char uses int operations too
             if(operand1->getType(framePtr) == Type::DOUBLE || operand2->getType(framePtr) == Type::DOUBLE)
                 destType = Type::DOUBLE;
@@ -383,23 +481,6 @@ public:
                 operand1->printMipsE(dst, n1, framePtr, destType);
                 operand2->printMipsE(dst, n2, framePtr, destType);
                 framePtr->load(dst, "$f0", n1);
-                framePtr->load(dst, "$f2", n2);
-            }
-        }else{
-            // ASSUMPTION MADE HERE: If it is an assignment, destType should be evaluated based on operand 2 then downcasted/upcasted if necessary
-            destType = operand2->getType(framePtr);
-
-            //TEMPFIX : check if RHS OF assignment is an addr, if yes convert using addrtotype, TEMPFIX NEEDS TO BE RE EVALUATED            
-            if(isAddr(destType)){
-                destType =addrToType(destType);
-            }
-                
-            if(destType == Type::INT){
-                operand2->printMipsE(dst, n2, framePtr, destType);
-                framePtr->load(dst, "$t1", n2);
-                
-            }else{
-                operand2->printMipsE(dst, n2, framePtr, destType);
                 framePtr->load(dst, "$f2", n2);
             }
         }
@@ -556,31 +637,7 @@ public:
             else {
                 throw std::runtime_error("Called BinaryOperation of Bitwise XOR " + oper->getId() + " on Non-Integer Types that doesnt exist");   
             }        
-        }
-        
-        /** LOGICAL OPERATOR SECTION **/
-        else if (oper->getId() == "&&") { // Bitwise Operations do not work on double or floats
-            if(destType == Type::INT){            
-                dst << "sltu $t3, $0, $t0" << std::endl;
-                dst << "sltu $t4, $0, $t1" << std::endl;
-                dst << "and $t2, $t3, $t4" << std::endl;    
-                // If either one is 0 t3/t4 will be not set i.e 0 and result of anding with 0 is 0
-            }
-            else {
-                assert(0); //Have not implemented for other types
-            }        
-        }
-        else if (oper->getId() == "||") { // Bitwise Operations do not work on double or floats
-            if(destType == Type::INT){            
-                dst << "sltu $t3, $0, $t0" << std::endl;
-                dst << "sltu $t4, $0, $t1" << std::endl;
-                dst << "or $t2, $t3, $t4" << std::endl;
-                // If either one is nonzero t3/t4 will be set i.e 1 and result of oring with 1 is 1
-            }
-            else {
-                assert(0); // Have not implemented for other types
-            }        
-        }        
+        }      
         
         else if(oper->getId() == "="){
             if(dynamic_cast<const PrimaryExpr*>(operand1)){
@@ -611,6 +668,7 @@ public:
                 dst << "move $t2, $t1" << std::endl;
            }
         }
+        // TODO : DO NOT ASSERT ELSE HERE! CUZ ITS POSSIBLE FOR LOGICAL OPERATORS TO END UP IN THIS ELSE (SPECIAL CASE)
         
         //Really important for when we have exprStatement (e.g. double x = 3; x = 1 + 2;)
         if(type == Type::ANYTHING) type = operand1->getType(framePtr);
