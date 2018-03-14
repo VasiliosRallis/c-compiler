@@ -659,26 +659,94 @@ public:
             }    
         }
         else if (oper->getId() == "<") {
-            dst << "slt $t2, $t0, $t1" << std::endl;
+            if(destType == Type ::INT){
+                dst << "slt $t2, $t0, $t1" << std::endl;
+            }
+            else{
+                std::string branchlabel = std::string("$" + makeName("BRANCH"));
+                dst << "li $t3, 1" << std::endl;
+                dst << "mtc1 $t3, $f8" << std::endl;
+                dst << "cvt.s.w $f4, $f8" << std::endl; // $f4 i.e output has decimal value 1 in float representation
+
+                dst << "c.lt.s $f0,$f2" << std :: endl; // if f0 < f2, flag 1 true
+	            dst << "nop" << std::endl;
+	            dst << "bc1t "<< branchlabel << std::endl; // branch if flag 1 true
+	            dst << "nop" << std::endl;
+                
+                dst << "mtc1 $0, $f6" << std::endl;
+                dst << "cvt.s.w $f4, $f6" << std::endl;
+                dst << branchlabel << ":" << std::endl;
+            }
         }
         else if (oper->getId() == "<=") {
-            dst << "slt $t2, $t0, $t1" << std::endl; // if t0<t1, t2 is 1
+            if(destType == Type::INT){
+                dst << "slt $t2, $t0, $t1" << std::endl; // if t0<t1, t2 is 1
 
-            dst << "xor $t3, $t0, $t1" << std::endl;
-            dst << "sltu $t3, $t3, 1" << std::endl;     // if t0 == t1, t3 is 0 and slt makes t3 = 1
+                dst << "xor $t3, $t0, $t1" << std::endl;
+                dst << "sltu $t3, $t3, 1" << std::endl;     // if t0 == t1, t3 is 0 and slt makes t3 = 1
 
-            dst << "or $t2, $t2, $t3" << std::endl;     // either one is true means <= is true
+                dst << "or $t2, $t2, $t3" << std::endl;     // either one is true means <= is true
+            }
+            else{
+                std::string branchlabel = std::string("$" + makeName("BRANCH"));
+                dst << "li $t3, 1" << std::endl;
+                dst << "mtc1 $t3, $f8" << std::endl;
+                dst << "cvt.s.w $f4, $f8" << std::endl; // $f4 i.e output has decimal value 1 in float representation
+
+                dst << "c.le.s $f0,$f2" << std :: endl; // if f0 <= f2, flag 1 true
+	            dst << "nop" << std::endl;
+	            dst << "bc1t "<< branchlabel << std::endl; // branch if flag 1 true
+	            dst << "nop" << std::endl;
+                
+                dst << "mtc1 $0, $f6" << std::endl;
+                dst << "cvt.s.w $f4, $f6" << std::endl;
+                dst << branchlabel << ":" << std::endl;
+            }
         }
         else if (oper->getId() == ">") {
-            dst << "slt $t2, $t1, $t0" << std::endl;
+            if(destType == Type::INT){
+                dst << "slt $t2, $t1, $t0" << std::endl;
+            }
+            else{
+                std::string branchlabel = std::string("$" + makeName("BRANCH"));
+                dst << "li $t3, 1" << std::endl;
+                dst << "mtc1 $t3, $f8" << std::endl;
+                dst << "cvt.s.w $f4, $f8" << std::endl; // $f4 i.e output has decimal value 1 in float representation
+
+                dst << "c.lt.s $f2,$f0" << std :: endl; // if f2 < f0, f0 > f2, flag 1 true
+	            dst << "nop" << std::endl;
+	            dst << "bc1t "<< branchlabel << std::endl; // branch if flag 1 true
+	            dst << "nop" << std::endl;
+                
+                dst << "mtc1 $0, $f6" << std::endl;
+                dst << "cvt.s.w $f4, $f6" << std::endl;
+                dst << branchlabel << ":" << std::endl;
+            }
         }
         else if (oper->getId() == ">=") {
-            dst << "slt $t2, $t1, $t0" << std::endl; // if t0>t1, t1<t0 and thus t2 is 1
+            if(destType == Type::INT){
+                dst << "slt $t2, $t1, $t0" << std::endl; // if t0>t1, t1<t0 and thus t2 is 1
 
-            dst << "xor $t3, $t0, $t1" << std::endl;
-            dst << "sltu $t3, $t3, 1" << std::endl;     // if t0 == t1, t3 is 0 and slt makes t3 = 1
+                dst << "xor $t3, $t0, $t1" << std::endl;
+                dst << "sltu $t3, $t3, 1" << std::endl;     // if t0 == t1, t3 is 0 and slt makes t3 = 1
 
-            dst << "or $t2, $t2, $t3" << std::endl;     // either one is true means >= is true
+                dst << "or $t2, $t2, $t3" << std::endl;     // either one is true means >= is true
+            }
+            else{
+                std::string branchlabel = std::string("$" + makeName("BRANCH"));
+                dst << "li $t3, 1" << std::endl;
+                dst << "mtc1 $t3, $f8" << std::endl;
+                dst << "cvt.s.w $f4, $f8" << std::endl; // $f4 i.e output has decimal value 1 in float representation
+
+                dst << "c.le.s $f2,$f0" << std :: endl; // if f2<=f0, f0 >= f2, flag 1 true
+	            dst << "nop" << std::endl;
+	            dst << "bc1t "<< branchlabel << std::endl; // branch if flag 1 true
+	            dst << "nop" << std::endl;
+                
+                dst << "mtc1 $0, $f6" << std::endl;
+                dst << "cvt.s.w $f4, $f6" << std::endl;
+                dst << branchlabel << ":" << std::endl;
+            }
         }
         else if (oper->getId() == "<<") {
             dst << "sllv $t2, $t0, $t1" << std::endl;
