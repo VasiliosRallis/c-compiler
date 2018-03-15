@@ -223,11 +223,11 @@ public:
     }
     
     virtual void printMips(std::ostream& dst, Frame* framePtr, Type type = Type::ANYTHING)const override{
-        //Add the return type to global map
-        
-        
-        function_type.insert({directDeclarator->getId(), declrSpecList->at(0)->getType()});
-        
+        //Get the return type of the function
+        Type returnType = declrSpecList->at(0)->getType();
+        //Add the function types (i.e. return type and argument types) to the global map
+        directDeclarator->insertFTypes(returnType);
+
         dst << "\t.set noreorder\n";        
         dst << "\t.text\n";
         dst << "\t.align 2 \n";
@@ -237,6 +237,7 @@ public:
         
         Frame frame(dst, directDeclarator);
         
+        //This is effectively stored twice but it's fine
         frame.storeType("return", declrSpecList->at(0)->getType());
         
         block->printMips(dst, &frame);

@@ -21,8 +21,9 @@ std::string ParameterDeclaration::getId()const{
 }
 
 Type ParameterDeclaration::getType(const Frame* framePtr)const{
-    if(n2->isPointer())
+    if(n2->isPointer()){
         return typeToAddr(n1->getType());
-    else 
+    }else{ 
         return n1->getType();
+    }
 }

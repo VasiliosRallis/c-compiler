@@ -8,7 +8,7 @@
 class ParameterDeclaration;
 class Expr;
 
-extern std::unordered_map<std::string, Type> function_decl;
+extern std::unordered_map<std::string, std::vector<Type> > function_decl;
 
 DirectDeclarator::DirectDeclarator(StrPtr _id, StrPtr _s1, const std::vector<const ParameterDeclaration*>* _v1, StrPtr _s2, const Expr* _expr)
     :StringNode(_id), s1(_s1), v1(_v1), s2(_s2), expr(_expr){}
@@ -65,8 +65,18 @@ void DirectDeclarator::printGMips(std::ostream& dst, Type type)const{
         
     }else{
         //Check if it is a function declaration
-        if(*s1 == "("){ 
-            function_decl.insert({*id, type});
+        if(*s1 == "("){
+            std::vector<Type> v;
+            //Pushback the return type
+            v.push_back(type);
+            
+            if(v1 != NULL){
+                for(auto i = v1->begin(); i != v1->end(); ++i){
+                    v.push_back((*i)->getType(NULL));
+                }
+            }
+            
+            function_decl.insert({*id, v});
         
         }else if(*s1 == "["){
             //Here we are storing char in a 4 bytes (this isn't how gcc does it)
@@ -97,4 +107,22 @@ bool DirectDeclarator::isPointer()const{
     }else{
         return false;
     }
+}
+
+void DirectDeclarator::insertFTypes(const Type returnType)const{
+    if(s1 != NULL){
+        if(*s1 == "("){
+            std::vector<Type> v;
+            v.push_back(returnType);
+
+            if(v1 != NULL){
+                for(auto i = v1->begin(); i != v1->end(); ++i){
+                    v.push_back((*i)->getType(NULL));
+                }
+            }
+            
+            function_decl.insert({*id, v});  
+        }else{assert(0);} //Should never happen
+        
+    }else{assert(0);} //Should never happen
 }

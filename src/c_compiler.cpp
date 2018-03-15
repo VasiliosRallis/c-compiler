@@ -18,11 +18,8 @@ std::unordered_map<std::string, Type> g_mips_var;
 //function as well. Might have to use another vector 
 //(We have to know the type so we know exaclty how to pass them)
 
-//std::unordered_map<std::string, std::vector<Type> > function_type;
-//std::unordered_map<std::string, std::vector<Type> > function_decl;
-
-std::unordered_map<std::string, Type> function_type;
-std::unordered_map<std::string, Type> function_decl;
+std::unordered_map<std::string, std::vector<Type> > function_type;
+std::unordered_map<std::string, std::vector<Type> > function_decl;
 
 int main(int argc, char* argv[]){
     

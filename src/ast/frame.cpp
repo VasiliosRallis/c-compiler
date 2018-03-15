@@ -1,6 +1,9 @@
 #include "ast_real/compiler/frame.hpp"
 #include "cassert"
 
+extern std::unordered_map<std::string, std::vector<Type> > function_type;
+extern std::unordered_map<std::string, std::vector<Type> > function_decl;
+
 void Frame::addWords(std::ostream& dst, int n){
     int bytes = n*4;
     dst << "addiu $sp, $sp, -" << bytes << "\n";
@@ -171,35 +174,90 @@ void Frame::clean(std::ostream& dst)const{
     dst << "nop\n";
 }
 
-void Frame::saveArguments(std::ostream& dst, const std::vector<const Expr*>* argumentExprList){
+void Frame::saveArguments(std::ostream& dst, const std::string& f_Id, const std::vector<const Expr*>* argumentExprList){
     //Looks compilcated but we need to do it this way so that the $sp doesn't change
     if(argumentExprList != NULL){
         dst << "###### Storing Arguments ######" << std::endl;
+        
+        std::vector<Type> argTypes;
+        if(function_type.find(f_Id) != function_type.end()){
+            argTypes = function_type.at(f_Id);
+            
+        }else if(function_decl.find(f_Id) != function_decl.end()){
+            argTypes = function_decl.at(f_Id);
+            
+        }else{assert(0);} //Should never happen
+        
+        //Remove the first type which is the return type
+        argTypes.erase(argTypes.begin());
+        
         //Vector to hold the names of the Variables of the expressions
         std::vector<std::string> argumentNames;
         
+        //Calculate the arguments
         for(int i(0); i < argumentExprList->size(); ++i){
             std::string exprName = makeName("arg");
             argumentNames.push_back(exprName);
-            
-            //const Expr* expr = static_cast<const Expr*>(argumentExprList->at(i));
-           
-            argumentExprList->at(i)->printMipsE(dst, argumentNames.back(), this, Type::ANYTHING);
-            dst << "## Was here " << argumentExprList->size() << std::endl;
+
+            argumentExprList->at(i)->printMipsE(dst, argumentNames.back(), this, argTypes.at(i));
+                
         }
         
+        //Leave space for incoming arguments
         addWords(dst, argumentExprList->size());
         nextFreeAddr -= 4 * argumentExprList->size();
         freeWords = 0;
         
+        bool integralHit(false);
+        int freeIntegralWords = 4;
+        int freeFPWords = 4;
+        
         //From this point $sp can't change!!!
         for(int i(0); i < argumentNames.size(); ++i){
-            if(i < 4) load(dst, std::string("$a").append(std::to_string(i)), argumentNames.at(i));
-            else{
-                //Store the arguments in the correct position of the frame;
-                load(dst, std::string("$t0"), argumentNames.at(i));
-                dst << "sw $t0, " << 4*(i) << "($sp)" << std::endl;
-            }
+            if(argTypes.at(i) == Type::INT || argTypes.at(i) == Type::CHAR || isAddr(argTypes.at(i))){
+                integralHit = true;
+                
+                if(freeIntegralWords > 0){
+                    load(dst, std::string("$a").append(std::to_string(4 - freeIntegralWords)), argumentNames.at(i));
+                    --freeIntegralWords;
+                    
+                }else{
+                    load(dst, "$t0", argumentNames.at(i));
+                    dst << "sw $t0, " << 4*i << "($sp)" << std::endl;
+                    
+                }
+                
+            }else if(argTypes.at(i) == Type::FLOAT){
+                if(integralHit){
+                    if(freeIntegralWords > 0){
+                        load(dst, std::string("$a").append(std::to_string(4 - freeIntegralWords)), argumentNames.at(i));
+                        --freeIntegralWords;
+                         
+                    }else{
+                        load(dst, "$t0", argumentNames.at(i));
+                        dst << "sw $t0, " << 4*i << "($sp)" << std::endl;
+                        
+                    }
+                //Not integralHit    
+                }else{
+                    if(freeFPWords > 0){
+                        load(dst, std::string("$f").append(std::to_string(16 - freeFPWords)), argumentNames.at(i));
+                        --freeIntegralWords; //Just following ABI
+                        freeFPWords = freeFPWords - 2;
+                    
+                    }else if(freeIntegralWords > 0){
+                        load(dst, std::string("$a").append(std::to_string(4 - freeIntegralWords)), argumentNames.at(i));
+                        --freeIntegralWords;
+                        
+                    }else{
+                        load(dst, "$t0", argumentNames.at(i));
+                        dst << "sw $t0, " << 4*i << "($sp)" << std::endl;
+                        
+                    }
+                }
+            }else if(argTypes.at(i) == Type::DOUBLE){
+                assert(0);
+           }else{assert(0);}//Haven't implemented yet
         }
     }
 }

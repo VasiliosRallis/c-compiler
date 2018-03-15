@@ -36,6 +36,8 @@ public:
     void printGMips(std::ostream& dst, Type type)const override;
     
     bool isPointer()const override;
+    
+    void insertFTypes(const Type returnType)const;
 };
 
 #endif

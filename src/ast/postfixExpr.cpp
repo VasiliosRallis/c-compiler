@@ -3,8 +3,8 @@
 
 #include "ast_real/compiler/typeConv.hpp"
 
-extern std::unordered_map<std::string, Type> function_type;
-extern std::unordered_map<std::string, Type> function_decl;
+extern std::unordered_map<std::string, std::vector<Type> > function_type;
+extern std::unordered_map<std::string, std::vector<Type> > function_decl;
 
 PostfixExpr::PostfixExpr(const Expr* _primaryExpr, StrPtr _oper1, const std::vector<const Expr*>* _argumentExprList, StrPtr _oper2)
     :primaryExpr(_primaryExpr), oper1(_oper1), argumentExprList(_argumentExprList), oper2(_oper2){}
@@ -46,9 +46,10 @@ void PostfixExpr::printMipsE(std::ostream& dst, const std::string& destName, Fra
     if(*oper1 == "("){
         std::string id = primaryExpr->getId();
         
+        //Store the registers that have to be saved between function calls (for now it's just the argument registers)
         framePtr->storeRegisters(dst);
         
-        framePtr->saveArguments(dst, argumentExprList);
+        framePtr->saveArguments(dst, id, argumentExprList);
         
         if(function_decl.find(id) != function_decl.end()){
             dst << "lw $t0, %call16(" << id << ")($28)" << std::endl;
@@ -61,14 +62,15 @@ void PostfixExpr::printMipsE(std::ostream& dst, const std::string& destName, Fra
             
         }
         
+        //Loads the registers that have to be saved between function calls
         framePtr->loadRegisters(dst);
         
         Type rType;
         if(function_type.find(id) != function_type.end()){
-            rType = function_type.at(id);
+            rType = (function_type.at(id)).at(0);
             
         }else if(function_decl.find(id) != function_decl.end()){
-            rType = function_decl.at(id);
+            rType = (function_decl.at(id)).at(0);
         
         //Should never happen    
         }else{assert(0);}
@@ -131,9 +133,9 @@ std::string PostfixExpr::getId()const{
 
 Type PostfixExpr::getType(const Frame* framePtr)const{
     if(*oper1 == "("){
-        try{return function_type.at(primaryExpr->getId());}
+        try{return function_type.at(primaryExpr->getId()).at(0);}
             catch(std::exception& e){
-                try{return function_decl.at(primaryExpr->getId());}
+                try{return function_decl.at(primaryExpr->getId()).at(0);}
                     catch(std::exception& e){
                         throw std::runtime_error("Called getType() in class PostfixExpr. Couldn't find function id in function_type map");
                     }
