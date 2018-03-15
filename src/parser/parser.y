@@ -8,6 +8,7 @@
   #include "ast_real/ast/expr.hpp"
   #include "ast/ast_statement.hpp"
   #include "ast/ast_expr.hpp"
+  #include "ast_real/ast/exprVector.hpp"
   
   extern NodePtr g_root; // A way of getting the AST out global defined in maths_parser.tab.cpp from bison
 
@@ -37,6 +38,7 @@
   std::vector<const Expr*>* exprList;
   const DeclSpecifier* declSpecifier;
   std::vector<const DeclSpecifier*>* declrSpecList;
+  ExprVector* exprVector;
 }
 
 //Keywords
@@ -63,13 +65,14 @@
 %type <node>  LABELED_STATEMENT JUMP_STATEMENT
 %type <nodeVector> INIT_DECLARATOR_LIST STATEMENT_LIST DECLR_LIST
 %type <expr> ASSIGNMENT_EXPR CONDITIONAL_EXPR UNARY_EXPR CAST_EXPR LOGICAL_OR_EXPR LOGICAL_AND_EXPR PRIMARY_EXPR POSTFIX_EXPR
-%type <expr> INCLUSIVE_OR_EXPR EXCLUSIVE_OR_EXPR AND_EXPR EQUAL_EXPR RELATIONAL_EXPR SHIFT_EXPR ADDITIVE_EXPR MULT_EXPR EXPR
+%type <expr> INCLUSIVE_OR_EXPR EXCLUSIVE_OR_EXPR AND_EXPR EQUAL_EXPR RELATIONAL_EXPR SHIFT_EXPR ADDITIVE_EXPR MULT_EXPR
 %type <exprStatement> EXPR_STATEMENT
 %type <parameterDeclaration> PARAMETER_DECL
 %type <parameterList> PARAMETER_LIST
 %type <exprList> ARGUMENT_EXPR_LIST
 %type <declrSpecList> DECL_SPECIFIER_LIST
 %type <declSpecifier> VAR_TYPE TYPE_QUALIFIER STOR_CLASS_SPEC DECL_SPECIFIER
+%type <exprVector> EXPR
 
 %type <string> T_INT_CONSTANT
 %type <string> T_IDENTIFIER T_STR_LIT T_CHAR_CONSTANT
@@ -136,7 +139,8 @@ ITERATION_STATEMENT: T_WHILE T_LBRACKET EXPR T_RBRACKET STATEMENT               
                    | T_FOR T_LBRACKET EXPR_STATEMENT EXPR_STATEMENT T_RBRACKET STATEMENT            {$$ = new ForStatement($3, $4, NULL, $6);}
                    | T_FOR T_LBRACKET EXPR_STATEMENT EXPR_STATEMENT EXPR T_RBRACKET STATEMENT       {$$ = new ForStatement($3, $4, $5, $7);}
                    
-EXPR: ASSIGNMENT_EXPR {$$ = $1;} //Add more
+EXPR: ASSIGNMENT_EXPR {$$ = new ExprVector($1);}
+    | EXPR T_COMMA ASSIGNMENT_EXPR {$$ = $1; $1->pushBack($3);} //Add more
 
 ASSIGNMENT_EXPR: CONDITIONAL_EXPR {$$ = $1;}
                | UNARY_EXPR ASSIGNMENT_OPER ASSIGNMENT_EXPR {$$ = new BinaryOperation($1, $2, $3);}
