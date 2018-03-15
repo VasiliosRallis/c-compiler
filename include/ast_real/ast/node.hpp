@@ -28,7 +28,8 @@ enum class Type{
     VOID_ADDR,
     CHAR_ADDR,
     STRING_ADDR,
-    ADDR_ADDR
+    ADDR_ADDR,
+    ANYTHING_ADDR
 };
 
 bool isAddr(const Type type);
@@ -57,6 +58,7 @@ public:
     virtual void printGMips(std::ostream& dst, Type type)const;
     virtual double eval()const;
     virtual bool isPointer()const;
+    virtual bool isDereference()const;
 };
 
 

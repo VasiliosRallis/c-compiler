@@ -304,7 +304,7 @@ public:
         else if(*oper == "&"){
             std::string id(postfixExpr->getId());
             framePtr->loadAddr(dst, "$t0", id);
-            framePtr->store(dst, "$t0", destName, typeToAddr(postfixExpr->getType(framePtr)));
+            framePtr->store(dst, "$t0", destName, type);
             
         }else if(*oper == "*"){
             postfixExpr->printMipsE(dst, destName, framePtr, typeToAddr(type));
@@ -361,6 +361,11 @@ public:
             return -postfixExpr->eval();
             
         }else{assert(0);}
+    }
+    
+    bool isDereference()const{
+        if(*oper == "*") return true;
+        else return false;
     }
     
 };
@@ -876,7 +881,9 @@ public:
             }else if(dynamic_cast<const PostfixExpr*>(operand1)){
                 framePtr->storeArrayElement(dst, "$t1", dynamic_cast<const PostfixExpr*>(operand1));
                 dst << "move $t2, $t1" << std::endl;
-           }
+           }else{
+                doLater = true;
+            }
         }
         //TODO: BILL we have to ASGN OPER FOR POSTFIX EXPR AS WELL ?
         else if(oper->getId() == "+="){
@@ -1021,8 +1028,16 @@ public:
             }
 
             framePtr->store(dst, "$t2", destName, Type::INT);
-            if(doLater) framePtr->store(dst, "$t2", operand1->getId(), Type::INT);
-              
+            if(doLater){
+                //BILL: This solves the issue that we are having in the case of the INT ARRAY TODO 
+                if(operand1->isDereference()){
+                    framePtr->load(dst, "$t0", operand1->getId());
+                    dst << "lw $t0, 0($t0)" << std::endl;
+                    dst << "sw $t1, 0($t0)" << std::endl;
+                }else{
+                    framePtr->store(dst, "$t2", operand1->getId(), Type::INT);
+                }
+            }
 
         }else if(isAddr(type)){
             if(destType == Type::DOUBLE || destType == Type::FLOAT){

@@ -9,6 +9,7 @@ class ParameterDeclaration;
 class Expr;
 
 extern std::unordered_map<std::string, std::vector<Type> > function_decl;
+extern std::unordered_map<std::string, std::vector<Type> > function_type;
 
 DirectDeclarator::DirectDeclarator(StrPtr _id, StrPtr _s1, const std::vector<const ParameterDeclaration*>* _v1, StrPtr _s2, const Expr* _expr)
     :StringNode(_id), s1(_s1), v1(_v1), s2(_s2), expr(_expr){}
@@ -32,7 +33,12 @@ void DirectDeclarator::printPy(std::ostream& dst, int depth)const{
 
 void DirectDeclarator::printMips(std::ostream& dst, Frame* framePtr, Type type)const{
     //Set the default value for an unitialized variable to zero
-    framePtr->store(dst, "$zero", *id, Type::INT, true);
+    if(s1 != NULL){
+        if(*s1 == "["){
+            assert(0);       
+        }
+        
+    }else{framePtr->store(dst, "$zero", *id, type, true);}
 }
 
 std::string DirectDeclarator::getId()const{
@@ -121,7 +127,7 @@ void DirectDeclarator::insertFTypes(const Type returnType)const{
                 }
             }
             
-            function_decl.insert({*id, v});  
+            function_type.insert({*id, v});  
         }else{assert(0);} //Should never happen
         
     }else{assert(0);} //Should never happen

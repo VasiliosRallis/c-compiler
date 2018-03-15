@@ -144,10 +144,10 @@ void Frame::store(std::ostream& dst, const std::string reg, const std::string va
             
             //Check if we are storing a floating point register
             if(reg[1] == 'f' && reg[2] != 'p'){
-                dst << "swc1 " << reg << ", " << scopeMap.back().at(varName) << "($fp)\n";
+                dst << "swc1 " << reg << ", " << scopeMap.back().at(varName) << "($fp)" << std::endl;
                 dst << "nop" << std::endl;                
             }else{
-                dst << "sw " << reg << ", " << scopeMap.back().at(varName) << "($fp)\n";
+                dst << "sw " << reg << ", " << scopeMap.back().at(varName) << "($fp)" << std::endl;
                 
             }
         }
@@ -462,13 +462,13 @@ void Frame::loadAddr(std::ostream& dst, const std::string& reg, const std::strin
     if(scopeMap.back().find(varName) != scopeMap.back().end()){
         Type myType = loadType(varName);
         
-        if(myType == Type::INT || myType == Type::FLOAT){
-            dst << "addi " << reg << ", $fp, " << scopeMap.back().at(varName) << std::endl;
-        
-        }else if (myType == Type::CHAR){
+        if(myType == Type::CHAR){
             dst << "addi " << reg << ", $fp, " << scopeMap.back().at(varName) + 3 << std::endl;
+        
+        }else{
+            dst << "addi " << reg << ", $fp, " << scopeMap.back().at(varName) << std::endl;
             
-        }else{assert(0);}
+        }
         
     }else{
         try{
