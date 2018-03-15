@@ -903,6 +903,61 @@ public:
                 dst<<"div.s $f4, $f0, $f2" <<std::endl;
             }
         }
+        else if(oper->getId() == "%="){
+            doLater = true;
+            if(destType == Type::INT){
+                dst<<"div $t0, $t1" << std:: endl;
+                dst<<"mfhi $t2" << std::endl;
+            }
+            else{
+                throw std::runtime_error("Invalid BinaryOperation of Modulo " + oper->getId() + " on Non-Integer Types");
+            }
+        }
+        else if (oper->getId() == "<<=") {
+            doLater = true;
+            if(destType == Type::INT){
+                dst << "sllv $t2, $t0, $t1" << std::endl;
+            }
+            else{ 
+                throw std::runtime_error("Called BinaryOperation of Left Shift " + oper->getId() + " on Non-Integer Types"); 
+            } 
+        }
+        else if (oper->getId() == ">>=") {
+            doLater = true;
+            if(destType == Type::INT){
+                dst << "srav $t2, $t0, $t1" << std::endl;   // if unsigned we have to use srlv instead
+            }
+            else{ 
+                throw std::runtime_error("Called BinaryOperation of Right Shift " + oper->getId() + " on Non-Integer Types");
+            } 
+        }
+        else if (oper->getId() == "&=") { // Bitwise Operations do not work on double or floats
+            doLater = true;
+            if(destType == Type::INT){            
+                dst << "and $t2, $t0, $t1" << std::endl;
+            }
+            else {
+                throw std::runtime_error("Called BinaryOperation of Bitwise AND " + oper->getId() + " on Non-Integer Types that doesnt exist");   
+            }        
+        }
+        else if (oper->getId() == "|=") { // Bitwise Operations do not work on double or floats
+            doLater = true;
+            if(destType == Type::INT){            
+                dst << "or $t2, $t0, $t1" << std::endl;
+            }
+            else {
+                throw std::runtime_error("Called BinaryOperation of Bitwise OR " + oper->getId() + " on Non-Integer Types that doesnt exist");   
+            }        
+        }
+        else if (oper->getId() == "^=") { // Bitwise Operations do not work on double or floats
+            doLater = true;
+            if(destType == Type::INT){            
+                dst << "xor $t2, $t0, $t1" << std::endl;
+            }
+            else {
+                throw std::runtime_error("Called BinaryOperation of Bitwise XOR " + oper->getId() + " on Non-Integer Types that doesnt exist");   
+            }        
+        }
         
         // TODO : DO NOT ASSERT ELSE HERE! CUZ ITS POSSIBLE FOR LOGICAL OPERATORS TO END UP IN THIS ELSE (SPECIAL CASE)
         
