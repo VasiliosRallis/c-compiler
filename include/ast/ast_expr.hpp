@@ -874,8 +874,36 @@ public:
             else{
                 dst << "add.s $f4, $f0, $f2" << std::endl;
             }
-        
         }
+        else if(oper->getId() == "-="){
+            doLater = true;
+            if(destType == Type::INT){
+                dst << "subu $t2, $t0, $t1" << std::endl;   // Subu Unsigned subtract used as we ignore trap if overflow, what C does
+            }
+            else{
+                dst << "sub.s $f4, $f0, $f2" << std::endl;
+            }
+        }
+        else if(oper->getId() == "*="){
+            doLater = true;
+            if(destType == Type::INT){
+                dst << "mul $t2, $t0, $t1" << std::endl;   // Subu Unsigned subtract used as we ignore trap if overflow, what C does
+            }
+            else{
+                dst << "mul.s $f4, $f0, $f2" << std::endl;
+            }
+        }
+        else if(oper->getId() == "/="){
+            doLater = true;
+            if(destType == Type::INT){
+                dst<<"div $t0, $t1" << std:: endl;
+                dst<<"mflo $t2" << std::endl;
+            }
+            else{
+                dst<<"div.s $f4, $f0, $f2" <<std::endl;
+            }
+        }
+        
         // TODO : DO NOT ASSERT ELSE HERE! CUZ ITS POSSIBLE FOR LOGICAL OPERATORS TO END UP IN THIS ELSE (SPECIAL CASE)
         
         //Really important for when we have exprStatement (e.g. double x = 3; x = 1 + 2;)
