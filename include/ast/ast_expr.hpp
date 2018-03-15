@@ -247,11 +247,23 @@ public:
     }
     
     virtual void printMipsE(std::ostream& dst, const std::string& destName, Frame* framePtr, Type type)const override{
-        if(*oper == "-"){            
-            postfixExpr->printMipsE(dst, destName, framePtr, type);
-	        framePtr->load(dst, "$t0", destName);
-            dst << "sub $t0, $0, $t0" << std::endl;     //Negate variable value stored in $t0
-	        framePtr->store(dst, "$t0", destName, type);
+        Type destType = postfixExpr->getType(framePtr);
+        
+        if(*oper == "-"){
+            if(destType == Type::INT){            
+                postfixExpr->printMipsE(dst, destName, framePtr, destType);
+	            framePtr->load(dst, "$t0", destName);
+                dst << "sub $t0, $0, $t0" << std::endl;     //Negate variable value stored in $t0
+	            framePtr->store(dst, "$t0", destName, type);
+            }
+            else{
+                //TODO: SOME PROBLEMS WITH RETURN TYPE? GOT TO CONVERT, i.e store $f if type =Float?
+                postfixExpr->printMipsE(dst, destName, framePtr, destType);
+                framePtr->load(dst, "$t0", destName);
+                dst << "li $t1, 0x80000000" << std::endl; // Negation of float = Invert first bit by xoring with first bit being 1 and the rest 0
+                dst << "xor $t0, $t0, $t1" << std::endl;
+                framePtr->store(dst, "$t0", destName, type);            
+            }
         }
         else if(*oper == "+"){            
             postfixExpr->printMipsE(dst, destName, framePtr, type);
@@ -866,6 +878,7 @@ public:
                 dst << "move $t2, $t1" << std::endl;
            }
         }
+        //TODO: BILL we have to ASGN OPER FOR POSTFIX EXPR AS WELL ?
         else if(oper->getId() == "+="){
             doLater = true;
             if(destType == Type::INT){
@@ -957,8 +970,7 @@ public:
             else {
                 throw std::runtime_error("Called BinaryOperation of Bitwise XOR " + oper->getId() + " on Non-Integer Types that doesnt exist");   
             }        
-        }
-        
+        }    
         // TODO : DO NOT ASSERT ELSE HERE! CUZ ITS POSSIBLE FOR LOGICAL OPERATORS TO END UP IN THIS ELSE (SPECIAL CASE)
         
         //Really important for when we have exprStatement (e.g. double x = 3; x = 1 + 2;)
