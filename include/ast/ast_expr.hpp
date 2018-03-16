@@ -254,26 +254,109 @@ public:
                 postfixExpr->printMipsE(dst, destName, framePtr, destType);
 	            framePtr->load(dst, "$t0", destName);
                 dst << "sub $t0, $0, $t0" << std::endl;     //Negate variable value stored in $t0
-	            framePtr->store(dst, "$t0", destName, type);
+
+                if(type == Type ::INT){ // Thing above asked for an int we have to convert our value to an int and store into stack 
+                    framePtr->store(dst, "$t0", destName, type);
+                }
+                else{ // Thing above asked for Float we return our value as a float
+                    TypeConv::convert(dst, Type::FLOAT, Type::INT, "$f0", "$t0");                                  
+                    framePtr->store(dst, "$f0", destName, type); 
+                }
             }
             else{
-                //TODO: SOME PROBLEMS WITH RETURN TYPE? GOT TO CONVERT, i.e store $f if type =Float?
                 postfixExpr->printMipsE(dst, destName, framePtr, destType);
-                framePtr->load(dst, "$t0", destName);
+                framePtr->load(dst, "$f0", destName);
+                dst << "mfc1 $t0, $f0" << std :: endl;
                 dst << "li $t1, 0x80000000" << std::endl; // Negation of float = Invert first bit by xoring with first bit being 1 and the rest 0
-                dst << "xor $t0, $t0, $t1" << std::endl;
-                framePtr->store(dst, "$t0", destName, type);            
+                dst << "xor $t0, $t0, $t1" << std::endl;             
+                dst << "mtc1 $t0, $f0" << std::endl;
+
+                if(type == Type ::INT){ // Thing above asked for an int we have to convert our value to an int and store into stack 
+                    TypeConv::convert(dst, Type::INT, Type::FLOAT, "$t0", "$f0");
+                    framePtr->store(dst, "$t0", destName, type);
+                }
+                else{ // Thing above asked for Float we return our value as a float                                  
+                    framePtr->store(dst, "$f0", destName, type); 
+                }           
             }
         }
-        else if(*oper == "+"){            
-            postfixExpr->printMipsE(dst, destName, framePtr, type);
+        else if(*oper == "+"){
+            if(destType == Type::INT){                
+                postfixExpr->printMipsE(dst, destName, framePtr, destType);
+             
+                if(type == Type ::INT){ // Thing above asked for an int we have to convert our value to an int and store into stack 
+                    framePtr->store(dst, "$t0", destName, type);
+                }
+                else{ // Thing above asked for Float we return our value as a float
+                    TypeConv::convert(dst, Type::FLOAT, Type::INT, "$f0", "$t0");                                  
+                    framePtr->store(dst, "$f0", destName, type); 
+                }               
+            }
+            else{
+                postfixExpr->printMipsE(dst, destName, framePtr, destType);
+                framePtr->load(dst, "$f0", destName);
+
+                if(type == Type ::INT){ // Thing above asked for an int we have to convert our value to an int and store into stack
+                    TypeConv::convert(dst, Type::INT, Type::FLOAT, "$t0", "$f0");
+                    framePtr->store(dst, "$t0", destName, type);
+                }
+                else{ // Thing above asked for Float we return our value as a float                                  
+                    framePtr->store(dst, "$f0", destName, type); 
+                }
+            }
         }
         else if (*oper == "!"){
-            postfixExpr->printMipsE(dst, destName, framePtr, type);
-            framePtr->load(dst, "$t0", destName);                    	
-            dst << "sltu $t0, $t0, 1" << std::endl;
-	        dst << "andi $t0, $t0, 0x00ff" << std::endl;
-            framePtr-> store(dst, "$t0" , destName, type);
+            if(destType == Type::INT){
+                postfixExpr->printMipsE(dst, destName, framePtr, type);
+                framePtr->load(dst, "$t0", destName);                    	
+                dst << "sltu $t0, $t0, 1" << std::endl;
+	            dst << "andi $t0, $t0, 0x00ff" << std::endl;
+                
+                if(type == Type ::INT){ // Thing above asked for an int we have to convert our value to an int and store into stack 
+                    framePtr->store(dst, "$t0", destName, type);
+                }
+                else{ // Thing above asked for Float we return our value as a float
+                    TypeConv::convert(dst, Type::FLOAT, Type::INT, "$f0", "$t0");                                  
+                    framePtr->store(dst, "$f0", destName, type); 
+                }
+            }
+            else{
+                std::string branchlabel = std::string("$" + makeName("BRANCH"));
+                std::string branchlabel2 = std::string("$" + makeName("BRANCH"));
+
+                postfixExpr->printMipsE(dst, destName, framePtr, type);
+                framePtr->load(dst, "$f0", destName);
+                dst << "mfc1 $t0, $f0" << std :: endl;
+                dst << "nop" << std::endl;
+                
+                dst << "mtc1 $0, $f2" << std::endl;     // $f2 has 0 in floating point representation NEED TO TEST for -0 case
+                dst << "nop" << std::endl;
+                dst << "c.eq.s $f0, $f2" << std::endl;
+                dst << "nop" << std::endl;
+                dst << "bc1f " << branchlabel << std::endl;
+                dst << "nop" << std::endl << std::endl;
+                
+                dst << "li $t1, 1" << std::endl;
+                dst << "mtc1 $t1, $f4" << std::endl;
+                dst << "cvt.s.w $f4, $f4" << std::endl; //   $f4 has 1 in fp representation.
+                dst << "mov.s $f0, $f4" << std::endl;
+	            dst << "b " << branchlabel2 << std::endl;
+                dst << "nop" << std::endl << std::endl;
+
+                dst << branchlabel << ":" << std::endl;
+	            dst << "mtc1 $0, $f0" << std::endl; 
+	            dst << "nop" << std::endl ;
+                    
+                dst << branchlabel2 << ":" << std::endl;
+            
+                if(type == Type ::INT){ // Thing above asked for an int we have to convert our value to an int and store into stack
+                    TypeConv::convert(dst, Type::INT, Type::FLOAT, "$t0", "$f0");
+                    framePtr->store(dst, "$t0", destName, type);
+                }
+                else{ // Thing above asked for Float we return our value as a float                                  
+                    framePtr->store(dst, "$f0", destName, type); 
+                }       
+            }
         }
         else if(*oper == "~"){
             postfixExpr->printMipsE(dst,destName,framePtr, type);
