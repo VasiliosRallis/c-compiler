@@ -307,7 +307,7 @@ public:
         }
         else if (*oper == "!"){
             if(destType == Type::INT){
-                postfixExpr->printMipsE(dst, destName, framePtr, type);
+                postfixExpr->printMipsE(dst, destName, framePtr, destType);
                 framePtr->load(dst, "$t0", destName);                    	
                 dst << "sltu $t0, $t0, 1" << std::endl;
 	            dst << "andi $t0, $t0, 0x00ff" << std::endl;
@@ -324,7 +324,7 @@ public:
                 std::string branchlabel = std::string("$" + makeName("BRANCH"));
                 std::string branchlabel2 = std::string("$" + makeName("BRANCH"));
 
-                postfixExpr->printMipsE(dst, destName, framePtr, type);
+                postfixExpr->printMipsE(dst, destName, framePtr, destType);
                 framePtr->load(dst, "$f0", destName);
                 dst << "mfc1 $t0, $f0" << std :: endl;
                 dst << "nop" << std::endl;
@@ -359,30 +359,120 @@ public:
             }
         }
         else if(*oper == "~"){
-            postfixExpr->printMipsE(dst,destName,framePtr, type);
-            framePtr->load(dst, "$t0", destName);                    	
-            dst << "nor  $t0, $t0, $0" << std::endl;
-            framePtr-> store(dst, "$t0", destName, type);           
+            if(destType == Type::INT){
+                postfixExpr->printMipsE(dst,destName,framePtr, destType);
+                framePtr->load(dst, "$t0", destName);                    	
+                dst << "nor  $t0, $t0, $0" << std::endl;
+
+                if(type == Type::INT){ // Thing above asked for an int we have to convert our value to an int and store into stack 
+                    framePtr->store(dst, "$t0", destName, type);
+                }
+                else{ // Thing above asked for Float we return our value as a float
+                    TypeConv::convert(dst, Type::FLOAT, Type::INT, "$f0", "$t0");                                  
+                    framePtr->store(dst, "$f0", destName, type);
+                } 
+            }
+            else{
+                throw std::runtime_error("Invalid Unary Operation of BITWISE NOT " + *oper + " on Non-Integer Types");
+            }           
         }
-        else if(*oper == "++"){            
-            postfixExpr->printMipsE(dst, destName, framePtr, type);
-	        framePtr->load(dst, "$t0", destName);
-            dst << "addi $t0, $t0, 1" << std::endl;     //Increment value before storing it back
-	        framePtr->store(dst, "$t0", destName, type);
-            if(dynamic_cast<const PrimaryExpr*>(postfixExpr)){
-                std::string id = postfixExpr->getId();
-                framePtr->store(dst, "$t0", id, type);
+        else if(*oper == "++"){
+            if(destType == Type ::INT){            
+                postfixExpr->printMipsE(dst, destName, framePtr, destType);
+	            framePtr->load(dst, "$t0", destName);
+                dst << "addi $t0, $t0, 1" << std::endl;     //Increment value before storing it back
+	            
+                if(type == Type::INT){
+                    framePtr->store(dst, "$t0", destName, type);
+                    if(dynamic_cast<const PrimaryExpr*>(postfixExpr)){
+                        std::string id = postfixExpr->getId();
+                        framePtr->store(dst, "$t0", id, destType);      // Should it be destType instead of type here?
+                    }
+                }
+                else{
+                    TypeConv::convert(dst, Type::FLOAT, Type::INT, "$f0", "$t0");                                  
+                    framePtr->store(dst, "$f0", destName, type);
+                    if(dynamic_cast<const PrimaryExpr*>(postfixExpr)){
+                        std::string id = postfixExpr->getId();
+                        framePtr->store(dst, "$t0", id, destType);      // Should it be destType instead of type here?
+                    } 
+                }
+            }
+
+            else{
+                postfixExpr->printMipsE(dst, destName, framePtr, destType);
+                framePtr->load(dst, "$f0", destName);
+                TypeConv::convert(dst, Type::INT, Type::FLOAT, "$t0", "$f0");
+                dst << "addi $t0, $t0, 1" << std::endl;     //Increment value before storing it back
+                
+                if(type == Type::INT){
+                    framePtr->store(dst, "$t0", destName, type);
+                    if(dynamic_cast<const PrimaryExpr*>(postfixExpr)){
+                        TypeConv::convert(dst, Type::FLOAT, Type::INT, "$f0", "$t0");
+                        std::string id = postfixExpr->getId();
+                        framePtr->store(dst, "$f0", id, destType);      // Should it be destType instead of type here?
+                    }
+                }
+                else{
+                    TypeConv::convert(dst, Type::FLOAT, Type::INT, "$f0", "$t0");                                  
+                    framePtr->store(dst, "$f0", destName, type);
+                    if(dynamic_cast<const PrimaryExpr*>(postfixExpr)){
+                        TypeConv::convert(dst, Type::FLOAT, Type::INT, "$f0", "$t0");
+                        std::string id = postfixExpr->getId();
+                        framePtr->store(dst, "$f0", id, destType);      // Should it be destType instead of type here?
+                    } 
+                }
+            
             }
         }
-        else if(*oper == "--"){            
-            postfixExpr->printMipsE(dst, destName, framePtr, type);
-	        framePtr->load(dst, "$t0", destName);
-            dst << "addi $t0, $t0, -1" << std::endl;     //Increment value before storing it back
-	        framePtr->store(dst, "$t0", destName, type);
-            if(dynamic_cast<const PrimaryExpr*>(postfixExpr)){
-                std::string id = postfixExpr->getId();
-                framePtr->store(dst, "$t0", id, type);
+        else if(*oper == "--"){
+            if(destType == Type ::INT){            
+                postfixExpr->printMipsE(dst, destName, framePtr, destType);
+	            framePtr->load(dst, "$t0", destName);
+                dst << "addi $t0, $t0, -1" << std::endl;     //Increment value before storing it back
+	            
+                if(type == Type::INT){
+                    framePtr->store(dst, "$t0", destName, type);
+                    if(dynamic_cast<const PrimaryExpr*>(postfixExpr)){
+                        std::string id = postfixExpr->getId();
+                        framePtr->store(dst, "$t0", id, destType);      // Should it be destType instead of type here?
+                    }
+                }
+                else{
+                    TypeConv::convert(dst, Type::FLOAT, Type::INT, "$f0", "$t0");                                  
+                    framePtr->store(dst, "$f0", destName, type);
+                    if(dynamic_cast<const PrimaryExpr*>(postfixExpr)){
+                        std::string id = postfixExpr->getId();
+                        framePtr->store(dst, "$t0", id, destType);      // Should it be destType instead of type here?
+                    } 
+                }
             }
+
+            else{
+                postfixExpr->printMipsE(dst, destName, framePtr, destType);
+                framePtr->load(dst, "$f0", destName);
+                TypeConv::convert(dst, Type::INT, Type::FLOAT, "$t0", "$f0");
+                dst << "addi $t0, $t0, -1" << std::endl;     //Increment value before storing it back
+                
+                if(type == Type::INT){
+                    framePtr->store(dst, "$t0", destName, type);
+                    if(dynamic_cast<const PrimaryExpr*>(postfixExpr)){
+                        TypeConv::convert(dst, Type::FLOAT, Type::INT, "$f0", "$t0");
+                        std::string id = postfixExpr->getId();
+                        framePtr->store(dst, "$f0", id, destType);      // Should it be destType instead of type here?
+                    }
+                }
+                else{
+                    TypeConv::convert(dst, Type::FLOAT, Type::INT, "$f0", "$t0");                                  
+                    framePtr->store(dst, "$f0", destName, type);
+                    if(dynamic_cast<const PrimaryExpr*>(postfixExpr)){
+                        TypeConv::convert(dst, Type::FLOAT, Type::INT, "$f0", "$t0");
+                        std::string id = postfixExpr->getId();
+                        framePtr->store(dst, "$f0", id, destType);      // Should it be destType instead of type here?
+                    } 
+                }
+            
+            }            
         }
         else if(*oper == "&"){
             std::string id(postfixExpr->getId());
