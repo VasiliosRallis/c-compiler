@@ -477,6 +477,9 @@ public:
         else if(*oper == "&"){
             std::string id(postfixExpr->getId());
             framePtr->loadAddr(dst, "$t0", id);
+            if(destType == Type::CHAR && type != Type::CHAR_ADDR){
+	            dst << "addi $t0, $t0, -3" << std::endl;
+	        }
             framePtr->store(dst, "$t0", destName, type);
             
         }else if(*oper == "*"){
@@ -489,7 +492,7 @@ public:
                 dst << "lw $t0, 0($t0)" << std::endl;
                 
             }else if(exprType == Type::CHAR_ADDR){
-                dst << "lb $t0, 0($t0)" << std::endl;
+                dst << "lbu $t0, 0($t0)" << std::endl;
                 
             }else{assert(0);}
             

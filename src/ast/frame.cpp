@@ -23,6 +23,7 @@ Frame::Frame(std::ostream& dst, const DirectDeclarator* directDeclarator)
     scopeMap.front().insert({"oldFramePointer", 8});
     scopeMap.front().insert({"returnAddr", 4});
     
+    
     freeWords = 1;
     nextFreeAddr = 0;
     
@@ -52,7 +53,16 @@ void Frame::load(std::ostream& dst, const std::string reg, const std::string var
             }else{assert(0);}   
                  
         }else{
-            dst << "lw " << reg << ", " << scopeMap.back().at(varName) << "($fp)" << std::endl;
+            if(typeMap.back().find(varName) != typeMap.back().end()){
+                if(typeMap.back().at(varName) == Type::CHAR){
+                    dst << "lbu " << reg << ", " << scopeMap.back().at(varName) + 3 << "($fp)" << std::endl;
+                }else{
+                     dst << "lw " << reg << ", " << scopeMap.back().at(varName) << "($fp)" << std::endl;
+                }
+            }else{
+                dst << "lw " << reg << ", " << scopeMap.back().at(varName) << "($fp)" << std::endl;
+            }
+            
         } 
     }catch(const std::out_of_range& e){
         try{
@@ -117,7 +127,12 @@ void Frame::store(std::ostream& dst, const std::string reg, const std::string va
             }else{assert(0);}
 
         }else{
-            dst << "sw " << reg << ", " << scopeMap.back().at(varName) << "($fp)" << std::endl;
+            if(type == Type::CHAR){
+                dst << "sb " << reg << ", " << scopeMap.back().at(varName) + 3 << "($fp)" << std::endl;
+                
+            }else{
+                dst << "sw " << reg << ", " << scopeMap.back().at(varName) << "($fp)" << std::endl;
+            }
  
         }
     }else{
@@ -128,12 +143,24 @@ void Frame::store(std::ostream& dst, const std::string reg, const std::string va
                 dst << "nop" << std::endl;
                 
             }else{
-                dst << "sw " << reg << ", " << scopeMap.back().at(varName) << "($fp)\n";
+                if(type == Type::CHAR){
+                    dst << "sb " << reg << ", " << scopeMap.back().at(varName) + 3 << "($fp)" << std::endl;
+                
+                }else{
+                    dst << "sw " << reg << ", " << scopeMap.back().at(varName) << "($fp)" << std::endl;
+                }
             }
             
         }else if(g_mips_var.find(varName) != g_mips_var.end()){
             dst << "lui $t7, %hi(" << varName << ")" << std::endl;
             dst << "sw " << reg << ",%lo(" << varName << ")($t7)" << std::endl;
+            
+            if(type == Type::CHAR){
+                dst << "sw " << reg << ",%lo(" << varName << ")($t7)" << std::endl;
+                
+            }else{
+                dst << "sw " << reg << ",%lo(" << varName << ")($t7)" << std::endl;
+            }
             
         }else{
             if(freeWords == 0) addWords(dst, scopeMap.back().size());
@@ -147,7 +174,12 @@ void Frame::store(std::ostream& dst, const std::string reg, const std::string va
                 dst << "swc1 " << reg << ", " << scopeMap.back().at(varName) << "($fp)" << std::endl;
                 dst << "nop" << std::endl;                
             }else{
-                dst << "sw " << reg << ", " << scopeMap.back().at(varName) << "($fp)" << std::endl;
+                if(type == Type::CHAR){
+                    dst << "sb " << reg << ", " << scopeMap.back().at(varName) + 3 << "($fp)" << std::endl;
+                
+                }else{
+                    dst << "sw " << reg << ", " << scopeMap.back().at(varName) << "($fp)" << std::endl;
+                }
                 
             }
         }
@@ -463,7 +495,7 @@ void Frame::loadAddr(std::ostream& dst, const std::string& reg, const std::strin
         Type myType = loadType(varName);
         
         if(myType == Type::CHAR){
-            dst << "addi " << reg << ", $fp, " << scopeMap.back().at(varName) + 3 << std::endl;
+            dst << "addi " << reg << ", $fp, " << scopeMap.back().at(varName) + 3<< std::endl;
         
         }else{
             dst << "addi " << reg << ", $fp, " << scopeMap.back().at(varName) << std::endl;
