@@ -21,7 +21,7 @@ ArgTranslator::ArgTranslator(const DirectDeclarator* directDeclarator){
                     --freeIntegralWords;
                     
                 }else{
-                    argMap.insert({id, std::to_string(12 - 4*i)});
+                    argMap.insert({id, std::to_string(12 + 4*i)});
                     
                 }
                 
@@ -32,7 +32,7 @@ ArgTranslator::ArgTranslator(const DirectDeclarator* directDeclarator){
                         --freeIntegralWords;
                          
                     }else{
-                        argMap.insert({id, std::to_string(12 - 4*i)});
+                        argMap.insert({id, std::to_string(12 + 4*i)});
                         
                     }
                 //Not integralHit    
@@ -47,7 +47,7 @@ ArgTranslator::ArgTranslator(const DirectDeclarator* directDeclarator){
                         --freeIntegralWords;
                         
                     }else{
-                        argMap.insert({id, std::to_string(12 - 4*i)});
+                        argMap.insert({id, std::to_string(12 + 4*i)});
                         
                     }
                 }
@@ -71,7 +71,7 @@ void ArgTranslator::load(std::ostream& dst, const std::string& destName, const s
                     dst << "mov.s " << destName << ", " << argMap.at(varName) << std::endl;
                 
                 }else{
-                   dst << "mtc1 " << destName << ", " << argMap.at(varName) << std::endl;
+                   dst << "mtc1 " << argMap.at(varName) << ", " <<  destName<< std::endl;
                 }
                    
             }else{
@@ -95,7 +95,7 @@ void ArgTranslator::load(std::ostream& dst, const std::string& destName, const s
     }else if(argTypeMap.at(varName) == Type::INT || isAddr(argTypeMap.at(varName)) || argTypeMap.at(varName) == Type::CHAR){
         if(argMap.at(varName).at(0) == '$'){
             if(destName[1] == 'f' && destName[2] != 'p'){
-                dst << "mtc1 " << destName << ", " << argMap.at(varName) << std::endl;
+                dst << "mtc1 " << argMap.at(varName) << ", " << destName << std::endl;
                 
             }else{
                 dst << "move " << destName << ", " << argMap.at(varName) << std::endl;
@@ -103,10 +103,10 @@ void ArgTranslator::load(std::ostream& dst, const std::string& destName, const s
             }
         }else{
             if(destName[1] == 'f' && destName[2] != 'p'){
-                dst << "lwc1 " << destName << ", " << argMap.at(varName) << std::endl;
+                dst << "lwc1 " << destName << ", " << argMap.at(varName)  << "($fp)" << std::endl;
                 
             }else{
-                dst << "lw " << destName << ", " << argMap.at(varName) << std::endl;
+                dst << "lw " << destName << ", " << argMap.at(varName) << "($fp)" << std::endl;
                 
             }
         }
