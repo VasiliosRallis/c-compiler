@@ -25,7 +25,7 @@ void InitDeclarator::printMips(std::ostream& dst, Frame* framePtr, Type type)con
     if(asgnExpr != NULL){
         if(type == Type::INT || type == Type::CHAR || isAddr(type)){
             //Generate a unique name
-            std::string destName = makeName();
+            std::string destName = makeName("init");
             //Ask the expression to evaluate itself and store its value in the frame, with destName as it's identifier
             asgnExpr->printMipsE(dst, destName, framePtr, type);
             //Temporary store the identifier in $t0

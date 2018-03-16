@@ -103,8 +103,11 @@ public:
 	            
 	        }else if(isAddr(type)){
 	            if(expr->isIdentifier()){
-                    if(myType == Type::CHAR || myType == Type::INT || isAddr(myType)){	                    
+                    if(myType == Type::CHAR || myType == Type::INT || isAddr(myType)){                    
 	                    framePtr->load(dst, "$t0", id);
+	                    if(myType == Type::CHAR_ADDR && type != Type::CHAR_ADDR){
+                            dst << "addi $t0, $t0, -3" << std::endl;
+                        }
 	                    framePtr->store(dst, "$t0", destName, type);
 	                
 	                }else{assert(0);}
