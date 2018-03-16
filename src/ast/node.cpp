@@ -50,7 +50,7 @@ bool Node::isPointer()const{
 bool Node::isDereference()const{return false;}
 
 bool isAddr(const Type type){
-    if(type == Type::INT_ADDR || type == Type::FLOAT_ADDR || type == Type::DOUBLE_ADDR || type == Type::VOID_ADDR || type == Type::CHAR_ADDR || type == Type::STRING_ADDR || type == Type::ADDR_ADDR)
+    if(type == Type::INT_ADDR || type == Type::FLOAT_ADDR || type == Type::DOUBLE_ADDR || type == Type::VOID_ADDR || type == Type::CHAR_ADDR || type == Type::STRING_ADDR)
         return true;
     else
         return false;
@@ -63,7 +63,7 @@ Type typeToAddr(const Type type){
     else if(type == Type::VOID) return Type::VOID_ADDR;
     else if(type == Type::CHAR) return Type::CHAR_ADDR;
     else if(type == Type::STRING) return Type::STRING_ADDR;
-    else if(isAddr(type)) return Type::ADDR_ADDR;
+    else if(isAddr(type)) return Type::INT_ADDR;
     else{
         std::cerr << "Type: " << (int)type << std::endl;
         assert(0);
@@ -77,7 +77,7 @@ Type addrToType(const Type type){
     else if(type == Type::VOID_ADDR) return Type::VOID;
     else if(type == Type::CHAR_ADDR) return Type::CHAR;
     else if(type == Type::STRING_ADDR) return Type::STRING;
-    else if(type == Type::ADDR_ADDR) return Type::ANYTHING_ADDR;
+    else if(!isAddr(type)) return Type::INT;
     else{
         std::cerr << "Type: " << (int)type << std::endl;
         assert(0);

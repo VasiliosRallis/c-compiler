@@ -35,3 +35,7 @@ bool ExprVector::isIdentifier()const{
 double ExprVector::eval()const{
     return exprVector.back()->eval();
 }
+
+std::string ExprVector::getId()const{
+    return exprVector.back()->getId();
+}

@@ -526,3 +526,66 @@ void Frame::loadRegisters(std::ostream& dst)const{
     }
     dst << "###### DONE LOADING REGISTERS ######" << std::endl;
 }
+
+
+
+void Frame::storeEmptyArray(std::ostream& dst, const std::string& arrayName, const int size, const Type type, bool force){
+    Type elementType = addrToType(type);
+ 
+    dst << "###### MAKING SPACE FOR ARRAY ######" << std::endl;
+    //Allocate enough space for the array (and for the pointer to the array)
+    while(freeWords < size + 1) addWords(dst, scopeMap.back().size());
+    
+    if(force){
+        if(scopeMap.back().find(arrayName) != scopeMap.back().end()){
+            scopeMap.back().erase(arrayName);
+            scopeMap.back().insert({arrayName, nextFreeAddr - 4 * (freeWords - 1)});
+            typeMap.back().erase(arrayName);
+            typeMap.back().insert({arrayName, type});
+
+        }else{
+            scopeMap.back().insert({arrayName, nextFreeAddr - 4 * (freeWords - 1)});
+            typeMap.back().insert({arrayName, type});
+        }
+        
+        nextFreeAddr -= 4;
+        freeWords--;
+            
+    }else{
+        if(scopeMap.back().find(arrayName) != scopeMap.back().end()){
+            
+            //Do nothing (everything is do further down)
+            
+        }else{assert(0);}    
+    }
+    
+    dst << "###### CALCULATING ADDRESS OF ARRAY ######" << std::endl;
+    //The last element in the stack is going to be the pointer to the array
+    dst << "addi $t0, $sp, 4" << std::endl;
+    dst << "sw $t0, 0($sp)" << std::endl;
+    
+    dst << "###### STORING ARRAY ELEMENTS ######" << std::endl;
+    //Store the elements of the array
+    int byteIndex = 0;
+    for(int i(0); i < size; ++i){
+        if(elementType == Type::INT || elementType == Type::FLOAT){
+            
+            dst << "sw $zero, " << byteIndex + 4 << "($sp)" << std::endl;
+            byteIndex += 4;
+        
+        //Special case have to store as bytes
+        }else if(elementType == Type::CHAR){
+            
+            dst << "sb $zero, " << byteIndex + 4 << "($sp)" << std::endl;
+            ++byteIndex;
+        
+        }else{assert(0);}
+        
+    }
+    dst << "###### FINISHED STORING ARRAY ELEMENTS ######" << std::endl;
+    
+    //Reset the stack
+    nextFreeAddr -= ((freeWords - 1) * 4) + 4;
+    freeWords = 0;
+        
+}

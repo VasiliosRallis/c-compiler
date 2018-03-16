@@ -35,7 +35,8 @@ void DirectDeclarator::printMips(std::ostream& dst, Frame* framePtr, Type type)c
     //Set the default value for an unitialized variable to zero
     if(s1 != NULL){
         if(*s1 == "["){
-            assert(0);       
+            int arraySize = expr->eval();
+            framePtr->storeEmptyArray(dst, *id, arraySize, type, true);       
         }
         
     }else{framePtr->store(dst, "$zero", *id, type, true);}

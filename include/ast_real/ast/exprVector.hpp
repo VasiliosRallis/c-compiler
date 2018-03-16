@@ -26,6 +26,8 @@ public:
     bool isIdentifier()const override;
     
     double eval()const override;
+    
+    std::string getId()const override;
 };
 
 #endif
