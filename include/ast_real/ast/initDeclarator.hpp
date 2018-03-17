@@ -9,6 +9,7 @@ class InitDeclarator;
 #include "ast_real/ast/directDeclarator.hpp"
 #include "ast_real/ast/expr.hpp"
 #include "ast_real/ast/node.hpp"
+#include "ast_real/compiler/typeConv.hpp"
 
 class InitDeclarator : public Node{
 private:

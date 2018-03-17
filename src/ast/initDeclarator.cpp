@@ -23,15 +23,26 @@ void InitDeclarator::printPy(std::ostream& dst, int depth)const{
 
 void InitDeclarator::printMips(std::ostream& dst, Frame* framePtr, Type type)const{
     if(asgnExpr != NULL){
+        Type destType = asgnExpr->getType(framePtr);
+
         if(type == Type::INT || type == Type::CHAR || isAddr(type)){
             //Generate a unique name
             std::string destName = makeName("init");
             //Ask the expression to evaluate itself and store its value in the frame, with destName as it's identifier
-            asgnExpr->printMipsE(dst, destName, framePtr, type);
-            //Temporary store the identifier in $t0
-            framePtr->load(dst, "$t0", destName);
-            //Store it in the frame
-            framePtr->store(dst, "$t0", directDeclarator->getId(), type, true);
+                      
+            if(destType == Type::FLOAT){
+                asgnExpr->printMipsE(dst, destName, framePtr, destType);
+                framePtr->load(dst, "$f0", destName);
+                TypeConv::convert(dst, Type::INT, Type::FLOAT, "$t0", "$f0");
+                framePtr->store(dst, "$t0", directDeclarator->getId(), type, true); 
+            }
+            else{
+                asgnExpr->printMipsE(dst, destName, framePtr, /*destType*/ type); // If we put destType which should be the answer, char and pointers get fked
+                //Temporary store the identifier in $t0
+                framePtr->load(dst, "$t0", destName);
+                //Store it in the frame
+                framePtr->store(dst, "$t0", directDeclarator->getId(), type, true);         
+            }
             
         }else if(type == Type::FLOAT){
             //We have to check if the Asgn Expr is a constant and only perform this if its constant
@@ -58,12 +69,22 @@ void InitDeclarator::printMips(std::ostream& dst, Frame* framePtr, Type type)con
             else{
             //EVAL EXPR AND store into LHS Declarator
             std::string destName = makeName();
-            //Ask the expression to evaluate itself and store its value in the frame, with destName as it's identifier
-            asgnExpr->printMipsE(dst, destName, framePtr, type);
-            //Temporary store the identifier in $f0
-            framePtr->load(dst, "$f0", destName);
-            //Store it in the frame
-            framePtr->store(dst, "$f0", directDeclarator->getId(), type, true);
+            if(destType == Type::INT){
+                 asgnExpr->printMipsE(dst, destName, framePtr, destType);
+                //Temporary store the identifier in $t0
+                framePtr->load(dst, "$t0", destName);
+                TypeConv::convert(dst, Type::FLOAT, Type::INT, "$f0", "$t0");
+                //Store it in the frame
+                framePtr->store(dst, "$f0", directDeclarator->getId(), type, true);            
+            }
+            else{           
+                //Ask the expression to evaluate itself and store its value in the frame, with destName as it's identifier
+                asgnExpr->printMipsE(dst, destName, framePtr, destType);
+                //Temporary store the identifier in $f0
+                framePtr->load(dst, "$f0", destName);
+                //Store it in the frame
+                framePtr->store(dst, "$f0", directDeclarator->getId(), type, true);       
+            }
 
             }
         }else if(type == Type::DOUBLE){
