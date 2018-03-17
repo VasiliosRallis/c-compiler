@@ -33,6 +33,8 @@ public:
     virtual std::string getId()const override;
     
     Type getType(const Frame* framePtr)const override;
+    
+    bool isIdentifier()const override;
 };
 
 #endif
