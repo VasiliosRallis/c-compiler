@@ -295,11 +295,22 @@ void Frame::saveArguments(std::ostream& dst, const std::string& f_Id, const std:
 }
 
 
-void Frame::storeArray(std::ostream& dst, const std::string& arrayName, const std::vector<const Expr*>* argumentExprList, const Type type, bool force){
+void Frame::storeArray(std::ostream& dst, const std::string& arrayName, const std::vector<const Expr*>* argumentExprList, const Type type, int size, bool force){
     if(argumentExprList != NULL){
         
         std::vector<std::string> elementName;
         Type elementType = addrToType(type);
+        
+        //Calculate the actual size of the array
+        //e.g. int a[15] = {1}; The actual size will be 15 words and not 1.
+        int mySize;
+        if(size > argumentExprList->size()){
+            mySize = size;
+            
+        }else{
+            mySize = argumentExprList->size();
+            
+        }
         
         //Calculate the value of all the elements
         dst << "###### CALCULATING ARRAY ELEMENTS ######" << std::endl;
@@ -311,7 +322,7 @@ void Frame::storeArray(std::ostream& dst, const std::string& arrayName, const st
         
         dst << "###### MAKING SPACE FOR ARRAY ######" << std::endl;
         //Allocate enough space for the array (and for the pointer to the array)
-        while(freeWords < argumentExprList->size() + 1) addWords(dst, scopeMap.back().size());
+        while(freeWords < mySize + 1) addWords(dst, scopeMap.back().size());
         
         if(force){
             if(scopeMap.back().find(arrayName) != scopeMap.back().end()){
@@ -405,7 +416,7 @@ void Frame::loadArrayElement(std::ostream& dst, const std::string& reg, const st
             dst << "lw " << reg << ", 0($t1)" << std::endl;
             
         }else if(elementType == Type::CHAR){
-            dst << "lb " << reg << ", 0($t1)" << std::endl;
+            dst << "lbu " << reg << ", 0($t1)" << std::endl;
             
         }else{assert(0);} //Haven't implemented it yet
         
@@ -419,7 +430,7 @@ void Frame::loadArrayElement(std::ostream& dst, const std::string& reg, const st
                 dst << "lw " << reg << ", 0($t1)" << std::endl;
                 
             }else if(elementType == Type::CHAR){
-                dst << "lb " << reg << ", 0($t1)" << std::endl;
+                dst << "lbu " << reg << ", 0($t1)" << std::endl;
                 
             }else{assert(0);} //Haven't implemented it yet
             
@@ -429,7 +440,14 @@ void Frame::loadArrayElement(std::ostream& dst, const std::string& reg, const st
             dst << "lui $t1, %hi(" << arrayName << ")" << std::endl;
             dst << "addiu $t1, $t1, %lo(" << arrayName << ")" << std::endl;
             dst << "addu $t1, $t1, $t0" << std::endl;
-            dst << "lw " << reg << ", " << "0($t1)" << std::endl;
+            if(elementType == Type::INT || elementType == Type::FLOAT){
+                dst << "lw " << reg << ", 0($t1)" << std::endl;
+                
+            }else if(elementType == Type::CHAR){
+                dst << "lbu " << reg << ", 0($t1)" << std::endl;
+                
+            }else{assert(0);} //Haven't implemented it yet
+            
         }
     }
     

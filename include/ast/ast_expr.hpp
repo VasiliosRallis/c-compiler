@@ -181,14 +181,14 @@ public:
     
     double eval()const override{
         if(dynamic_cast<const StringNode*>(expr)){
-            std::string id = expr->getId();
-            Type myType = expr->getType(NULL);
-            
             if(expr->isIdentifier()){
                 //We need it to be a constant in global declarations
                 assert(0);
                 
             }else{ 
+                std::string id = expr->getId();
+                Type myType = expr->getType(NULL);
+                
                 if(myType == Type::INT || myType == Type::FLOAT || myType == Type::DOUBLE){
                     return std::stod(id);
                 

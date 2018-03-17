@@ -98,7 +98,7 @@ void InitDeclarator::printMips(std::ostream& dst, Frame* framePtr, Type type)con
             assert(0);
    
         }else{
-            framePtr->storeArray(dst, directDeclarator->getId(), exprList, type, true);
+            framePtr->storeArray(dst, directDeclarator->getId(), exprList, type, directDeclarator->getSize(), true);
             
         }
     }
@@ -175,41 +175,56 @@ void InitDeclarator::printGMips(std::ostream& dst, Type type)const{
             dst << "\t.data" << std::endl;
             dst << "\t.align 2" << std::endl;
             
-            //BILL::We are storing characters in 4 bytes instead of 1 (n.b. might cause problems)
             if(type == Type::INT_ADDR || type == Type::CHAR_ADDR || type == Type::FLOAT_ADDR){
-                dst << "\t.size\t" << id << ", " << exprList->size()*4<< std::endl;
+                int mySize;
+                int objSize;
+                
+                if(directDeclarator->getSize() > exprList->size()){
+                    mySize = directDeclarator->getSize();
+                    
+                }else{
+                    mySize = exprList->size();
+                    
+                }
+                
+                if(type == Type::INT_ADDR || type == Type::FLOAT_ADDR){
+                    objSize = 4;
+                    
+                }else{
+                    objSize = 1;
+                    
+                }
+                
+                dst << "\t.size\t" << id << ", " << mySize*objSize << std::endl;
                 dst << id << ":" << std::endl;
+                
+                if(mySize > exprList->size()){
+                    dst << "\t.space\t" << objSize*(mySize-exprList->size()) << std::endl;
+                }
                     
                 for(int i(0); i < exprList->size(); ++i){
                     Type myType = exprList->at(i)->getType(NULL);
                     
-                    if(myType == Type::INT || myType == Type::DOUBLE){
-                        if(type == Type::INT_ADDR){
-                            //This will automatically truncate
-                            int constant = exprList->at(i)->eval();
-                            dst << "\t.word\t" << constant << std::endl;   
-                        
-                        }else if(type == Type::CHAR_ADDR){
-                            char constant = exprList->at(i)->eval();
-                            dst << "\t.word\t" << (int)constant << std::endl;
-                               
-                        }else if(type == Type::FLOAT_ADDR){
-                            float constant = exprList->at(i)->eval();
-                            dst << "\t.float\t" << constant << std::endl;
-                        
-                        }else if(type == Type::DOUBLE_ADDR){
-                            double constant = exprList->at(i)->eval();
-                            dst << "\t.double\t" << constant << std::endl;
-                            
-                        }else{assert(0);}
-                        
-                    }else if(myType == Type::CHAR){
-                        //Don't care about what type of array we have
-                        std::string id = exprList->at(i)->getId();
-                        int ascii = id[1];
-                        dst << "\t.word\t" << ascii << std::endl;
+                    if(type == Type::INT_ADDR){
+                        //This will automatically truncate
+                        int constant = exprList->at(i)->eval();
+                        dst << "\t.word\t" << constant << std::endl;   
                     
-                    }else{assert(0);}   
+                    }else if(type == Type::CHAR_ADDR){
+                        char constant = exprList->at(i)->eval();
+                        dst << "\t.byte\t" << (int)constant << std::endl;
+                           
+                    }else if(type == Type::FLOAT_ADDR){
+                        float constant = exprList->at(i)->eval();
+                        dst << "\t.float\t" << constant << std::endl;
+                    
+                    }else if(type == Type::DOUBLE_ADDR){
+                        double constant = exprList->at(i)->eval();
+                        dst << "\t.double\t" << constant << std::endl;
+                        
+                    }else{assert(0);}
+                        
+                      
                 }
                 
             }else{assert(0);}

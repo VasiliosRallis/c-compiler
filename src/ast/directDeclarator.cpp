@@ -86,8 +86,10 @@ void DirectDeclarator::printGMips(std::ostream& dst, Type type)const{
             function_decl.insert({*id, v});
         
         }else if(*s1 == "["){
-            //Here we are storing char in a 4 bytes (this isn't how gcc does it)
-            if(type == Type::CHAR_ADDR || type == Type::INT_ADDR || type == Type::FLOAT_ADDR){
+            if(type == Type::CHAR_ADDR){
+                dst << "\t.comm\t" << *id << "," << expr->eval() << ",4" << std::endl;
+                
+            }else if(type == Type::CHAR_ADDR || type == Type::INT_ADDR || type == Type::FLOAT_ADDR){
                 dst << "\t.comm\t" << *id << "," << 4*expr->eval() << ",4" << std::endl;
                 
             }else if(type == Type::DOUBLE_ADDR){
@@ -132,4 +134,17 @@ void DirectDeclarator::insertFTypes(const Type returnType)const{
         }else{assert(0);} //Should never happen
         
     }else{assert(0);} //Should never happen
+}
+
+int DirectDeclarator::getSize()const{
+    if(s1 != NULL){
+        if(*s1 == "["){
+            if(expr!= NULL){
+                return expr->eval();      
+            
+            }else{return 0;}
+            
+        }else{assert(0);}
+        
+    }else{assert(0);}
 }

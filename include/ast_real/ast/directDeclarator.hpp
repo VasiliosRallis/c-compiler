@@ -38,6 +38,8 @@ public:
     bool isPointer()const override;
     
     void insertFTypes(const Type returnType)const;
+    
+    int getSize()const;
 };
 
 #endif
