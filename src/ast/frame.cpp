@@ -79,7 +79,13 @@ void Frame::load(std::ostream& dst, const std::string reg, const std::string var
                     
                 }else{
                     dst << "lui " << reg << ",%hi(" << varName << ")" << std::endl;
-                    dst << "lw " << reg <<  ",%lo(" << varName << ")(" << reg << ")" << std::endl;
+                    //if(isAddr(g_mips_var.at(varName))){
+                      //  dst << "addiu " << reg << ", " << reg << ",%lo(" << varName << ")" << std::endl;
+                    //    
+                    //}else{
+                        dst << "lw " << reg <<  ",%lo(" << varName << ")(" << reg << ")" << std::endl;
+                        
+                    //}
                 }
                 
             }else{
@@ -438,7 +444,7 @@ void Frame::loadArrayElement(std::ostream& dst, const std::string& reg, const st
         }catch(const std::out_of_range& e){
             //Array is global
             dst << "lui $t1, %hi(" << arrayName << ")" << std::endl;
-            dst << "addiu $t1, $t1, %lo(" << arrayName << ")" << std::endl;
+            dst << "lw $t1, %lo(" << arrayName << ")($t1)" << std::endl;
             dst << "addu $t1, $t1, $t0" << std::endl;
             if(elementType == Type::INT || elementType == Type::FLOAT){
                 dst << "lw " << reg << ", 0($t1)" << std::endl;
@@ -494,7 +500,7 @@ void Frame::storeArrayElement(std::ostream& dst, const std::string& reg, const P
     else{
         //Find the address of the array
         dst << "lui $t1, %hi(" << arrayName << ")" << std::endl;
-        dst << "addiu $t1, $t1, %lo(" << arrayName << ")" << std::endl;
+        dst << "lw $t1, %lo(" << arrayName << ")($t1)" << std::endl;
         
         //Find the address of the element
         dst << "addu $t0, $t1, $t0" << std::endl;

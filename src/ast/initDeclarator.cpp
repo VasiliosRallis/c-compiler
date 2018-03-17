@@ -171,9 +171,11 @@ void InitDeclarator::printGMips(std::ostream& dst, Type type)const{
             assert(0);
             
         }else{
-            dst << "\t.globl\t" << id << std::endl;
+            std::string p_to_array = makeName("pointer");
+            dst << "\t.globl\t" << p_to_array<< std::endl;
             dst << "\t.data" << std::endl;
             dst << "\t.align 2" << std::endl;
+            
             
             if(type == Type::INT_ADDR || type == Type::CHAR_ADDR || type == Type::FLOAT_ADDR){
                 int mySize;
@@ -195,15 +197,14 @@ void InitDeclarator::printGMips(std::ostream& dst, Type type)const{
                     
                 }
                 
-                dst << "\t.size\t" << id << ", " << mySize*objSize << std::endl;
-                dst << id << ":" << std::endl;
+                dst << "\t.size\t" << p_to_array << ", " << mySize*objSize << std::endl;
+                dst << p_to_array << ":" << std::endl;
                 
                 if(mySize > exprList->size()){
                     dst << "\t.space\t" << objSize*(mySize-exprList->size()) << std::endl;
                 }
                     
                 for(int i(0); i < exprList->size(); ++i){
-                    Type myType = exprList->at(i)->getType(NULL);
                     
                     if(type == Type::INT_ADDR){
                         //This will automatically truncate
@@ -227,6 +228,13 @@ void InitDeclarator::printGMips(std::ostream& dst, Type type)const{
                       
                 }
                 
+                dst << "\t.globl\t" << id << std::endl;
+                dst << "\t.section	.data.rel.local,\"aw\",@progbits" << std::endl;
+                dst << "\t.align 2" << std::endl;
+                dst << "\t.size\t" << id << ", 4" << std::endl;
+                dst << id << ":" << std::endl;
+                dst << "\t.word\t" << p_to_array << std::endl;
+                    
             }else{assert(0);}
         }
     }

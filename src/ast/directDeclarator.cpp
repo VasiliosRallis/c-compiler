@@ -86,16 +86,25 @@ void DirectDeclarator::printGMips(std::ostream& dst, Type type)const{
             function_decl.insert({*id, v});
         
         }else if(*s1 == "["){
+            std::string p_to_array = makeName("pointer");
+            
             if(type == Type::CHAR_ADDR){
-                dst << "\t.comm\t" << *id << "," << expr->eval() << ",4" << std::endl;
+                dst << "\t.comm\t" << p_to_array << "," << expr->eval() << ",4" << std::endl;
                 
             }else if(type == Type::CHAR_ADDR || type == Type::INT_ADDR || type == Type::FLOAT_ADDR){
-                dst << "\t.comm\t" << *id << "," << 4*expr->eval() << ",4" << std::endl;
+                dst << "\t.comm\t" << p_to_array << "," << 4*expr->eval() << ",4" << std::endl;
                 
             }else if(type == Type::DOUBLE_ADDR){
-                dst << "\t.comm\t" << *id << "," << 8*expr->eval() << ",8" << std::endl;
+                dst << "\t.comm\t" << p_to_array << "," << 8*expr->eval() << ",8" << std::endl;
                 
             }else{assert(0);}
+            
+            dst << "\t.globl\t" << *id << std::endl;
+            dst << "\t.section	.data.rel.local,\"aw\",@progbits" << std::endl;
+            dst << "\t.align 2" << std::endl;
+            dst << "\t.size\t" << *id << ", 4" << std::endl;
+            dst << *id << ":" << std::endl;
+            dst << "\t.word\t" << p_to_array << std::endl;
             
             g_mips_var.insert({*id, type});
             
