@@ -57,6 +57,7 @@ public:
     virtual double eval()const;
     virtual bool isPointer()const;
     virtual bool isDereference()const;
+    virtual std::string getString()const;
 };
 
 

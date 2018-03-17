@@ -143,6 +143,18 @@ void InitDeclarator::printGMips(std::ostream& dst, Type type)const{
             if(isAddr(myType)){
                 dst << "\t.word\t" << asgnExpr->getId() << std::endl;
                 
+            }else if(myType == Type::STRING){
+                std::string label = makeName("label");
+                dst << "\t.word\t" << label << std::endl;
+                
+                dst << "\t.rdata\t" << std::endl;
+                dst << "\t.align 2" << std::endl;
+                dst << label << ":" << std::endl;
+                std::string myString = asgnExpr->getString();
+                myString.erase(myString.begin());
+                myString.erase(myString.end() - 1);
+                dst << "\t.ascii\t\"" << myString << "\\000\"" << std::endl;
+                
             }else{assert(0);}
             
         }else if(type == Type::FLOAT){

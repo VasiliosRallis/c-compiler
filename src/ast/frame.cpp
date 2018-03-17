@@ -645,3 +645,37 @@ void Frame::storeEmptyArray(std::ostream& dst, const std::string& arrayName, con
     freeWords = 0;
         
 }
+
+void Frame::makeString(std::ostream& dst, const std::string& destReg, std::string& string){
+    dst << "###### MAKING STRING ######" << std::endl;
+    
+    //Remove the double quotes
+    string.erase(string.begin());
+    string.erase(string.end()-1);
+    
+    dst << "###### ALLOCATING SPACE FOR STRING ######" << std::endl;
+    while(freeWords < string.size()) addWords(dst, scopeMap.back().size());
+    
+    dst << "###### CALCULATING ADDRESS OF STRING ######" << std::endl;
+    //The last element in the stack is going to be the pointer to the string
+    dst << "addi $t0, $sp, 4" << std::endl;
+    dst << "sw $t0, 0($sp)" << std::endl;
+    
+    dst << "###### STORING CHARACTERS ######" << std::endl;
+    int byteIndex = 0;
+    for(int i(0); i < string.size(); ++i){   
+        dst << "li $t0, " << (int)string.at(i) << std::endl;
+        dst << "sb $t0, " << byteIndex + 4 << "($sp)" << std::endl;
+        ++byteIndex;
+    }
+    
+    //Store the null
+    dst << "sb $zero, " << byteIndex + 4 << "($sp)" << std::endl;
+    
+    //Reset the stack
+    nextFreeAddr -= ((freeWords - 1) * 4) + 4;
+    freeWords = 0;
+    
+    //Load the pointer to the string in destReg
+    dst << "lw " << destReg << ", 0($sp)" << std::endl;
+}

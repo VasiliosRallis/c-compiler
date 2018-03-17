@@ -40,6 +40,7 @@ public:
 	        Type myType = expr->getType(framePtr);
 	        
 	        if(type == Type::ANYTHING) type = expr->getType(framePtr);
+	        if(type == Type::STRING) type = Type::CHAR_ADDR;
 	        
 	        if(type == Type::INT){
                 if(expr->isIdentifier()){
@@ -73,8 +74,12 @@ public:
 	                dst << "li $t0, " << ascii << std::endl;
 	                framePtr->store(dst, "$t0", destName, Type::CHAR);
 	            
-	            }else{assert(0);}
-
+                }else if(myType == Type::STRING){
+                    framePtr->makeString(dst, "$t0", id);
+                    framePtr->store(dst, "$t0", destName, type);
+                
+                }else{assert(0);}
+	                
 	        }else if(type == Type::CHAR){
 	            if(expr->isIdentifier()){
 	                if(myType == Type::CHAR){
@@ -122,7 +127,11 @@ public:
 	                    dst << "li $t0, " << ascii << std::endl;
 	                    framePtr->store(dst, "$t0", destName, type);
 	                    
-	                }else{assert(0);}   
+	                }else if(myType == Type::STRING){
+	                    framePtr->makeString(dst, "$t0", id);
+	                    framePtr->store(dst, "$t0", destName, type);
+	                
+	                }else{assert(0);}
 	            }            
 	        }else if(type == Type::DOUBLE){{assert(0);}
 	                
@@ -227,6 +236,10 @@ public:
     
     bool isIdentifier()const override{
         return expr->isIdentifier();
+    }
+    
+    std::string getString()const override{
+        return expr->getString();
     }
     
 };

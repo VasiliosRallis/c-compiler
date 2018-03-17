@@ -111,7 +111,7 @@ FLOAT           [0-9]*\.[0-9]+
 
 S_CHAR          [^\\"\n]
 CHAR_SEQ        {CHAR}+
-STR_LIT         "{CHAR_SEQ}"|""
+STR_LIT         \"{CHAR_SEQ}\"|\"\"
 
 CHAR_CONSTANT   \'{CHAR}\'
 CHAR            [^\'\n]|{CHAR_ESCAPE}

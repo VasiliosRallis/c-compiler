@@ -31,6 +31,8 @@ public:
     virtual bool isIdentifier()const override;
     
     double eval()const override;
+    
+    std::string getString()const override;
 };
 
 #endif

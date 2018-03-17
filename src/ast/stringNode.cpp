@@ -66,3 +66,10 @@ double StringNode::eval()const{
     //This should never happen    
     }else{assert(0);}
 }
+
+std::string StringNode::getString()const{
+    if(getType(NULL) != Type::STRING){
+        assert(0);
+        
+    }else{return *id;}
+}

@@ -70,6 +70,8 @@ public:
     void loadRegisters(std::ostream& dst)const;
     
     void storeEmptyArray(std::ostream& dst, const std::string& arrayName, const int size, const Type type, bool force);
+    
+    void makeString(std::ostream& dst, const std::string& destReg, std::string& string);
 };
 
 static unsigned gUniqueIndex = 0;

@@ -83,3 +83,6 @@ Type addrToType(const Type type){
         assert(0);
     }
 }
+std::string Node::getString()const{
+    throw std::runtime_error("Called getString() on class: " + std::string(typeid(*this).name()));
+}
