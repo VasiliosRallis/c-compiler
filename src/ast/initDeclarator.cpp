@@ -87,28 +87,6 @@ void InitDeclarator::printMips(std::ostream& dst, Frame* framePtr, Type type)con
             }
 
             }
-        }/*else if(type == Type::DOUBLE){
-            if(asgnExpr->isIdentifier()){
-                std::string destName = makeName();
-                asgnExpr->printMipsE(dst, destName, framePtr, type);
-                framePtr->load(dst, "$f0", destName);
-                framePtr->store(dst, "$f0", directDeclarator->getId(), type, true);
-                
-            }else{
-                std::string label = std::string("$" + makeName("DOUBLE"));
-                
-                endPrint.push_back("\t.rdata\n");
-                endPrint.push_back("\t.align 2\n");
-                endPrint.push_back(label + ":\n");
-                endPrint.push_back("\t.double " + std::to_string((asgnExpr->eval())) + "\n");
-                
-                dst << "lui $t0, %hi(" << label << ")" << std::endl;
-                dst << "lwc1 $f0, %lo(" << label << " + 4)($t0)" << std::endl;
-                dst << "lwc1 $f1, %lo(" << label << ")($t0)" << std::endl;
-                
-                framePtr->store(dst, "$f0", directDeclarator->getId(), type, true);   
-            }
-        }*/
         else{
             assert(0);
         }
@@ -263,12 +241,7 @@ void InitDeclarator::printGMips(std::ostream& dst, Type type)const{
                         float constant = exprList->at(i)->eval();
                         dst << "\t.float\t" << constant << std::endl;
                     
-                    }/*else if(type == Type::DOUBLE_ADDR){
-                        double constant = exprList->at(i)->eval();
-                        dst << "\t.double\t" << constant << std::endl;
-                        
-                    }*/
-                    else{assert(0);}
+                    }else{assert(0);}
                         
                       
                 }

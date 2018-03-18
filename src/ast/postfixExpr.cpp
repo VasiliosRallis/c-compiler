@@ -71,9 +71,8 @@ void PostfixExpr::printMipsE(std::ostream& dst, const std::string& destName, Fra
             
         }else if(function_decl.find(id) != function_decl.end()){
             rType = (function_decl.at(id)).at(0);
-        
-        //Should never happen    
-        }else{assert(0);}
+           
+        }else{assert(0);} //Should never happen
         
         if(rType == Type::INT || isAddr(rType) || rType == Type::CHAR){
             framePtr->store(dst, "$v0", destName, type);
@@ -82,29 +81,39 @@ void PostfixExpr::printMipsE(std::ostream& dst, const std::string& destName, Fra
             framePtr->store(dst, "$f0", destName, type);
         
         }else if(rType == Type::VOID){
-            //Do nothing
-        //Haven't implemented double yet    
-        }else{assert(0);}
-    }
-    if(*oper1 == "["){
+            //Store nothing
+            
+        }else{assert(0);} //Should never happen
+    
+    }else if(*oper1 == "["){
         //Trying to access element of an array;
         framePtr->loadArrayElement(dst, "$t0", primaryExpr->getId(), argumentExprList->at(0));
         Type elementType = addrToType(primaryExpr->getType(framePtr));
         if(type == Type::ANYTHING) type = elementType;
         
-        if(type == Type::INT || isAddr(type)){
-            if(elementType == Type::INT || elementType == Type::CHAR){
+        if(type == Type::INT || isAddr(type) || type == Type::CHAR){
+            if(elementType == Type::INT || elementType == Type::CHAR || isAddr(elementType)){
                 //Do nothing
                 
             }else if(elementType == Type::FLOAT){
                 dst << "mtc1 $t0, $f0" << std::endl;
                 TypeConv::convert(dst, Type::INT, Type::FLOAT, "$t0", "$f0");
                 
-            }else{assert(0);} //Haven't implemented it yet
+            }else{assert(0);} //Should never happen (Can never be string)
+            
+        }else if(type == Type::FLOAT){
+            if(elementType == Type::INT || elementType == Type::CHAR || isAddr(elementType)){
+                dst << "mtc1 $t0, $f0" << std::endl;
+                TypeConv::convert(dst, Type::FLOAT, Type::INT, "$t0", "$f0");
+                
+            }else if(elementType == Type::FLOAT){
+                //Do nothing
+                
+            }else{assert(0);} //Should never happen (Can never be string)
             
         }else{assert(0);} //Haven't implemented it yet
         
-        framePtr->store(dst, "$t0", destName, addrToType(primaryExpr->getType(framePtr)));
+        framePtr->store(dst, "$t0", destName, type);
     }
     else if(*oper1 == "++"){
             Type destType = primaryExpr->getType(framePtr);

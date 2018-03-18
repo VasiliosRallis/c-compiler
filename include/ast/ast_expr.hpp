@@ -74,7 +74,9 @@ public:
 	                    framePtr->store(dst, "$t0", destName, Type::CHAR);
 	                    
 	                }else if(myType == Type::FLOAT){
-	                    //TODO figure out what TODO
+	                    framePtr->load(dst, "$f0", id);
+	                    TypeConv::convert(dst, Type::INT, Type::FLOAT, "$t0", "$f0");
+	                    framePtr->store(dst, "$t0", destName, Type::CHAR);
 	                    
 	                }else{assert(0);} //Should never happen (nothing should be stored as a string)
 	                
@@ -84,10 +86,12 @@ public:
 	                    framePtr->store(dst, "$t0", destName, Type::CHAR);
 	                    
 	                }else if(myType == Type::FLOAT){
-	                    int c = (int)this->eval();
-                        if(c > 127) c = 127;
-                        if(c < -128) c = -128;
-                        dst << "li $t0, " << (int)c << std::endl;
+	                    dst << "li $t0, " << (int)this->eval() << std::endl;
+	                    
+	                    //int c = (int)this->eval();
+                        //if(c > 127) c = 127;
+                        //if(c < -128) c = -128;
+                        //dst << "li $t0, " << (int)c << std::endl;
                         framePtr->store(dst, "$t0", destName, Type::CHAR);
 	                
 	                }else if(myType == Type::STRING){
@@ -1220,7 +1224,7 @@ public:
                     dst << "lw $t0, 0($t0)" << std::endl;
                     dst << "sw $t1, 0($t0)" << std::endl;
                 }else{
-                    framePtr->store(dst, "$t2", operand1->getId(), Type::INT);
+                    framePtr->store(dst, "$t2", operand1->getId(), type);
                 }
             }
 
