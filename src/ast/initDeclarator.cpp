@@ -48,45 +48,46 @@ void InitDeclarator::printMips(std::ostream& dst, Frame* framePtr, Type type)con
             //We have to check if the Asgn Expr is a constant and only perform this if its constant
             //Generate label identifier
             if(!(asgnExpr->isIdentifier())){
-            std::string label = std::string("$" + makeName("FLOAT"));
-            
-            //Add the code that needs to be printed at the end of
-            //the assembly
-            endPrint.push_back("\t.rdata\n");
-            endPrint.push_back("\t.align 2\n");
-            endPrint.push_back(label + ":\n");
-            
-            //This might not word for some inputs (non deterministic)
-            endPrint.push_back("\t.float " + std::to_string((float)asgnExpr->eval()) + "\n");
-            
-            //Load the containts of the rdata into a register
-            dst << "lui $t0, %hi(" << label << ")" << std::endl;
-            dst << "lwc1 $f0, %lo(" << label << ")($t0)" << std::endl;
-            
-            //Store the variable in the frame
-            framePtr->store(dst, "$f0", directDeclarator->getId(), type, true);
+                std::string label = std::string("$" + makeName("FLOAT"));
+                
+                //Add the code that needs to be printed at the end of
+                //the assembly
+                endPrint.push_back("\t.rdata\n");
+                endPrint.push_back("\t.align 2\n");
+                endPrint.push_back(label + ":\n");
+                
+                //This might not word for some inputs (non deterministic)
+                endPrint.push_back("\t.float " + std::to_string((float)asgnExpr->eval()) + "\n");
+                
+                //Load the containts of the rdata into a register
+                dst << "lui $t0, %hi(" << label << ")" << std::endl;
+                dst << "lwc1 $f0, %lo(" << label << ")($t0)" << std::endl;
+                
+                //Store the variable in the frame
+                framePtr->store(dst, "$f0", directDeclarator->getId(), type, true);
             }
             else{
-            //EVAL EXPR AND store into LHS Declarator
-            std::string destName = makeName();
-            if(myType == Type::INT){
-                 asgnExpr->printMipsE(dst, destName, framePtr, myType);
-                //Temporary store the identifier in $t0
-                framePtr->load(dst, "$t0", destName);
-                TypeConv::convert(dst, Type::FLOAT, Type::INT, "$f0", "$t0");
-                //Store it in the frame
-                framePtr->store(dst, "$f0", directDeclarator->getId(), type, true);            
-            }
-            else{           
-                //Ask the expression to evaluate itself and store its value in the frame, with destName as it's identifier
-                asgnExpr->printMipsE(dst, destName, framePtr, myType);
-                //Temporary store the identifier in $f0
-                framePtr->load(dst, "$f0", destName);
-                //Store it in the frame
-                framePtr->store(dst, "$f0", directDeclarator->getId(), type, true);       
-            }
+                //EVAL EXPR AND store into LHS Declarator
+                std::string destName = makeName();
+                if(myType == Type::INT){
+                     asgnExpr->printMipsE(dst, destName, framePtr, myType);
+                    //Temporary store the identifier in $t0
+                    framePtr->load(dst, "$t0", destName);
+                    TypeConv::convert(dst, Type::FLOAT, Type::INT, "$f0", "$t0");
+                    //Store it in the frame
+                    framePtr->store(dst, "$f0", directDeclarator->getId(), type, true);            
+                }
+                else{           
+                    //Ask the expression to evaluate itself and store its value in the frame, with destName as it's identifier
+                    asgnExpr->printMipsE(dst, destName, framePtr, myType);
+                    //Temporary store the identifier in $f0
+                    framePtr->load(dst, "$f0", destName);
+                    //Store it in the frame
+                    framePtr->store(dst, "$f0", directDeclarator->getId(), type, true);       
+                }
 
             }
+        }
         else{
             assert(0);
         }
