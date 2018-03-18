@@ -138,7 +138,7 @@ public:
         dst<<"bne $0, $t0, $" << START << std::endl;
         dst << "nop" << std::endl;
    
-        dst << "###### END OF FOR LOOP ######";
+        dst << "###### END OF FOR LOOP ######\n";
         framePtr->deleteScope();
     }   
  
@@ -179,7 +179,7 @@ public:
         dst<<"bne $0, $t0, $" << START << std::endl;
         dst << "nop" << std::endl;
         
-        dst << "###### END OF WHILE LOOP ######";
+        dst << "###### END OF WHILE LOOP ######\n";
         framePtr->deleteScope();
     }  
     
@@ -228,12 +228,23 @@ public:
         statement->printMips(dst, framePtr);
         
         dst << "$" << COND << ":" << std::endl;
-        expr->printMipsE(dst, condition, framePtr, Type::INT);
-        framePtr->load(dst, "$t0", condition);
-        dst<<"bne $0, $t0, $" << START << std::endl;
-        dst << "nop" << std::endl;
+        Type destType = expr->getType(framePtr);
+        expr->printMipsE(dst, condition, framePtr, destType);
+        if(destType == Type::INT){
+            framePtr->load(dst, "$t0", condition);
+            dst<<"bne $0, $t0, $" << START << std::endl;
+            dst << "nop" << std::endl;
+        }
+        else if(destType ==Type::FLOAT){
+            framePtr->load(dst, "$f0", condition);
+            TypeConv::convert(dst, Type::INT, Type::FLOAT, "$t0", "$f0");
+            dst<<"bne $0, $t0, $" << START << std::endl;
+            dst << "nop" << std::endl;
         
-        dst << "###### END OF WHILE LOOP ######";
+        }
+        else {assert(0);}
+        
+        dst << "###### END OF WHILE LOOP ######\n";
         framePtr->deleteScope();
     }    
 
