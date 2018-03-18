@@ -115,6 +115,7 @@ public:
     
     virtual void printMips(std::ostream& dst, Frame* framePtr, Type type = Type::ANYTHING)const override{
         framePtr->newScope();
+        
         dst << "###### START OF FOR LOOP ######\n";
         
         std::string COND = makeName("COND");
@@ -129,12 +130,15 @@ public:
         dst << "$" << START << ":" << std::endl;
         state3->printMips(dst, framePtr);
         
-        if(expr != NULL) expr->printMipsE(dst, exprName, framePtr, Type::INT);
+        if(expr != NULL) {
+            Type destType = expr->getType(framePtr);
+            expr->printMipsE(dst, exprName, framePtr, destType);
+        }
         
         dst << "$" << COND << ":" << std::endl;
-        state2->printMipsE(dst, condition, framePtr, Type::INT);
+        state2->printMipsE(dst, condition, framePtr, Type::INT); //destType
         framePtr->load(dst, "$t0", condition);
-
+        
         dst<<"bne $0, $t0, $" << START << std::endl;
         dst << "nop" << std::endl;
    
@@ -228,21 +232,10 @@ public:
         statement->printMips(dst, framePtr);
         
         dst << "$" << COND << ":" << std::endl;
-        Type destType = expr->getType(framePtr);
-        expr->printMipsE(dst, condition, framePtr, destType);
-        if(destType == Type::INT){
-            framePtr->load(dst, "$t0", condition);
-            dst<<"bne $0, $t0, $" << START << std::endl;
-            dst << "nop" << std::endl;
-        }
-        else if(destType ==Type::FLOAT){
-            framePtr->load(dst, "$f0", condition);
-            TypeConv::convert(dst, Type::INT, Type::FLOAT, "$t0", "$f0");
-            dst<<"bne $0, $t0, $" << START << std::endl;
-            dst << "nop" << std::endl;
-        
-        }
-        else {assert(0);}
+        expr->printMipsE(dst, condition, framePtr, Type::INT);
+        framePtr->load(dst, "$t0", condition);
+        dst<<"bne $0, $t0, $" << START << std::endl;
+        dst << "nop" << std::endl;
         
         dst << "###### END OF WHILE LOOP ######\n";
         framePtr->deleteScope();

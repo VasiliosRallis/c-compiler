@@ -138,19 +138,25 @@ void PostfixExpr::printMipsE(std::ostream& dst, const std::string& destName, Fra
             else{
                 primaryExpr->printMipsE(dst,destName,framePtr, destType);
 	            framePtr->load(dst, "$f0", destName);
+                
                 if(type == Type::INT){
                     TypeConv::convert(dst, Type::INT, Type::FLOAT, "$t0", "$f0");
 	                framePtr->store(dst, "$t0", destName, type);
-                    dst << "addi $t0, $t0, 1" << std::endl;
-                    TypeConv::convert(dst, Type::FLOAT, Type::INT, "$f0", "$t0");
+                    
+                    dst << "li $t1, 1" << std::endl;
+                    dst << "mtc1 $t1, $f4" << std::endl;
+                    dst << "cvt.s.w $f4, $f4" << std::endl; //   $f4 has 1 in fp representation.
+                    dst << "add.s $f0, $f0, $f4" << std::endl;     
                     std::string id2 = primaryExpr->getId();     // Wondering if there are problems with this, "5++;" Not valid in C89
                     framePtr->store(dst, "$f0", id2, destType);
                 }
                 else{
                     framePtr->store(dst, "$f0", destName, type);
-                    TypeConv::convert(dst, Type::INT, Type::FLOAT, "$t0", "$f0");
-                    dst << "addi $t0, $t0, 1" << std::endl;
-                    TypeConv::convert(dst, Type::FLOAT, Type::INT, "$f0", "$t0");
+
+                    dst << "li $t1, 1" << std::endl;
+                    dst << "mtc1 $t1, $f4" << std::endl;
+                    dst << "cvt.s.w $f4, $f4" << std::endl; //   $f4 has 1 in fp representation.
+                    dst << "add.s $f0, $f0, $f4" << std::endl;                  
                     std::string id2 = primaryExpr->getId();     // Wondering if there are problems with this, "5++;" Not valid in C89
                     framePtr->store(dst, "$f0", id2, destType);          
                 }        
@@ -182,16 +188,21 @@ void PostfixExpr::printMipsE(std::ostream& dst, const std::string& destName, Fra
             if(type == Type::INT){
                 TypeConv::convert(dst, Type::INT, Type::FLOAT, "$t0", "$f0");
                 framePtr->store(dst, "$t0", destName, type);
-                dst << "addi $t0, $t0, -1" << std::endl;
-                TypeConv::convert(dst, Type::FLOAT, Type::INT, "$f0", "$t0");
-                std::string id2 = primaryExpr->getId();     // Wondering if there are problems with this, "5--;" Not valid in C89
-                framePtr->store(dst, "$f0", id2, destType);
+                
+                dst << "li $t1, -1" << std::endl;
+                dst << "mtc1 $t1, $f4" << std::endl;
+                dst << "cvt.s.w $f4, $f4" << std::endl; //   $f4 has -1 in fp representation.
+                dst << "add.s $f0, $f0, $f4" << std::endl;     
+                std::string id2 = primaryExpr->getId();     // Wondering if there are problems with this, "5++;" Not valid in C89
+                framePtr->store(dst, "$f0", id2, destType);                    
             }
             else{
                 framePtr->store(dst, "$f0", destName, type);
-                TypeConv::convert(dst, Type::INT, Type::FLOAT, "$t0", "$f0");
-                dst << "addi $t0, $t0, -1" << std::endl;
-                TypeConv::convert(dst, Type::FLOAT, Type::INT, "$f0", "$t0");
+                              
+                dst << "li $t1, -1" << std::endl;
+                dst << "mtc1 $t1, $f4" << std::endl;
+                dst << "cvt.s.w $f4, $f4" << std::endl; //   $f4 has -1 in fp representation.
+                dst << "add.s $f0, $f0, $f4" << std::endl;                     
                 std::string id2 = primaryExpr->getId();     // Wondering if there are problems with this, "5--;" Not valid in C89
                 framePtr->store(dst, "$f0", id2, destType);          
             }        
