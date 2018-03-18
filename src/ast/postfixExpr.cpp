@@ -52,6 +52,15 @@ void PostfixExpr::printMipsE(std::ostream& dst, const std::string& destName, Fra
         framePtr->saveArguments(dst, id, argumentExprList);
         
         if(function_decl.find(id) != function_decl.end()){
+            
+            //Uncomment the following lines for the $gp (not sure how it works)
+            /*
+            dst << "nop" << std::endl;
+            dst << "lui	$28,%hi(__gnu_local_gp)" <<std::endl;
+	        dst << "addiu	$28,$28,%lo(__gnu_local_gp)" << std::endl;
+	        dst << ".cprestore	16" << std::endl;
+	        dst << "nop" << std::endl;
+	        */
             dst << "lw $t0, %call16(" << id << ")($28)" << std::endl;
             dst << "jalr $t0" << std::endl;
             dst << "nop" << std::endl;
