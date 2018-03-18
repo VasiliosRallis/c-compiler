@@ -252,6 +252,7 @@ public:
     
     virtual void printMipsE(std::ostream& dst, const std::string& destName, Frame* framePtr, Type type)const override{
         Type destType = postfixExpr->getType(framePtr);
+        if(type == Type::ANYTHING) type = destType;
         
         if(*oper == "-"){
             if(destType == Type::INT){            
