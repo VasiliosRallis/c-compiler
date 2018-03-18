@@ -255,12 +255,12 @@ public:
         if(type == Type::ANYTHING) type = destType;
         
         if(*oper == "-"){
-            if(destType == Type::INT){            
+            if(destType == Type::INT || destType == Type::CHAR || isAddr(destType)){            
                 postfixExpr->printMipsE(dst, destName, framePtr, destType);
 	            framePtr->load(dst, "$t0", destName);
                 dst << "sub $t0, $0, $t0" << std::endl;     //Negate variable value stored in $t0
 
-                if(type == Type::INT){ // Thing above asked for an int we have to convert our value to an int and store into stack 
+                if(type == Type::INT || type == Type::CHAR || isAddr(type)){ // Thing above asked for an int we have to convert our value to an int and store into stack 
                     framePtr->store(dst, "$t0", destName, type);
                 }
                 else{ // Thing above asked for Float we return our value as a float
@@ -276,7 +276,7 @@ public:
                 dst << "xor $t0, $t0, $t1" << std::endl;             
                 dst << "mtc1 $t0, $f0" << std::endl;
 
-                if(type == Type ::INT){ // Thing above asked for an int we have to convert our value to an int and store into stack 
+                if(type == Type::INT || type == Type::CHAR || isAddr(type)){ // Thing above asked for an int we have to convert our value to an int and store into stack 
                     TypeConv::convert(dst, Type::INT, Type::FLOAT, "$t0", "$f0");
                     framePtr->store(dst, "$t0", destName, type);
                 }
@@ -286,10 +286,10 @@ public:
             }
         }
         else if(*oper == "+"){
-            if(destType == Type::INT){                
+            if(destType == Type::INT || destType == Type::CHAR || isAddr(destType)){                
                 postfixExpr->printMipsE(dst, destName, framePtr, destType);
              
-                if(type == Type ::INT){ // Thing above asked for an int we have to convert our value to an int and store into stack 
+                if(type == Type::INT || type == Type::CHAR || isAddr(type)){ // Thing above asked for an int we have to convert our value to an int and store into stack 
                     framePtr->store(dst, "$t0", destName, type);
                 }
                 else{ // Thing above asked for Float we return our value as a float
@@ -301,7 +301,7 @@ public:
                 postfixExpr->printMipsE(dst, destName, framePtr, destType);
                 framePtr->load(dst, "$f0", destName);
 
-                if(type == Type ::INT){ // Thing above asked for an int we have to convert our value to an int and store into stack
+                if(type == Type::INT || type == Type::CHAR || isAddr(type)){ // Thing above asked for an int we have to convert our value to an int and store into stack
                     TypeConv::convert(dst, Type::INT, Type::FLOAT, "$t0", "$f0");
                     framePtr->store(dst, "$t0", destName, type);
                 }
@@ -311,13 +311,13 @@ public:
             }
         }
         else if (*oper == "!"){
-            if(destType == Type::INT){
+            if(destType == Type::INT || destType == Type::CHAR || isAddr(destType)){
                 postfixExpr->printMipsE(dst, destName, framePtr, destType);
                 framePtr->load(dst, "$t0", destName);                    	
                 dst << "sltu $t0, $t0, 1" << std::endl;
 	            dst << "andi $t0, $t0, 0x00ff" << std::endl;
                 
-                if(type == Type ::INT){ // Thing above asked for an int we have to convert our value to an int and store into stack 
+                if(type == Type::INT || type == Type::CHAR || isAddr(type)){ // Thing above asked for an int we have to convert our value to an int and store into stack 
                     framePtr->store(dst, "$t0", destName, type);
                 }
                 else{ // Thing above asked for Float we return our value as a float
@@ -354,7 +354,7 @@ public:
                     
                 dst << branchlabel2 << ":" << std::endl;
             
-                if(type == Type ::INT){ // Thing above asked for an int we have to convert our value to an int and store into stack
+                if(type == Type::INT || type == Type::CHAR || isAddr(type)){ // Thing above asked for an int we have to convert our value to an int and store into stack
                     TypeConv::convert(dst, Type::INT, Type::FLOAT, "$t0", "$f0");
                     framePtr->store(dst, "$t0", destName, type);
                 }
@@ -364,12 +364,12 @@ public:
             }
         }
         else if(*oper == "~"){
-            if(destType == Type::INT){
+            if(destType == Type::INT || destType == Type::CHAR || isAddr(destType)){
                 postfixExpr->printMipsE(dst,destName,framePtr, destType);
                 framePtr->load(dst, "$t0", destName);                    	
                 dst << "nor  $t0, $t0, $0" << std::endl;
 
-                if(type == Type::INT){ // Thing above asked for an int we have to convert our value to an int and store into stack 
+                if(type == Type::INT || type == Type::CHAR || isAddr(type)){ // Thing above asked for an int we have to convert our value to an int and store into stack 
                     framePtr->store(dst, "$t0", destName, type);
                 }
                 else{ // Thing above asked for Float we return our value as a float
@@ -382,12 +382,12 @@ public:
             }           
         }
         else if(*oper == "++"){
-            if(destType == Type ::INT){            
+            if(destType == Type::INT || destType == Type::CHAR || isAddr(destType)){            
                 postfixExpr->printMipsE(dst, destName, framePtr, destType);
 	            framePtr->load(dst, "$t0", destName);
                 dst << "addi $t0, $t0, 1" << std::endl;     //Increment value before storing it back
 	            
-                if(type == Type::INT){
+                if(type == Type::INT || type == Type::CHAR || isAddr(type)){
                     framePtr->store(dst, "$t0", destName, type);
                     if(dynamic_cast<const PrimaryExpr*>(postfixExpr)){
                         std::string id = postfixExpr->getId();
@@ -412,7 +412,7 @@ public:
                 dst << "cvt.s.w $f4, $f4" << std::endl; //   $f4 has 1 in fp representation.
                 dst << "add.s $f0, $f0, $f4" << std::endl;     //Increment value before storing it back
           
-                if(type == Type::INT){
+                if(type == Type::INT || type == Type::CHAR || isAddr(type)){
                     TypeConv::convert(dst, Type::INT, Type::FLOAT, "$t0", "$f0");
                     framePtr->store(dst, "$t0", destName, type);
                     if(dynamic_cast<const PrimaryExpr*>(postfixExpr)){
@@ -431,12 +431,12 @@ public:
             }
         }
         else if(*oper == "--"){
-            if(destType == Type ::INT){            
+            if(destType == Type::INT || destType == Type::CHAR || isAddr(destType)){            
                 postfixExpr->printMipsE(dst, destName, framePtr, destType);
 	            framePtr->load(dst, "$t0", destName);
                 dst << "addi $t0, $t0, -1" << std::endl;     //Increment value before storing it back
 	            
-                if(type == Type::INT){
+                if(type == Type::INT || type == Type::CHAR || isAddr(type)){
                     framePtr->store(dst, "$t0", destName, type);
                     if(dynamic_cast<const PrimaryExpr*>(postfixExpr)){
                         std::string id = postfixExpr->getId();
@@ -461,7 +461,7 @@ public:
                 dst << "cvt.s.w $f4, $f4" << std::endl; //   $f4 has 1 in fp representation.
                 dst << "add.s $f0, $f0, $f4" << std::endl;     //Increment value before storing it back
                 
-                if(type == Type::INT){
+                if(type == Type::INT || type == Type::CHAR || isAddr(type)){
                     TypeConv::convert(dst, Type::INT, Type::FLOAT, "$t0", "$f0");
                     framePtr->store(dst, "$t0", destName, type);
                     if(dynamic_cast<const PrimaryExpr*>(postfixExpr)){
@@ -613,7 +613,7 @@ public:
                 destType = Type::DOUBLE;*/
             if(operand1->getType(framePtr) == Type::FLOAT || operand2->getType(framePtr) == Type::FLOAT)
                 destType = Type::FLOAT;
-            else destType = Type::INT;
+            else destType = Type::INT;  //If destType is char or Addr, we perform operation like an Int
             
             //Only Evaluate LH operand first and see if Shortcircuited!
             if(destType == Type::INT){ 
@@ -1179,27 +1179,8 @@ public:
         //Really important for when we have exprStatement (e.g. double x = 3; x = 1 + 2;)
         if(type == Type::ANYTHING) type = operand1->getType(framePtr);
         
-        //We only convert if type mismatch between type(LHS) and destType(RHS) 
-        /*if(type == Type::DOUBLE){
-            if(destType == Type::FLOAT){
-                TypeConv::convert(dst, Type::DOUBLE, Type::FLOAT, "$f4", "$f4");
-                
-            }else if(destType == Type::INT){
-                TypeConv::convert(dst, Type::DOUBLE, Type::INT, "$f4", "$t2");
-                
-            }else if(destType == Type::DOUBLE){
-                //No need to convert, kept here to not assert   
-            }else{assert(0);}
-
-            framePtr->store(dst, "$f4", destName, Type::DOUBLE);
-            if(doLater) framePtr->store(dst, "$f4", operand1->getId(), Type::DOUBLE);
-
-        }else*/
         if(type == Type::FLOAT){
-            /*if(destType == Type::DOUBLE){
-                TypeConv::convert(dst, Type::FLOAT, Type::DOUBLE, "$f4", "$f4");
-                               
-            }else*/
+
             if(destType == Type::INT){
                 TypeConv::convert(dst, Type::FLOAT, Type::INT, "$f4", "$t2");
                 
@@ -1211,10 +1192,7 @@ public:
             if(doLater) framePtr->store(dst, "$f4", operand1->getId(), Type::FLOAT);
                     
         }else if(type == Type::INT || type == Type::CHAR){
-            /*if(destType == Type::DOUBLE){
-                TypeConv::convert(dst, Type::INT, Type::DOUBLE, "$t2", "$f4");
-                                
-            }else*/ 
+ 
             if(destType == Type::FLOAT){
                 TypeConv::convert(dst, Type::INT, Type::FLOAT, "$t2", "$f4");   
                 
@@ -1259,10 +1237,7 @@ public:
             return operand1->getType(framePtr);
             
         }else{
-            /*if(operand1->getType(framePtr) == Type::DOUBLE || operand2->getType(framePtr) == Type::DOUBLE){
-                return Type::DOUBLE;
-                
-            }else*/ 
+ 
             if(operand1->getType(framePtr) == Type::FLOAT || operand2->getType(framePtr) == Type::FLOAT){
                 return Type::FLOAT;
                 
