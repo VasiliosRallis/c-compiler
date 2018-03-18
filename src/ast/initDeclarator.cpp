@@ -147,13 +147,12 @@ void InitDeclarator::printGMips(std::ostream& dst, Type type)const{
             dst << "\t.size\t" << id << ", 4" << std::endl;
             dst << id << ":" << std::endl;
             
-            if(myType == Type::INT){
-                dst << "\t.word\t" <<  asgnExpr->eval() << std::endl;
+            if(myType == Type::INT || myType == Type::FLOAT || myType == Type::CHAR){
+                dst << "\t.word\t" <<  (int)asgnExpr->eval() << std::endl;
             
             }
             else{
-                std::cerr << "Type: " << (int)myType << std::endl;
-                assert(0);
+                assert(0); //Should never happen (myType cannot be Addr)
             }
         }else if(isAddr(type)){
             dst << "\t.globl\t" << id << std::endl;
@@ -177,7 +176,10 @@ void InitDeclarator::printGMips(std::ostream& dst, Type type)const{
                 myString.erase(myString.end() - 1);
                 dst << "\t.ascii\t\"" << myString << "\\000\"" << std::endl;
                 
-            }else{assert(0);}
+            }else if(myType == Type::INT || myType == Type::CHAR){
+                dst << "\t.word\t" <<  (int)asgnExpr->eval() << std::endl;
+                
+            }else{assert(0);} //Should never happen (myType cannot be float)
             
         }else if(type == Type::FLOAT){
             dst << "\t.align 2" << std::endl;
@@ -185,25 +187,32 @@ void InitDeclarator::printGMips(std::ostream& dst, Type type)const{
             dst << "\t.size\t" << id << ", 4" << std::endl;
             dst << id << ":" << std::endl;
             
-            if(myType == Type::INT){
+            if(myType == Type::INT || myType == Type::CHAR || myType == Type::FLOAT){
                 dst << "\t.float\t" << asgnExpr->eval() << std::endl;
                 
-            }else if(myType == Type::CHAR){
-                int ascii = (int)id[1];
-                dst << "\t.float\t" << ascii << std::endl;
-                
-            }/*else if(myType == Type::DOUBLE){
-                dst << "\t.float\t" << (float)asgnExpr->eval() << std::endl;
-                    
-            }*/
-            else{assert(0);}
+            }else{assert(0);} //Should never happen (myType cannot be addr)
+        
+        }else if(type == Type::CHAR){
+            dst << "\t.data" << std::endl;
+            dst << "\t.size\t" << id << ", 1" << std::endl;
+            dst << id << ":" << std::endl;
             
-        }else{assert(0);}
+            if(myType == Type::INT || myType == Type::CHAR){
+                dst << "\t.byte\t" << (int)(unsigned char)asgnExpr->eval() << std::endl;
+                
+            }else if(myType == Type::FLOAT){
+                int c = (int)asgnExpr->eval();
+                if(c > 127) c = 127;
+                if(c < -128) c = -128;
+                dst << "\t.byte\t" << (int)c << std::endl;
+                
+            }else{assert(0);} //Should never happen (myType cannot be addr)
+            
+        }else{assert(0);} //All types covered should never happen
         
     }else if(exprList != NULL){
         if(!isAddr(type)){
-            //This should never happen
-            assert(0);
+            assert(0); //Should never happen
             
         }else{
             std::string p_to_array = makeName("pointer");

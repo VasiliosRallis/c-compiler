@@ -80,13 +80,15 @@ void Frame::load(std::ostream& dst, const std::string reg, const std::string var
                     
                 }else{
                     dst << "lui " << reg << ",%hi(" << varName << ")" << std::endl;
-                    //if(isAddr(g_mips_var.at(varName))){
-                      //  dst << "addiu " << reg << ", " << reg << ",%lo(" << varName << ")" << std::endl;
-                    //    
-                    //}else{
+                    
+                    if(g_mips_var.at(varName) == Type::CHAR){
+                       dst << "lbu " << reg <<  ",%lo(" << varName << ")(" << reg << ")" << std::endl;
+                    
+                    }else{
                         dst << "lw " << reg <<  ",%lo(" << varName << ")(" << reg << ")" << std::endl;
                         
-                    //}
+                    }
+                        
                 }
                 
             }else{
