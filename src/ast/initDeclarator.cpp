@@ -87,7 +87,7 @@ void InitDeclarator::printMips(std::ostream& dst, Frame* framePtr, Type type)con
             }
 
             }
-        }else if(type == Type::DOUBLE){
+        }/*else if(type == Type::DOUBLE){
             if(asgnExpr->isIdentifier()){
                 std::string destName = makeName();
                 asgnExpr->printMipsE(dst, destName, framePtr, type);
@@ -108,7 +108,8 @@ void InitDeclarator::printMips(std::ostream& dst, Frame* framePtr, Type type)con
                 
                 framePtr->store(dst, "$f0", directDeclarator->getId(), type, true);   
             }
-        }else{
+        }*/
+        else{
             assert(0);
         }
         
@@ -191,10 +192,11 @@ void InitDeclarator::printGMips(std::ostream& dst, Type type)const{
                 int ascii = (int)id[1];
                 dst << "\t.float\t" << ascii << std::endl;
                 
-            }else if(myType == Type::DOUBLE){
+            }/*else if(myType == Type::DOUBLE){
                 dst << "\t.float\t" << (float)asgnExpr->eval() << std::endl;
                     
-            }else{assert(0);}
+            }*/
+            else{assert(0);}
             
         }else{assert(0);}
         
@@ -252,11 +254,12 @@ void InitDeclarator::printGMips(std::ostream& dst, Type type)const{
                         float constant = exprList->at(i)->eval();
                         dst << "\t.float\t" << constant << std::endl;
                     
-                    }else if(type == Type::DOUBLE_ADDR){
+                    }/*else if(type == Type::DOUBLE_ADDR){
                         double constant = exprList->at(i)->eval();
                         dst << "\t.double\t" << constant << std::endl;
                         
-                    }else{assert(0);}
+                    }*/
+                    else{assert(0);}
                         
                       
                 }

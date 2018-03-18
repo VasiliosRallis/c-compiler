@@ -72,7 +72,7 @@ public:
                 p1->printMipsE(dst, destName, framePtr, retType);
 
                 //Return value should be in $f0 not $2($v0) if return type is float/double
-                if(retType == Type::FLOAT || retType == Type::DOUBLE){
+                if(retType == Type::FLOAT /*|| retType == Type::DOUBLE*/){
                     framePtr->load(dst, "$f0", destName);
                 }
                 else{

@@ -51,9 +51,8 @@ ArgTranslator::ArgTranslator(const DirectDeclarator* directDeclarator){
                         
                     }
                 }
-            }else if(myType == Type::DOUBLE){
-                assert(0);
-           }else{assert(0);}//Haven't implemented yet
+            }
+            else{assert(0);}//Haven't implemented yet
   
             //if(i < 4) argMap.insert({v1->at(i)->getId(), std::string("$a").append(std::to_string(i))});
             //Store the address of the argument in the statck relative to the previous $sp
@@ -111,7 +110,7 @@ void ArgTranslator::load(std::ostream& dst, const std::string& destName, const s
             }
         }
         
-    }else{assert(0);} //Haven't implemented DOUBLE
+    }else{assert(0);} 
 }
 
 Type ArgTranslator::loadType(const std::string& id)const{

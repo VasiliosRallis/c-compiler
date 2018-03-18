@@ -39,7 +39,7 @@ Type StringNode::getType(const Frame* framePtr)const{
             return Type::INT;
         
         }else{
-            return Type::DOUBLE;
+            return Type::FLOAT; //Used to be double here
         }
     
     }else if(isalpha(id->front()) || id->front() == '_'){
@@ -56,7 +56,7 @@ bool StringNode::isIdentifier()const{
 double StringNode::eval()const{
     Type myType = getType(NULL);
     
-    if(myType == Type::INT || myType == Type::DOUBLE){
+    if(myType == Type::INT || myType == Type::FLOAT){   //Used to be double here
         return std::stod(*id);
         
     }else if(myType == Type::CHAR){

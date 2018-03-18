@@ -48,7 +48,7 @@ public:
 	                    framePtr->load(dst, "$t0", id);
 	                    framePtr->store(dst, "$t0", destName, type);
 	                
-	                }else if(myType == Type::FLOAT || myType == Type::DOUBLE){
+	                }else if(myType == Type::FLOAT /*|| myType == Type::DOUBLE*/){
 	                    framePtr->load(dst, "$f0", id);
 	                    TypeConv::convert(dst, type, myType, "$t0", "$f0");
 	                    framePtr->store(dst, "$t0", destName, type);
@@ -133,9 +133,11 @@ public:
 	                
 	                }else{assert(0);}
 	            }            
-	        }else if(type == Type::DOUBLE){{assert(0);}
+	        }
+            /*else if(type == Type::DOUBLE){{assert(0);}
 	                
-	        }else if(type == Type::FLOAT){
+	        }*/
+            else if(type == Type::FLOAT){
 	            if(expr->isIdentifier()){
 	                if(myType == Type::CHAR || myType == Type::INT || isAddr(myType)){
 	                    framePtr->load(dst, "$t0", id);
@@ -146,12 +148,13 @@ public:
                         framePtr->load(dst, "$f0", id);
                         framePtr->store(dst, "$f0", destName, type);
                         
-                    }else if(myType == Type::DOUBLE){
+                    }/*else if(myType == Type::DOUBLE){
                         framePtr->load(dst, "$f0", id);
                         TypeConv::convert(dst, Type::FLOAT, Type::DOUBLE, "$f0", "$f0");
                         framePtr->store(dst, "$f0", destName, type);
                         
-                    }else{assert(0);}
+                    }*/
+                    else{assert(0);}
                     
                 }else{
                     if(myType == Type::INT || myType == Type::CHAR){
@@ -160,7 +163,7 @@ public:
                         framePtr->store(dst, "$f0", destName, type);
                     
                     //Since it is a constant, it has to be double (i.e. not float)    
-                    }else if(myType == Type::DOUBLE){
+                    }else if(myType == Type::FLOAT){    //Used to be double
                         //Set up for label of float constant
                         endPrint.push_back("\t.rdata\n");
                         endPrint.push_back("\t.align 2\n");
@@ -198,7 +201,7 @@ public:
                 std::string id = expr->getId();
                 Type myType = expr->getType(NULL);
                 
-                if(myType == Type::INT || myType == Type::FLOAT || myType == Type::DOUBLE){
+                if(myType == Type::INT || myType == Type::FLOAT /*|| myType == Type::DOUBLE*/){
                     return std::stod(id);
                 
                 }else if(myType == Type::CHAR){
@@ -617,9 +620,9 @@ public:
         if (oper->getId() == "&&" || oper->getId() == "||" ) {
 
             //Resolve destType for && and || Operations
-            if(operand1->getType(framePtr) == Type::DOUBLE || operand2->getType(framePtr) == Type::DOUBLE)
-                destType = Type::DOUBLE;
-            else if(operand1->getType(framePtr) == Type::FLOAT || operand2->getType(framePtr) == Type::FLOAT)
+            /*if(operand1->getType(framePtr) == Type::DOUBLE || operand2->getType(framePtr) == Type::DOUBLE)
+                destType = Type::DOUBLE;*/
+            if(operand1->getType(framePtr) == Type::FLOAT || operand2->getType(framePtr) == Type::FLOAT)
                 destType = Type::FLOAT;
             else destType = Type::INT;
             
@@ -771,10 +774,11 @@ public:
             //The rest of Binary operators :we have to evaluate the types based on the more general one, 
             //Assign EXPR like += , *= etc falls here too as x*=2.3 is similar to x = x*2.3 where we resolve RHS via float
             
-            if(operand1->getType(framePtr) == Type::DOUBLE || operand2->getType(framePtr) == Type::DOUBLE){
+            /*if(operand1->getType(framePtr) == Type::DOUBLE || operand2->getType(framePtr) == Type::DOUBLE){
                 destType = Type::DOUBLE;
                 
-            }else if(operand1->getType(framePtr) == Type::FLOAT || operand2->getType(framePtr) == Type::FLOAT){
+            }*/
+            if(operand1->getType(framePtr) == Type::FLOAT || operand2->getType(framePtr) == Type::FLOAT){
                 destType = Type::FLOAT;
                 
             }else if(isAddr(operand1->getType(framePtr)) || isAddr(operand2->getType(framePtr))){
@@ -814,10 +818,11 @@ public:
                     if(elementType == Type::INT || elementType == Type::FLOAT){
                         dst << "sll $t1, $t1, 2" << std::endl;
                         
-                    }else if(elementType == Type::DOUBLE){
+                    }/*else if(elementType == Type::DOUBLE){
                         dst << "sll $t1, $t1, 3" << std::endl;
                         
-                    }else if(elementType == Type::CHAR){
+                    }*/
+                    else if(elementType == Type::CHAR){
                         //Do nothing
                         
                     }else{assert(0);}
@@ -829,10 +834,11 @@ public:
                     if(elementType == Type::INT || elementType == Type::FLOAT){
                         dst << "sll $t0, $t0, 2" << std::endl;
                         
-                    }else if(elementType == Type::DOUBLE){
+                    }/*else if(elementType == Type::DOUBLE){
                         dst << "sll $t0, $t0, 3" << std::endl;
                         
-                    }else if(elementType == Type::CHAR){
+                    }*/
+                    else if(elementType == Type::CHAR){
                         //Do nothing
                         
                     }else{assert(0);}
@@ -1176,7 +1182,7 @@ public:
         if(type == Type::ANYTHING) type = operand1->getType(framePtr);
         
         //We only convert if type mismatch between type(LHS) and destType(RHS) 
-        if(type == Type::DOUBLE){
+        /*if(type == Type::DOUBLE){
             if(destType == Type::FLOAT){
                 TypeConv::convert(dst, Type::DOUBLE, Type::FLOAT, "$f4", "$f4");
                 
@@ -1190,11 +1196,13 @@ public:
             framePtr->store(dst, "$f4", destName, Type::DOUBLE);
             if(doLater) framePtr->store(dst, "$f4", operand1->getId(), Type::DOUBLE);
 
-        }else if(type == Type::FLOAT){
-            if(destType == Type::DOUBLE){
+        }else*/
+        if(type == Type::FLOAT){
+            /*if(destType == Type::DOUBLE){
                 TypeConv::convert(dst, Type::FLOAT, Type::DOUBLE, "$f4", "$f4");
                                
-            }else if(destType == Type::INT){
+            }else*/
+            if(destType == Type::INT){
                 TypeConv::convert(dst, Type::FLOAT, Type::INT, "$f4", "$t2");
                 
             }else if(destType == Type::FLOAT){
@@ -1205,10 +1213,11 @@ public:
             if(doLater) framePtr->store(dst, "$f4", operand1->getId(), Type::FLOAT);
                     
         }else if(type == Type::INT || type == Type::CHAR){
-            if(destType == Type::DOUBLE){
+            /*if(destType == Type::DOUBLE){
                 TypeConv::convert(dst, Type::INT, Type::DOUBLE, "$t2", "$f4");
                                 
-            }else if(destType == Type::FLOAT){
+            }else*/ 
+            if(destType == Type::FLOAT){
                 TypeConv::convert(dst, Type::INT, Type::FLOAT, "$t2", "$f4");   
                 
             }else if(destType == Type::INT){
@@ -1232,7 +1241,7 @@ public:
             }
 
         }else if(isAddr(type)){
-            if(destType == Type::DOUBLE || destType == Type::FLOAT){
+            if(/*destType == Type::DOUBLE ||*/ destType == Type::FLOAT){
                 //This should never happen
                 assert(0);
                 
@@ -1252,10 +1261,11 @@ public:
             return operand1->getType(framePtr);
             
         }else{
-            if(operand1->getType(framePtr) == Type::DOUBLE || operand2->getType(framePtr) == Type::DOUBLE){
+            /*if(operand1->getType(framePtr) == Type::DOUBLE || operand2->getType(framePtr) == Type::DOUBLE){
                 return Type::DOUBLE;
                 
-            }else if(operand1->getType(framePtr) == Type::FLOAT || operand2->getType(framePtr) == Type::FLOAT){
+            }else*/ 
+            if(operand1->getType(framePtr) == Type::FLOAT || operand2->getType(framePtr) == Type::FLOAT){
                 return Type::FLOAT;
                 
             }else if(isAddr(operand1->getType(framePtr)) || isAddr(operand2->getType(framePtr))){

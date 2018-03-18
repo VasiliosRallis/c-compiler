@@ -7,10 +7,11 @@ void TypeConv::convert(std::ostream& dst, const Type outT, const Type inT, const
     else if(outT == Type::FLOAT && inT == Type::INT){
         cFloatInt(dst, outReg, inReg);
     
-    }else if(outT == Type::INT && inT == Type::DOUBLE){
+    }/*else if(outT == Type::INT && inT == Type::DOUBLE){
         cIntDouble(dst, outReg, inReg);
       
-    }else{
+    }*/
+    else{
         throw std::runtime_error("Haven't implemented conversion for those types");
     }
 }
@@ -28,9 +29,9 @@ void TypeConv::cFloatInt(std::ostream& dst, const std::string& outReg, const std
 	dst << "cvt.s.w	"<< outReg << ", $f10" << std::endl;
 }
 
-void TypeConv::cIntDouble(std::ostream& dst, const std::string& outReg, const std::string& inReg){
+/*void TypeConv::cIntDouble(std::ostream& dst, const std::string& outReg, const std::string& inReg){
     dst << ".set macro" << std::endl;
     dst << "trunc.w.d " << inReg << ", " << inReg << ", $28" << std::endl;
     dst << ".set nomacro" << std::endl;
     dst << "mfc1 " << outReg << ", " << inReg << std::endl;
-}
+}*/

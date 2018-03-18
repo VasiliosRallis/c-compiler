@@ -40,7 +40,7 @@ void Frame::load(std::ostream& dst, const std::string reg, const std::string var
                 dst << "lwc1 " << reg << ", " << scopeMap.back().at(varName) << "($fp)\n";
                 dst <<"nop" << std::endl;
             
-            }else if(loadType(varName) == Type::DOUBLE){
+            }/*else if(loadType(varName) == Type::DOUBLE){
                  dst << "lwc1 " << reg << ", " << scopeMap.back().at(varName) << "($fp)\n";
                  dst << "nop" << std::endl;
                  
@@ -50,7 +50,8 @@ void Frame::load(std::ostream& dst, const std::string reg, const std::string var
                 dst << "lwc1 " << std::string(reg.substr(0,2).append(std::to_string(a))) << ", " << scopeMap.back().at(varName)- 4  << "($fp)" << std::endl;
                 dst << "nop" << std::endl;
                 
-            }else{assert(0);}   
+            }*/
+            else{assert(0);}   
                  
         }else{
             if(typeMap.back().find(varName) != typeMap.back().end()){
@@ -118,7 +119,7 @@ void Frame::store(std::ostream& dst, const std::string reg, const std::string va
             if(type == Type::FLOAT){
                 dst << "swc1 " << reg << ", " << scopeMap.back().at(varName) << "($fp)\n";
                 
-            }else if(type == Type::DOUBLE){
+            }/*else if(type == Type::DOUBLE){
              
                 dst << "swc1 " << reg << ", " << scopeMap.back().at(varName)  << "($fp)" << std::endl;
                 dst << "nop" << std::endl;
@@ -130,7 +131,8 @@ void Frame::store(std::ostream& dst, const std::string reg, const std::string va
                 dst << "nop" << std::endl;
             
             //Should not happen
-            }else{assert(0);}
+            }*/
+            else{assert(0);}
 
         }else{
             if(type == Type::CHAR){
@@ -293,9 +295,8 @@ void Frame::saveArguments(std::ostream& dst, const std::string& f_Id, const std:
                         
                     }
                 }
-            }else if(argTypes.at(i) == Type::DOUBLE){
-                assert(0);
-           }else{assert(0);}//Haven't implemented yet
+            }
+            else{assert(0);}//Haven't implemented yet
         }
     }
 }
@@ -403,10 +404,11 @@ void Frame::loadArrayElement(std::ostream& dst, const std::string& reg, const st
     if(elementType == Type::INT || elementType == Type::FLOAT){
         dst << "sll $t0, $t0, 2" << std::endl;
         
-    }else if(elementType == Type::DOUBLE){
+    }/*else if(elementType == Type::DOUBLE){
         dst << "sll $t0, $t0, 3" << std::endl;
         
-    }else if(elementType == Type::CHAR){
+    }*/
+    else if(elementType == Type::CHAR){
         //Do nothing
         
     }else{assert(0);}
@@ -480,10 +482,11 @@ void Frame::storeArrayElement(std::ostream& dst, const std::string& reg, const P
     if(elementType == Type::INT || elementType == Type::FLOAT){
         dst << "sll $t0, $t0, 2" << std::endl;
         
-    }else if(elementType == Type::DOUBLE){
+    }/*else if(elementType == Type::DOUBLE){
         dst << "sll $t0, $t0, 3" << std::endl;
         
-    }else if(elementType == Type::CHAR){
+    }*/
+    else if(elementType == Type::CHAR){
         //Do nothing
         
     }else{assert(0);}

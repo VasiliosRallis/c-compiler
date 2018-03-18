@@ -58,10 +58,10 @@ void DirectDeclarator::printGMips(std::ostream& dst, Type type)const{
         }else if(type == Type::INT || type == Type::FLOAT){
             dst << "\t.comm\t" << *id << ",4,4" << std::endl;
             
-        }else if(type == Type::DOUBLE){
-            dst << "\t.comm\t" << *id << ",8,8" << std::endl;
-            
-        }else if(isAddr(type)){
+        }/*else if(type == Type::DOUBLE){
+            dst << "\t.comm\t" << *id << ",8,8" << std::endl;           
+        }*/
+        else if(isAddr(type)){
             assert(0); //Should never happen
         }else{
             std::cerr << "Type: " << (int)type << std::endl;
@@ -94,10 +94,11 @@ void DirectDeclarator::printGMips(std::ostream& dst, Type type)const{
             }else if(type == Type::CHAR_ADDR || type == Type::INT_ADDR || type == Type::FLOAT_ADDR){
                 dst << "\t.comm\t" << p_to_array << "," << 4*expr->eval() << ",4" << std::endl;
                 
-            }else if(type == Type::DOUBLE_ADDR){
+            }/*else if(type == Type::DOUBLE_ADDR){
                 dst << "\t.comm\t" << p_to_array << "," << 8*expr->eval() << ",8" << std::endl;
                 
-            }else{assert(0);}
+            }*/
+            else{assert(0);}
             
             dst << "\t.globl\t" << *id << std::endl;
             dst << "\t.section	.data.rel.local,\"aw\",@progbits" << std::endl;

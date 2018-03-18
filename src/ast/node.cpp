@@ -50,7 +50,7 @@ bool Node::isPointer()const{
 bool Node::isDereference()const{return false;}
 
 bool isAddr(const Type type){
-    if(type == Type::INT_ADDR || type == Type::FLOAT_ADDR || type == Type::DOUBLE_ADDR || type == Type::VOID_ADDR || type == Type::CHAR_ADDR || type == Type::STRING_ADDR)
+    if(type == Type::INT_ADDR || type == Type::FLOAT_ADDR || /*type == Type::DOUBLE_ADDR ||*/ type == Type::VOID_ADDR || type == Type::CHAR_ADDR || type == Type::STRING_ADDR)
         return true;
     else
         return false;
@@ -59,7 +59,7 @@ bool isAddr(const Type type){
 Type typeToAddr(const Type type){
     if(type == Type::INT) return Type::INT_ADDR;
     else if(type == Type::FLOAT) return Type::FLOAT_ADDR;
-    else if(type == Type::DOUBLE) return Type::DOUBLE_ADDR;
+    //else if(type == Type::DOUBLE) return Type::DOUBLE_ADDR;
     else if(type == Type::VOID) return Type::VOID_ADDR;
     else if(type == Type::CHAR) return Type::CHAR_ADDR;
     else if(type == Type::STRING) return Type::STRING_ADDR;
@@ -73,7 +73,7 @@ Type typeToAddr(const Type type){
 Type addrToType(const Type type){
     if(type == Type::INT_ADDR) return Type::INT;
     else if(type == Type::FLOAT_ADDR) return Type::FLOAT;
-    else if(type == Type::DOUBLE_ADDR) return Type::DOUBLE;
+    //else if(type == Type::DOUBLE_ADDR) return Type::DOUBLE;
     else if(type == Type::VOID_ADDR) return Type::VOID;
     else if(type == Type::CHAR_ADDR) return Type::CHAR;
     else if(type == Type::STRING_ADDR) return Type::STRING;
