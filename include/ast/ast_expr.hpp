@@ -407,24 +407,24 @@ public:
             else{
                 postfixExpr->printMipsE(dst, destName, framePtr, destType);
                 framePtr->load(dst, "$f0", destName);
-                TypeConv::convert(dst, Type::INT, Type::FLOAT, "$t0", "$f0");
-                dst << "addi $t0, $t0, 1" << std::endl;     //Increment value before storing it back
-                
+                dst << "li $t1, 1" << std::endl;
+                dst << "mtc1 $t1, $f4" << std::endl;
+                dst << "cvt.s.w $f4, $f4" << std::endl; //   $f4 has 1 in fp representation.
+                dst << "add.s $f0, $f0, $f4" << std::endl;     //Increment value before storing it back
+          
                 if(type == Type::INT){
+                    TypeConv::convert(dst, Type::INT, Type::FLOAT, "$t0", "$f0");
                     framePtr->store(dst, "$t0", destName, type);
                     if(dynamic_cast<const PrimaryExpr*>(postfixExpr)){
-                        TypeConv::convert(dst, Type::FLOAT, Type::INT, "$f0", "$t0");
                         std::string id = postfixExpr->getId();
-                        framePtr->store(dst, "$f0", id, destType);      // Should it be destType instead of type here?
+                        framePtr->store(dst, "$f0", id, destType);      
                     }
                 }
-                else{
-                    TypeConv::convert(dst, Type::FLOAT, Type::INT, "$f0", "$t0");                                  
+                else{                                 
                     framePtr->store(dst, "$f0", destName, type);
                     if(dynamic_cast<const PrimaryExpr*>(postfixExpr)){
-                        TypeConv::convert(dst, Type::FLOAT, Type::INT, "$f0", "$t0");
                         std::string id = postfixExpr->getId();
-                        framePtr->store(dst, "$f0", id, destType);      // Should it be destType instead of type here?
+                        framePtr->store(dst, "$f0", id, destType);      
                     } 
                 }
             
@@ -453,25 +453,25 @@ public:
                 }
             }
 
-            else{
+            else{             
                 postfixExpr->printMipsE(dst, destName, framePtr, destType);
                 framePtr->load(dst, "$f0", destName);
-                TypeConv::convert(dst, Type::INT, Type::FLOAT, "$t0", "$f0");
-                dst << "addi $t0, $t0, -1" << std::endl;     //Increment value before storing it back
+                dst << "li $t1, -1" << std::endl;
+                dst << "mtc1 $t1, $f4" << std::endl;
+                dst << "cvt.s.w $f4, $f4" << std::endl; //   $f4 has 1 in fp representation.
+                dst << "add.s $f0, $f0, $f4" << std::endl;     //Increment value before storing it back
                 
                 if(type == Type::INT){
+                    TypeConv::convert(dst, Type::INT, Type::FLOAT, "$t0", "$f0");
                     framePtr->store(dst, "$t0", destName, type);
                     if(dynamic_cast<const PrimaryExpr*>(postfixExpr)){
-                        TypeConv::convert(dst, Type::FLOAT, Type::INT, "$f0", "$t0");
                         std::string id = postfixExpr->getId();
                         framePtr->store(dst, "$f0", id, destType);      // Should it be destType instead of type here?
                     }
                 }
-                else{
-                    TypeConv::convert(dst, Type::FLOAT, Type::INT, "$f0", "$t0");                                  
+                else{                                 
                     framePtr->store(dst, "$f0", destName, type);
                     if(dynamic_cast<const PrimaryExpr*>(postfixExpr)){
-                        TypeConv::convert(dst, Type::FLOAT, Type::INT, "$f0", "$t0");
                         std::string id = postfixExpr->getId();
                         framePtr->store(dst, "$f0", id, destType);      // Should it be destType instead of type here?
                     } 

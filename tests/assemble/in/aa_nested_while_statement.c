@@ -7,7 +7,7 @@ int main(){
             sumofCombi = sumofCombi +x+y;
             y++;
        }
-        x++;
+        ++x;
     }
 	
 	return sumofCombi;
