@@ -69,7 +69,7 @@ void InitDeclarator::printMips(std::ostream& dst, Frame* framePtr, Type type)con
             else{
                 //EVAL EXPR AND store into LHS Declarator
                 std::string destName = makeName();
-                if(myType == Type::INT){
+                if(myType == Type::INT || myType == Type::CHAR || isAddr(myType)){ // USED TO HAVE My type == int here
                      asgnExpr->printMipsE(dst, destName, framePtr, myType);
                     //Temporary store the identifier in $t0
                     framePtr->load(dst, "$t0", destName);

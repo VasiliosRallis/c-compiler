@@ -858,9 +858,18 @@ public:
             }
         }
         else if (oper->getId() == "/"){
+            std::string branchlabel = std::string("$" + makeName("BRANCH"));
             if(destType == Type::INT){
+                /*dst <<"bne $t1,$0, " << branchlabel << std::endl;
+                dst<<"div $t0, $t1" << std:: endl;
+                dst <<"break 7" << std::endl<<std::endl;                
+                dst << branchlabel << ":" << std::endl;
+                dst<<"mflo $t2" << std::endl;*/
+                //Tells me that Break is Illegal Instruction in qemu
+                
                 dst<<"div $t0, $t1" << std:: endl;
                 dst<<"mflo $t2" << std::endl;
+                
             }
             else{
                 dst<<"div.s $f4, $f0, $f2" <<std::endl;
