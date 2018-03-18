@@ -90,8 +90,9 @@ void PostfixExpr::printMipsE(std::ostream& dst, const std::string& destName, Fra
         //Trying to access element of an array;
         framePtr->loadArrayElement(dst, "$t0", primaryExpr->getId(), argumentExprList->at(0));
         Type elementType = addrToType(primaryExpr->getType(framePtr));
+        if(type == Type::ANYTHING) type = elementType;
         
-        if(type == Type::INT){
+        if(type == Type::INT || isAddr(type)){
             if(elementType == Type::INT || elementType == Type::CHAR){
                 //Do nothing
                 
@@ -207,7 +208,11 @@ Type PostfixExpr::getType(const Frame* framePtr)const{
                     }
             }    
     }else{
-        return primaryExpr->getType(framePtr);
+        if(*oper1 == "["){
+            return (addrToType(primaryExpr->getType(framePtr)));
+        }else{
+            return primaryExpr->getType(framePtr);
+        }
     }
 }
 

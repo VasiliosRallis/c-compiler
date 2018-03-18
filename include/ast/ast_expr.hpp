@@ -89,22 +89,20 @@ public:
 	                }else{assert(0);}
 	                
 	                
-	            }else if(myType == Type::CHAR){
-	                int ascii;
+	            }else{
+	                if(myType == Type::CHAR || myType == Type::INT){
+	                    dst << "li $t0, " << (int)(unsigned char)this->eval() << std::endl;
+	                    framePtr->store(dst, "$t0", destName, Type::CHAR);
+	                    
+	                }else if(myType == Type::FLOAT){
+	                    int c = (int)this->eval();
+                        if(c > 127) c = 127;
+                        if(c < -128) c = -128;
+                        dst << "li $t0, " << (int)c << std::endl;
+                        framePtr->store(dst, "$t0", destName, Type::CHAR);
 	                
-	                //Handle escape sequence (e.g. /000 = NULL)
-	                if(id[1] == '\\'){
-	                    if(id[2] == 'x') ascii = std::stoi(id.substr(3), nullptr, 16);
-	                        
-	                    else ascii = std::stoi(id.substr(3), nullptr, 8);
-	                        
-	                }else{
-	                    ascii = (int)id[1];
-                    }
-	                dst << "li $t0, " << ascii << std::endl;
-	                framePtr->store(dst, "$t0", destName, Type::CHAR);
-	                
-	            }else{assert(0);}
+	                }else{assert(0);}
+	            }
 	            
 	        }else if(isAddr(type)){
 	            if(expr->isIdentifier()){
@@ -507,13 +505,21 @@ public:
             
             Type exprType = postfixExpr->getType(framePtr);
             
-            if(exprType == Type::INT_ADDR || exprType == Type::FLOAT_ADDR){
-                dst << "lw $t0, 0($t0)" << std::endl;
+            if(type == Type::INT){
+                if(exprType == Type::INT_ADDR){
+                    dst << "lw $t0, 0($t0)" << std::endl;
                 
-            }else if(exprType == Type::CHAR_ADDR){
-                dst << "lbu $t0, 0($t0)" << std::endl;
-                
-            }else{assert(0);}
+                }else if(exprType == Type::FLOAT_ADDR){
+                    dst << "lw $t0, 0($t0)" << std::endl;
+                    dst << "mtc1 $t0, $f0" << std::endl;
+                    TypeConv::convert(dst, Type::INT, Type::FLOAT, "$t0", "$f0");
+                    
+                    
+                }else if(exprType == Type::CHAR_ADDR){
+                    dst << "lbu $t0, 0($t0)" << std::endl;
+                }
+            }
+                   
             
             framePtr->store(dst, "$t0", destName, type);
         }

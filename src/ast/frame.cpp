@@ -80,7 +80,7 @@ void Frame::load(std::ostream& dst, const std::string reg, const std::string var
                     
                 }else{
                     dst << "lui " << reg << ",%hi(" << varName << ")" << std::endl;
-                    
+
                     if(g_mips_var.at(varName) == Type::CHAR){
                        dst << "lbu " << reg <<  ",%lo(" << varName << ")(" << reg << ")" << std::endl;
                     
@@ -484,36 +484,33 @@ void Frame::storeArrayElement(std::ostream& dst, const std::string& reg, const P
     if(elementType == Type::INT || elementType == Type::FLOAT){
         dst << "sll $t0, $t0, 2" << std::endl;
         
-    }/*else if(elementType == Type::DOUBLE){
-        dst << "sll $t0, $t0, 3" << std::endl;
-        
-    }*/
-    else if(elementType == Type::CHAR){
+    }else if(elementType == Type::CHAR){
         //Do nothing
-        
+           
     }else{assert(0);}
         
     //Check if the array is in local scope
     if(scopeMap.back().find(arrayName) != scopeMap.back().end()){
         //Load the pointer to the array
         load(dst, "$t1", arrayName);
-        
-        dst << "addu $t0, $t1, $t0" << std::endl;
-        load(dst, "$t1", safetyStore);
-        dst << "sw $t1, 0($t0)" << std::endl;
     }
     else{
-        //Find the address of the array
-        dst << "lui $t1, %hi(" << arrayName << ")" << std::endl;
-        dst << "lw $t1, %lo(" << arrayName << ")($t1)" << std::endl;
-        
-        //Find the address of the element
-        dst << "addu $t0, $t1, $t0" << std::endl;
-                
-        //Store
-        load(dst, "$t1", safetyStore);
-        dst << "sw $t1, 0($t0)" << std::endl;
+        try{
+            argTranslator->load(dst, "$t1", arrayName);
+            
+        }catch(const std::out_of_range& e){
+            //Find the address of the array
+            dst << "lui $t1, %hi(" << arrayName << ")" << std::endl;
+            dst << "lw $t1, %lo(" << arrayName << ")($t1)" << std::endl;
+        }
     }
+    
+    //Find the address of the element
+    dst << "addu $t0, $t1, $t0" << std::endl;
+            
+    //Store
+    load(dst, "$t1", safetyStore);
+    dst << "sw $t1, 0($t0)" << std::endl;
     
     dst << "######## DONE STORING ########" << std::endl;
 }

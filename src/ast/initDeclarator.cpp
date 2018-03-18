@@ -23,15 +23,15 @@ void InitDeclarator::printPy(std::ostream& dst, int depth)const{
 
 void InitDeclarator::printMips(std::ostream& dst, Frame* framePtr, Type type)const{
     if(asgnExpr != NULL){
-        Type destType = asgnExpr->getType(framePtr);
+        Type myType = asgnExpr->getType(framePtr);
 
         if(type == Type::INT || type == Type::CHAR || isAddr(type)){
             //Generate a unique name
             std::string destName = makeName("init");
             //Ask the expression to evaluate itself and store its value in the frame, with destName as it's identifier
                       
-            if(destType == Type::FLOAT){
-                asgnExpr->printMipsE(dst, destName, framePtr, destType);
+            if(myType == Type::FLOAT){
+                asgnExpr->printMipsE(dst, destName, framePtr, myType);
                 framePtr->load(dst, "$f0", destName);
                 TypeConv::convert(dst, Type::INT, Type::FLOAT, "$t0", "$f0");
                 framePtr->store(dst, "$t0", directDeclarator->getId(), type, true); 
@@ -69,8 +69,8 @@ void InitDeclarator::printMips(std::ostream& dst, Frame* framePtr, Type type)con
             else{
             //EVAL EXPR AND store into LHS Declarator
             std::string destName = makeName();
-            if(destType == Type::INT){
-                 asgnExpr->printMipsE(dst, destName, framePtr, destType);
+            if(myType == Type::INT){
+                 asgnExpr->printMipsE(dst, destName, framePtr, myType);
                 //Temporary store the identifier in $t0
                 framePtr->load(dst, "$t0", destName);
                 TypeConv::convert(dst, Type::FLOAT, Type::INT, "$f0", "$t0");
@@ -79,7 +79,7 @@ void InitDeclarator::printMips(std::ostream& dst, Frame* framePtr, Type type)con
             }
             else{           
                 //Ask the expression to evaluate itself and store its value in the frame, with destName as it's identifier
-                asgnExpr->printMipsE(dst, destName, framePtr, destType);
+                asgnExpr->printMipsE(dst, destName, framePtr, myType);
                 //Temporary store the identifier in $f0
                 framePtr->load(dst, "$f0", destName);
                 //Store it in the frame
