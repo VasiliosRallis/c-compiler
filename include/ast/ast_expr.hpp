@@ -48,46 +48,35 @@ public:
 	                    framePtr->load(dst, "$t0", id);
 	                    framePtr->store(dst, "$t0", destName, type);
 	                
-	                }else if(myType == Type::FLOAT /*|| myType == Type::DOUBLE*/){
+	                }else if(myType == Type::FLOAT){
 	                    framePtr->load(dst, "$f0", id);
 	                    TypeConv::convert(dst, type, myType, "$t0", "$f0");
 	                    framePtr->store(dst, "$t0", destName, type);
+	               
+	                }else{assert(0);} //Should never happen (nothing should be stored as a string)
 	                
-	                }else{assert(0);}
-	                
-	            }else if(myType == Type::INT){
-	                dst << "li $t0, " << id << std::endl;
-	                framePtr->store(dst, "$t0", destName, Type::INT);
+	            }else{
+	                if(myType == Type::INT || myType == Type::CHAR || myType == Type::FLOAT){
+	                    dst << "li $t0, " << (int)expr->eval() << std::endl;
+	                    framePtr->store(dst, "$t0", destName, Type::INT);
 	            
-	            }else if(myType == Type::CHAR){
-	                int ascii;
-	                
-	                //Handle escape sequence (e.g. /000 = NULL)
-	                if(id[1] == '\\'){
-	                    if(id[2] == 'x') ascii = std::stoi(id.substr(3), nullptr, 16);
-	                        
-	                    else ascii = std::stoi(id.substr(3), nullptr, 8);
-	                        
-	                }else{
-	                    ascii = (int)id[1];
-                    }
-	                dst << "li $t0, " << ascii << std::endl;
-	                framePtr->store(dst, "$t0", destName, Type::CHAR);
-	            
-                }else if(myType == Type::STRING){
-                    framePtr->makeString(dst, "$t0", id);
-                    framePtr->store(dst, "$t0", destName, type);
-                
-                }else{assert(0);}
+                    }else if(myType == Type::STRING){
+                        framePtr->makeString(dst, "$t0", id);
+                        framePtr->store(dst, "$t0", destName, type);
+                    
+                    }else{assert(0);} //Should never happen (it can never be type Addr)
+                }
 	                
 	        }else if(type == Type::CHAR){
 	            if(expr->isIdentifier()){
-	                if(myType == Type::CHAR){
+	                if(myType == Type::INT || myType == Type::CHAR || isAddr(myType)){
 	                    framePtr->load(dst, "$t0", id);
 	                    framePtr->store(dst, "$t0", destName, Type::CHAR);
 	                    
-	                }else{assert(0);}
-	                
+	                }else if(myType == Type::FLOAT){
+	                    //TODO figure out what TODO
+	                    
+	                }else{assert(0);} //Should never happen (nothing should be stored as a string)
 	                
 	            }else{
 	                if(myType == Type::CHAR || myType == Type::INT){
@@ -101,7 +90,11 @@ public:
                         dst << "li $t0, " << (int)c << std::endl;
                         framePtr->store(dst, "$t0", destName, Type::CHAR);
 	                
-	                }else{assert(0);}
+	                }else if(myType == Type::STRING){
+	                    framePtr->makeString(dst, "$t0", id);
+                        framePtr->store(dst, "$t0", destName, Type::CHAR);
+  
+	                }else{assert(0);} //Should never happen (it can never be type Addr)
 	            }
 	            
 	        }else if(isAddr(type)){
@@ -113,7 +106,7 @@ public:
                         }
 	                    framePtr->store(dst, "$t0", destName, type);
 	                
-	                }else{assert(0);}
+	                }else{assert(0);} //Should never happen (It can't be FLOAT or STRING)
 	                
 	            }else{
 	                if(myType == Type::INT){
@@ -121,21 +114,17 @@ public:
 	                    framePtr->store(dst, "$t0", destName, type);
 	                    
 	                }else if(myType == Type::CHAR){
-	                    int ascii = (int)id[1];
-	                    dst << "li $t0, " << ascii << std::endl;
+	                    dst << "li $t0, " << (int)expr->eval() << std::endl;
 	                    framePtr->store(dst, "$t0", destName, type);
 	                    
 	                }else if(myType == Type::STRING){
 	                    framePtr->makeString(dst, "$t0", id);
 	                    framePtr->store(dst, "$t0", destName, type);
 	                
-	                }else{assert(0);}
-	            }            
-	        }
-            /*else if(type == Type::DOUBLE){{assert(0);}
-	                
-	        }*/
-            else if(type == Type::FLOAT){
+	                }else{assert(0);} //Should never happen (It can't be FLOAT or ADDR)
+	            }
+	                        
+	        }else if(type == Type::FLOAT){
 	            if(expr->isIdentifier()){
 	                if(myType == Type::CHAR || myType == Type::INT || isAddr(myType)){
 	                    framePtr->load(dst, "$t0", id);
@@ -146,22 +135,15 @@ public:
                         framePtr->load(dst, "$f0", id);
                         framePtr->store(dst, "$f0", destName, type);
                         
-                    }/*else if(myType == Type::DOUBLE){
-                        framePtr->load(dst, "$f0", id);
-                        TypeConv::convert(dst, Type::FLOAT, Type::DOUBLE, "$f0", "$f0");
-                        framePtr->store(dst, "$f0", destName, type);
-                        
-                    }*/
-                    else{assert(0);}
+                    }else{assert(0);} //Should never happen (Never store STRING)
                     
                 }else{
                     if(myType == Type::INT || myType == Type::CHAR){
                         dst << "li $t0, " << expr->eval() << std::endl;
                         TypeConv::convert(dst, Type::FLOAT, Type::INT, "$f0", "$t0");
                         framePtr->store(dst, "$f0", destName, type);
-                    
-                    //Since it is a constant, it has to be double (i.e. not float)    
-                    }else if(myType == Type::FLOAT){    //Used to be double
+                       
+                    }else if(myType == Type::FLOAT){
                         //Set up for label of float constant
                         endPrint.push_back("\t.rdata\n");
                         endPrint.push_back("\t.align 2\n");
@@ -178,14 +160,15 @@ public:
                         
                         framePtr->store(dst, "$f0", destName, type);
                         
-                    }else{assert(0);}
-                }        
-	        }else{assert(0);}
+                    }else{assert(0);} //Should never happen (It can't be STRING or ADDR)
+                }
+                        
+	        }else{assert(0);} //Should never happen
 	        
         }else if(dynamic_cast<const Expr*>(expr)){
             expr->printMipsE(dst, destName, framePtr, type);
                     
-        }else{assert(0);}
+        }else{assert(0);} //Should never happen
         
     }
     
@@ -199,7 +182,7 @@ public:
                 std::string id = expr->getId();
                 Type myType = expr->getType(NULL);
                 
-                if(myType == Type::INT || myType == Type::FLOAT /*|| myType == Type::DOUBLE*/){
+                if(myType == Type::INT || myType == Type::FLOAT){
                     return std::stod(id);
                 
                 }else if(myType == Type::CHAR){
@@ -272,7 +255,7 @@ public:
 	            framePtr->load(dst, "$t0", destName);
                 dst << "sub $t0, $0, $t0" << std::endl;     //Negate variable value stored in $t0
 
-                if(type == Type ::INT){ // Thing above asked for an int we have to convert our value to an int and store into stack 
+                if(type == Type::INT){ // Thing above asked for an int we have to convert our value to an int and store into stack 
                     framePtr->store(dst, "$t0", destName, type);
                 }
                 else{ // Thing above asked for Float we return our value as a float
@@ -524,11 +507,6 @@ public:
             framePtr->store(dst, "$t0", destName, type);
         }
     }
-    
-    //virtual bool isAddr()const override{
-    //    if(*oper == "&") return true;
-    //    else return false;
-    //}
     
     virtual std::string getId()const override{
         return postfixExpr->getId();

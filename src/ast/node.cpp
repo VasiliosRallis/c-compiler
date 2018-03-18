@@ -50,7 +50,7 @@ bool Node::isPointer()const{
 bool Node::isDereference()const{return false;}
 
 bool isAddr(const Type type){
-    if(type == Type::INT_ADDR || type == Type::FLOAT_ADDR || /*type == Type::DOUBLE_ADDR ||*/ type == Type::VOID_ADDR || type == Type::CHAR_ADDR || type == Type::STRING_ADDR)
+    if(type == Type::INT_ADDR || type == Type::FLOAT_ADDR || type == Type::VOID_ADDR || type == Type::CHAR_ADDR || type == Type::STRING_ADDR)
         return true;
     else
         return false;
