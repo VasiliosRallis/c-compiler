@@ -3,6 +3,7 @@
 #include "ast_real/ast/postfixExpr.hpp"
 #include "ast_real/compiler/frame.hpp"
 #include <cassert>
+#include <cctype>
 
 extern std::vector<std::string> endPrint;
 
@@ -190,20 +191,32 @@ public:
                     return std::stod(id);
                 
                 }else if(myType == Type::CHAR){
-	                int ascii;
 	                
 	                //Handle escape sequence (e.g. /000 = NULL)
 	                if(id[1] == '\\'){
-	                    if(id[2] == 'x') ascii = std::stoi(id.substr(3), nullptr, 16);
-	                        
-	                    else ascii = std::stoi(id.substr(3), nullptr, 8);
+	                    if(!isdigit(id[2]) && id[2] != 'x'){
+	                        if(id[2] == 'a')        return 0x07;
+	                        else if(id[2] == 'b')   return 0x08;
+	                        else if(id[2] == 'f')   return 0x0C;
+	                        else if(id[2] == 'n')   return 0x0A;
+	                        else if(id[2] == 'r')   return 0x0D;
+	                        else if(id[2] == 't')   return 0x0A;
+	                        else if(id[2] == 'v')   return 0x0A;
+	                        else if(id[2] == '\\')  return 0x0A;
+	                        else if(id[2] == '\'')  return 0x0A;
+	                        else if(id[2] == '"')   return 0x0A;
+	                        else if(id[2] == '?')   return 0x0A;
+	                        else                    assert(0);
+	                    
+	                    }else{
+	                        if(id[2] == 'x') return std::stoi(id.substr(3), nullptr, 16);
+	                        else return std::stoi(id.substr(3), nullptr, 8);
+	                    }
 	                        
 	                }else{
-	                    ascii = (int)id[1];
+	                    return (int)id[1];
                     }
 	                
-	                return ascii;
-                    
                 }else{assert(0);}
             }
         

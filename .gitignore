@@ -5,6 +5,7 @@ bin/*
 *.tab.*
 tests/c/out
 tests/python/out
+test_deliverable/output
 tests/out
 tmp/
 *.s

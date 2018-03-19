@@ -9,6 +9,8 @@ echo "Cleaning the temporaries and outputs"
 echo "========================================"
 make clean
 echo ""
+rm -r tests/python/out
+rm -r tests/assemble/out
 
 echo "Building from scratch"
 echo "========================================"
@@ -81,15 +83,14 @@ if [ $1 != 'd' ]
         BASENAME=$(basename $i .c);
         
         # Compile the .c file and get the golden exit code
-        gcc -std=c89 -w tests/assemble/in/$BASENAME.c -o tests/assemble/in/$BASENAME.exe
+        gcc -std=c89 -w tests/assemble/in/$BASENAME.c -o tests/assemble/out/$BASENAME
         
         if [[ "$?" -ne "0" ]]; then
-            rm tests/assemble/in/*.exe
             echo ""
             echo "ERROR: test ${BASENAME} is wrong!"
             exit 1
         else
-            ./tests/assemble/in/$BASENAME.exe
+            ./tests/assemble/out/$BASENAME
             REF_EXIT=$?
                 
             ./bin/$PARSER -S tests/assemble/in/$BASENAME.c -o tests/assemble/out/$BASENAME.mips.s 2> tests/assemble/out/$BASENAME.stderr.txt  
@@ -102,10 +103,10 @@ if [ $1 != 'd' ]
                 PASSED=$(( ${PASSED}+1 ));
                   
                 # Compile the .s file generated from our compiler
-                mips-linux-gnu-gcc -w -std=c89 -march=mips1 -mfp32 -static -O0 tests/assemble/out/$BASENAME.mips.s -o tests/assemble/out/$BASENAME.mips.exe
+                mips-linux-gnu-gcc -w -std=c89 -march=mips1 -mfp32 -static -O0 tests/assemble/out/$BASENAME.mips.s -o tests/assemble/out/$BASENAME
                 
                 # Pass the .mips.exe through qemu and get exit code
-                qemu-mips tests/assemble/out/$BASENAME.mips.exe
+                qemu-mips tests/assemble/out/$BASENAME
                 
                 # Compare exit codes
                 GOT_EXIT=$?
@@ -137,15 +138,14 @@ for i in tests/assemble/in_d/*.c; do
         BASENAME=$(basename $i .c);
         
         # Compile the .c file and get the golden exit code        
-        gcc -std=c89 -w tests/assemble/in_d/$BASENAME.c tests/assemble/in_d/${BASENAME}_d.c -o tests/assemble/in/$BASENAME.exe
+        gcc -std=c89 -w tests/assemble/in_d/$BASENAME.c tests/assemble/in_d/${BASENAME}_d.c -o tests/assemble/out_d/$BASENAME
 
         if [[ "$?" -ne "0" ]]; then
-            rm tests/assemble/in/*.exe
             echo ""
             echo "ERROR: test ${BASENAME} is wrong!"
             exit 1
         else
-            ./tests/assemble/in/$BASENAME.exe
+            ./tests/assemble/out_d/$BASENAME
             REF_EXIT=$?
                 
         ./bin/$PARSER -S tests/assemble/in_d/$BASENAME.c -o tests/assemble/out_d/$BASENAME.mips.s 2> tests/assemble/out_d/$BASENAME.stderr.txt  
@@ -158,10 +158,10 @@ for i in tests/assemble/in_d/*.c; do
             PASSED=$(( ${PASSED}+1 ));
 
             # Compile the .s file generated from our compiler
-            mips-linux-gnu-gcc -w -std=c89 -march=mips1 -mfp32 -static -O0 tests/assemble/out_d/$BASENAME.mips.s tests/assemble/in_d/${BASENAME}_d.c -o tests/assemble/out_d/$BASENAME.mips.exe
+            mips-linux-gnu-gcc -w -std=c89 -march=mips1 -mfp32 -static -O0 tests/assemble/out_d/$BASENAME.mips.s tests/assemble/in_d/${BASENAME}_d.c -o tests/assemble/out_d/$BASENAME
             
-            # Pass the .mips.exe through qemu and get exzit code
-            qemu-mips tests/assemble/out_d/$BASENAME.mips.exe
+            # Pass the binary through qemu and get exzit code
+            qemu-mips tests/assemble/out_d/$BASENAME
             
             # Compare exit codes
             GOT_EXIT=$?

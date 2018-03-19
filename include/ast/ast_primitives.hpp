@@ -89,14 +89,19 @@ public:
     }
     
     void printMips(std::ostream& dst, Frame* framePtr, Type type = Type::ANYTHING)const override{
-        if(initdeclrList != NULL){
-            for(int i(0); i < initdeclrList->size(); ++i){
-                if(initdeclrList->at(i)->isPointer()){
-                    initdeclrList->at(i)->printMips(dst, framePtr, typeToAddr(declrspecList->at(0)->getType()));
-                }else{
-                    initdeclrList->at(i)->printMips(dst, framePtr, declrspecList->at(0)->getType());
+        if(framePtr == NULL){
+            printGMips(dst, type);
+            
+        }else{
+            if(initdeclrList != NULL){
+                for(int i(0); i < initdeclrList->size(); ++i){
+                    if(initdeclrList->at(i)->isPointer()){
+                        initdeclrList->at(i)->printMips(dst, framePtr, typeToAddr(declrspecList->at(0)->getType()));
+                    }else{
+                        initdeclrList->at(i)->printMips(dst, framePtr, declrspecList->at(0)->getType());
+                    }
+                    if (i < initdeclrList->size() - 1) dst << "\n";
                 }
-                if (i < initdeclrList->size() - 1) dst << "\n";
             }
         }
     }
