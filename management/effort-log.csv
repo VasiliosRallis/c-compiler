@@ -1,15 +1,20 @@
 Date,		    Effort,		Developers,	    Milestones
 2018-01-26,	    2,		    vgr16,		    BasicCLexer
 2018-02-04,	    10,		    yhl15;vgr16,	BasicCParser;DeriveManagementPlan
-2018-02-07,2,          vgr16,TestbenchParser
-2018-02-10,8,          vgr16;yhl15,    GrammarHieracrchy
-2018-02-15,10,         vgr16;yhl15,ExpandLexicalsGrammar
-2018-02-17,13,         vgr16;yhl15,    DecentPythonTranslator;TestCtoPythonTranslator
-2018-02-23,7,          yhl15;vgr16,    CtoPythonTranslator;PlanCodeGenStructure
-2018-02-24,4,          yhl15;vgr16,    Testsuiteforcomplier
-2018-02-25,8,          yhl15;vgr16,    BasicCodeGen
-2018-03-04,8,          yhl15;vgr16,    CodegenArrays
-2018-03-05,6,          vgr16;yhl15,    NearCompletedCParser
-2018-03-07,6,          vgr16,          CodegenPointers
-2018-03-11,14,         vgr16;yhl15,    CodegenMultTypeStructure
-2018-03-11,8,          yhl15,          CodegenMultTypeBasic
+2018-02-07,     2,          vgr16,          TestbenchParser
+2018-02-10,     8,          vgr16;yhl15,    GrammarHieracrchy
+2018-02-15,     10,         vgr16;yhl15,    ExpandLexicalsGrammar
+2018-02-17,     13,         vgr16;yhl15,    DecentPythonTranslator;TestCtoPythonTranslator
+2018-02-23,     7,          yhl15;vgr16,    CtoPythonTranslator;PlanCodeGenStructure
+2018-02-24,     4,          yhl15;vgr16,    Testsuiteforcomplier
+2018-02-25,     8,          yhl15;vgr16,    BasicCodeGen
+2018-03-04,     8,          yhl15;vgr16,    CodegenArrays
+2018-03-05,     6,          vgr16;yhl15,    NearCompletedCParser
+2018-03-07,     6,          vgr16,          CodegenPointers
+2018-03-11,     14,         vgr16;yhl15,    CodegenMultTypeStructure
+2018-03-11,     8,          yhl15,          CodegenMultTypeBasic
+2018-03-17,     8,          yhl15,          CodegenMultTypeExpr
+2018-03-17,     9,          yhl15;vgr16,    NearCompleteCodegen
+2018-03-18,     9,          yhl15;vgr16,    CheckCodegen
+2018-03-18,     9,          yhl15;vgr16,    CheckCodegenAgain
+2018-03-18,     5,          yhl15;vgr16,    FinishCodegen
