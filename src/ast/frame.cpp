@@ -207,7 +207,7 @@ void Frame::newScope(){
 void Frame::deleteScope(){
     scopeMap.pop_back();
     typeMap.pop_back();
-    enum_lib.push_back(enum_lib.back());
+    enum_lib.pop_back();
 }
    
 void Frame::clean(std::ostream& dst)const{
