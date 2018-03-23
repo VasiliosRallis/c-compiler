@@ -24,7 +24,7 @@ void InitDeclarator::printPy(std::ostream& dst, int depth)const{
 void InitDeclarator::printMips(std::ostream& dst, Frame* framePtr, Type type)const{
     if(asgnExpr != NULL){
         Type myType = asgnExpr->getType(framePtr);
-
+        
         if(type == Type::INT || type == Type::CHAR || isAddr(type)){
             //Generate a unique name
             std::string destName = makeName("init");

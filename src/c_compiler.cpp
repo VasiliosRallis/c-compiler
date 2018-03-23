@@ -20,6 +20,7 @@ std::unordered_map<std::string, Type> g_mips_var;
 
 std::unordered_map<std::string, std::vector<Type> > function_type;
 std::unordered_map<std::string, std::vector<Type> > function_decl;
+std::vector<std::unordered_map<std::string, int> > enum_lib;
 
 int main(int argc, char* argv[]){
     
@@ -44,6 +45,9 @@ int main(int argc, char* argv[]){
         }
         
         else if(std::string(argv[1]) == "-S"){
+            std::unordered_map<std::string, int> g_enum;
+            enum_lib.push_back(g_enum);
+            
             NodePtr ast = parseAST(argv[2]);
             std::ofstream output(argv[4]);
             ast->printMips(output, NULL);

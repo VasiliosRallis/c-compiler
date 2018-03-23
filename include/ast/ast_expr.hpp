@@ -6,6 +6,7 @@
 #include <cctype>
 
 extern std::vector<std::string> endPrint;
+extern std::vector<std::unordered_map<std::string, int>> enum_lib;
 
 class PrimaryExpr: public Expr{
 private:
@@ -46,11 +47,23 @@ public:
 	        if(type == Type::INT){
                 if(expr->isIdentifier()){
 	                if(myType == Type::INT || myType == Type::CHAR || isAddr(myType)){
-	                    framePtr->load(dst, "$t0", id);
+	                    if(enum_lib.back().find(id) != enum_lib.back().end()){
+	                        dst << "li $t0, " << enum_lib.back().at(id) << std::endl;
+	                    
+	                    }else{
+	                        framePtr->load(dst, "$t0", id);
+	                    }
 	                    framePtr->store(dst, "$t0", destName, type);
 	                
 	                }else if(myType == Type::FLOAT){
-	                    framePtr->load(dst, "$f0", id);
+	                    if(enum_lib.back().find(id) != enum_lib.back().end()){
+	                        dst << "li $t0, " << enum_lib.back().at(id) << std::endl;
+	                        dst << "mtc1 $t0, $f0 " << std::endl;
+	                    
+	                    }else{
+	                        framePtr->load(dst, "$f0", id);
+	                    }
+	                    
 	                    TypeConv::convert(dst, type, myType, "$t0", "$f0");
 	                    framePtr->store(dst, "$t0", destName, type);
 	               
@@ -71,11 +84,22 @@ public:
 	        }else if(type == Type::CHAR){
 	            if(expr->isIdentifier()){
 	                if(myType == Type::INT || myType == Type::CHAR || isAddr(myType)){
-	                    framePtr->load(dst, "$t0", id);
+	                    if(enum_lib.back().find(id) != enum_lib.back().end()){
+	                        dst << "li $t0, " << enum_lib.back().at(id) << std::endl;
+	                    
+	                    }else{
+	                        framePtr->load(dst, "$t0", id);
+	                    }
 	                    framePtr->store(dst, "$t0", destName, Type::CHAR);
 	                    
 	                }else if(myType == Type::FLOAT){
-	                    framePtr->load(dst, "$f0", id);
+	                    if(enum_lib.back().find(id) != enum_lib.back().end()){
+	                        dst << "li $t0, " << enum_lib.back().at(id) << std::endl;
+	                        dst << "mtc1 $t0, $f0 " << std::endl;
+	                    
+	                    }else{
+	                        framePtr->load(dst, "$f0", id);
+	                    }
 	                    TypeConv::convert(dst, Type::INT, Type::FLOAT, "$t0", "$f0");
 	                    framePtr->store(dst, "$t0", destName, Type::CHAR);
 	                    
@@ -132,7 +156,12 @@ public:
 	        }else if(type == Type::FLOAT){
 	            if(expr->isIdentifier()){
 	                if(myType == Type::CHAR || myType == Type::INT || isAddr(myType)){
-	                    framePtr->load(dst, "$t0", id);
+	                    if(enum_lib.back().find(id) != enum_lib.back().end()){
+	                        dst << "li $t0, " << enum_lib.back().at(id) << std::endl;
+	                    
+	                    }else{
+	                        framePtr->load(dst, "$t0", id);
+	                    }
 	                    TypeConv::convert(dst, Type::FLOAT, Type::INT, "$f0", "$t0");
 	                    framePtr->store(dst, "$f0", destName, type);
 	                    
@@ -179,14 +208,18 @@ public:
     
     double eval()const override{
         if(dynamic_cast<const StringNode*>(expr)){
+            std::string id = expr->getId();
             if(expr->isIdentifier()){
-                //We need it to be a constant in global declarations
-                assert(0);
+                if(enum_lib.back().find(id) != enum_lib.back().end()){
+                    return enum_lib.back().at(id);
+                    
+                }else{
+                    assert(0);
+                }
                 
-            }else{ 
-                std::string id = expr->getId();
+            }else{
+            
                 Type myType = expr->getType(NULL);
-                
                 if(myType == Type::INT || myType == Type::FLOAT){
                     return std::stod(id);
                 

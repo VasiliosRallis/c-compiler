@@ -2,6 +2,7 @@
   #include <vector>
   #include <cassert>
   #include <string>
+  #include <utility>
   
   #include "ast_real/ast/node.hpp"
   #include "ast/ast_primitives.hpp"
@@ -39,6 +40,8 @@
   const DeclSpecifier* declSpecifier;
   std::vector<const DeclSpecifier*>* declrSpecList;
   ExprVector* exprVector;
+  std::vector<std::pair<StrPtr, NodePtr>* >* pair_list;
+  std::pair<StrPtr, NodePtr>* pair;
 }
 
 //Keywords
@@ -71,8 +74,10 @@
 %type <parameterList> PARAMETER_LIST
 %type <exprList> ARGUMENT_EXPR_LIST
 %type <declrSpecList> DECL_SPECIFIER_LIST
-%type <declSpecifier> VAR_TYPE TYPE_QUALIFIER STOR_CLASS_SPEC DECL_SPECIFIER
+%type <declSpecifier> VAR_TYPE TYPE_QUALIFIER STOR_CLASS_SPEC DECL_SPECIFIER ENUM_SPECIFIER
 %type <exprVector> EXPR
+%type <pair_list> ENUM_LIST
+%type <pair> ENUM
 
 %type <string> T_INT_CONSTANT
 %type <string> T_IDENTIFIER T_STR_LIT T_CHAR_CONSTANT
@@ -82,7 +87,7 @@
 %type <string> T_EQUAL T_RIGHT_S_ASSIGN T_LEFT_S_ASSIGN T_ADD_ASSIGN T_SUB_ASSIGN T_MUL_ASSIGN T_DIV_ASSIGN T_MOD_ASSIGN T_AND_ASSIGN T_XOR_ASSIGN T_OR_ASSIGN
 %type <string> T_AMPERSAND T_EXCLAMATION T_TILDE T_INCREMENT T_DECREMENT T_LOGICAL_OR T_LOGICAL_AND T_OR T_AND T_XOR T_EQUALITY T_INEQUALITY
 %type <string> T_SMALLER T_GREATER T_GREATER_EQUAL T_SMALLER_EQUAL T_SHIFT_L T_SHIFT_R T_PLUS T_MINUS T_DIV T_MULT T_MOD UNARY_OPER
-%type <string> T_ARROW T_DOT T_SQUARE_LBRACKET T_SQUARE_RBRACKET T_LBRACKET T_RBRACKET T_CASE T_DEFAULT T_GOTO T_RETURN T_CONTINUE T_BREAK
+%type <string> T_ARROW T_DOT T_SQUARE_LBRACKET T_SQUARE_RBRACKET T_LBRACKET T_RBRACKET T_CASE T_DEFAULT T_GOTO T_RETURN T_CONTINUE T_BREAK T_ENUM
 
 
 %start ROOT
@@ -260,17 +265,28 @@ ASSIGNMENT_OPER: T_EQUAL            {$$ = new Operator($1, Operator::ASSIGN);}
                | T_XOR_ASSIGN       {$$ = new Operator($1, Operator::ASSIGN);}
                | T_OR_ASSIGN        {$$ = new Operator($1, Operator::ASSIGN);}
 	
-VAR_TYPE : T_INT        {$$ = new DeclSpecifier($1);}
-         | T_CHAR       {$$ = new DeclSpecifier($1);}
-         | T_VOID       {$$ = new DeclSpecifier($1);}
-         | T_SHORT      {$$ = new DeclSpecifier($1);}
-         | T_LONG       {$$ = new DeclSpecifier($1);}
-         | T_FLOAT      {$$ = new DeclSpecifier($1);}
-         | T_DOUBLE     {$$ = new DeclSpecifier($1);}
-         | T_SIGNED     {$$ = new DeclSpecifier($1);}
-         | T_UNSIGNED   {$$ = new DeclSpecifier($1);}
+VAR_TYPE : T_INT            {$$ = new DeclSpecifier($1);}
+         | T_CHAR           {$$ = new DeclSpecifier($1);}
+         | T_VOID           {$$ = new DeclSpecifier($1);}
+         | T_SHORT          {$$ = new DeclSpecifier($1);}
+         | T_LONG           {$$ = new DeclSpecifier($1);}
+         | T_FLOAT          {$$ = new DeclSpecifier($1);}
+         | T_DOUBLE         {$$ = new DeclSpecifier($1);}
+         | T_SIGNED         {$$ = new DeclSpecifier($1);}
+         | T_UNSIGNED       {$$ = new DeclSpecifier($1);}
+         | ENUM_SPECIFIER   {$$ = $1;}
          
-        
+ENUM_SPECIFIER: T_ENUM T_LCURLBRACKET ENUM_LIST T_RCURLBRACKET              {$$ = new DeclSpecifier($1, $3);}
+              | T_ENUM T_IDENTIFIER T_LCURLBRACKET ENUM_LIST T_RCURLBRACKET {$$ = new DeclSpecifier($1, $4);}
+              | T_ENUM T_IDENTIFIER                                         {$$ = new DeclSpecifier($1, NULL);}
+              
+ENUM_LIST: ENUM                     {$$ = new std::vector<std::pair<StrPtr, NodePtr>* >{$1};}
+         | ENUM_LIST T_COMMA ENUM   {$$ = $1; $1->push_back($3);}
+         
+ENUM: T_IDENTIFIER              {$$ = new std::pair<StrPtr, NodePtr>($1, NULL);}
+    | T_IDENTIFIER T_EQUAL ASSIGNMENT_EXPR {$$ = new std::pair<StrPtr, NodePtr>($1, $3);}
+         
+
 TYPE_QUALIFIER: T_CONST     {$$ = new DeclSpecifier($1);}
               | T_VOLATILE  {$$ = new DeclSpecifier($1);}
 

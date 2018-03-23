@@ -5,6 +5,8 @@
 
 #include "ast_real/compiler/frame.hpp"
 
+extern std::vector<std::unordered_map<std::string, int> > enum_lib;
+
 StringNode::StringNode(const std::string* _id) 
     :id(_id){}
     
@@ -43,8 +45,13 @@ Type StringNode::getType(const Frame* framePtr)const{
         }
     
     }else if(isalpha(id->front()) || id->front() == '_'){
-        return framePtr->loadType(*id);
-    
+        if(enum_lib.back().find(*id) != enum_lib.back().end()){
+            return Type::INT;
+        
+        }else{
+            return framePtr->loadType(*id);
+        }
+        
     }else{assert(0);}
 }
 

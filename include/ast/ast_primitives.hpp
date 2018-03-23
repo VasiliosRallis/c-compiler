@@ -7,6 +7,7 @@
 #include <sstream>
 #include <cassert>
 #include <unordered_map>
+#include <utility>
 
 #include "ast_real/ast/node.hpp"
 #include "ast_real/ast/expr.hpp"
@@ -17,11 +18,15 @@
 extern std::vector<std::string> g_variables;
 extern std::unordered_map<std::string, Type> g_mips_var;
 extern std::unordered_map<std::string, Type> function_type;
+extern std::vector<std::unordered_map<std::string, int>> enum_lib;
 
 class DeclSpecifier: public StringNode{
+private:
+    const std::vector<std::pair<StrPtr, NodePtr>*>* enum_list;
+    
 public:
-    DeclSpecifier(StrPtr _id)
-        :StringNode(_id){}
+    DeclSpecifier(StrPtr _id, const std::vector<std::pair<StrPtr, NodePtr>* >* _enum_list = NULL)
+        :StringNode(_id), enum_list(_enum_list){}
   
     Type getType()const{
         if(*id == "int"){return Type::INT;}
@@ -29,6 +34,36 @@ public:
         //else if(*id == "double"){return Type::DOUBLE;}
         else if(*id == "void"){return Type::VOID;}
         else if(*id == "char"){return Type::CHAR;}
+        else if(*id == "enum"){
+            if(enum_list != NULL){
+                std::string id;
+                int val;
+                for(auto i = enum_list->begin(); i != enum_list->end(); ++i){
+                    id = (*((*i)->first));
+                    
+                    //Generate the value of the enumerator
+                    if((*i)->second != NULL){
+                        val = (int)(*i)->second->eval();
+                    
+                    }else{
+                        if(i == enum_list->begin()){val = 0;}
+                        else{++val;}
+                    
+                    }
+                    
+                    if(enum_lib.back().find(id) != enum_lib.back().end()){
+                        enum_lib.back().erase(id);
+                        enum_lib.back().emplace(id, val);
+                    
+                    }else{
+                        enum_lib.back().emplace(id, val);
+                        std::cerr << "Added: " << id << " " << val << std::endl;
+                        
+                    }
+                }
+            }
+            return Type::INT;
+        }            
         else{assert(0);}
     }
 };
@@ -89,6 +124,7 @@ public:
     }
     
     void printMips(std::ostream& dst, Frame* framePtr, Type type = Type::ANYTHING)const override{
+    Type my_type = declrspecList->at(0)->getType();
         if(framePtr == NULL){
             printGMips(dst, type);
             
@@ -96,9 +132,9 @@ public:
             if(initdeclrList != NULL){
                 for(int i(0); i < initdeclrList->size(); ++i){
                     if(initdeclrList->at(i)->isPointer()){
-                        initdeclrList->at(i)->printMips(dst, framePtr, typeToAddr(declrspecList->at(0)->getType()));
+                        initdeclrList->at(i)->printMips(dst, framePtr, typeToAddr(my_type));
                     }else{
-                        initdeclrList->at(i)->printMips(dst, framePtr, declrspecList->at(0)->getType());
+                        initdeclrList->at(i)->printMips(dst, framePtr, my_type);
                     }
                     if (i < initdeclrList->size() - 1) dst << "\n";
                 }
@@ -107,13 +143,14 @@ public:
     }
     
     virtual void printGMips(std::ostream& dst, Type type)const override{
+        Type my_type = declrspecList->at(0)->getType();
         if(initdeclrList != NULL){
             for(int i(0); i < initdeclrList->size(); ++i){
                 if(initdeclrList->at(i)->isPointer()){
-                    initdeclrList->at(i)->printGMips(dst, typeToAddr(declrspecList->at(0)->getType()));
+                    initdeclrList->at(i)->printGMips(dst, typeToAddr(my_type));
                 
                 }else{
-                    initdeclrList->at(i)->printGMips(dst, declrspecList->at(0)->getType());
+                    initdeclrList->at(i)->printGMips(dst, my_type);
                 }          
             }
         }

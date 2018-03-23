@@ -3,6 +3,7 @@
 
 extern std::unordered_map<std::string, std::vector<Type> > function_type;
 extern std::unordered_map<std::string, std::vector<Type> > function_decl;
+extern std::vector<std::unordered_map<std::string, int>> enum_lib;
 
 void Frame::addWords(std::ostream& dst, int n){
     int bytes = n*4;
@@ -36,7 +37,7 @@ Frame::Frame(std::ostream& dst, const DirectDeclarator* directDeclarator)
 void Frame::load(std::ostream& dst, const std::string reg, const std::string varName)const{
     try{
         if(reg[1] == 'f' && reg[2] != 'p'){
-            if(loadType(varName) == Type::FLOAT || loadType(varName) == Type::INT ){   
+            if(loadType(varName) == Type::FLOAT || loadType(varName) == Type::INT ){ 
                 dst << "lwc1 " << reg << ", " << scopeMap.back().at(varName) << "($fp)\n";
                 dst <<"nop" << std::endl;
             
@@ -200,11 +201,13 @@ void Frame::store(std::ostream& dst, const std::string reg, const std::string va
 void Frame::newScope(){
     scopeMap.push_back(scopeMap.back());
     typeMap.push_back(typeMap.back());
+    enum_lib.push_back(enum_lib.back());
 }
 
 void Frame::deleteScope(){
     scopeMap.pop_back();
     typeMap.pop_back();
+    enum_lib.push_back(enum_lib.back());
 }
    
 void Frame::clean(std::ostream& dst)const{
