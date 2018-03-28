@@ -1,5 +1,6 @@
 int f();
 
 int main(){
-    return f();
+    if(f() == 3)return 0;
+    else return 1;
 }

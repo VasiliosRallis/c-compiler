@@ -1,4 +1,5 @@
 extern int a;
 int main(){
-    return a;
+    if(a == 5) return 0;
+    else return 1;
 }

@@ -38,36 +38,22 @@ for i in test_deliverable/test_cases/*.c; do
     if [[ $i != *"_driver.c" ]]; then
     
         BASENAME=$(basename $i .c);
-        
-        # Compile the .c file and get the golden exit code        
-        gcc -std=c89 -w test_deliverable/test_cases/$BASENAME.c test_deliverable/test_cases/${BASENAME}_driver.c -o test_deliverable/output/$BASENAME
-
-        if [[ "$?" -ne "0" ]]; then
-            echo ""
-            echo "ERROR: test ${BASENAME} is wrong!"
-            exit 1
-        else
-            ./test_deliverable/output/$BASENAME
-            REF_EXIT=$?
                 
-            ./bin/$PARSER -S test_deliverable/test_cases/$BASENAME.c -o test_deliverable/output/$BASENAME.mips.s 2> test_deliverable/output/$BASENAME.stderr.txt  
-            
-
-            # Compile the .s file generated from our compiler
-            mips-linux-gnu-gcc -w -std=c89 -march=mips1 -mfp32 -static -O0 test_deliverable/output/$BASENAME.mips.s test_deliverable/test_cases/${BASENAME}_driver.c -o test_deliverable/output/$BASENAME
-            
-            # Pass the binary through qemu and get exit code
-            qemu-mips test_deliverable/output/$BASENAME
-            
-            # Compare exit codes
-            GOT_EXIT=$?
-            if [[ $REF_EXIT -ne $GOT_EXIT ]]; then
-                printf "%-50s ${RED_FAIL} REF_EXIT=${REF_EXIT} GOT_EXIT = ${GOT_EXIT}\n" "$i"
-            else
-                printf "%-50s ${GREEN_PASS}\n" "$i"
-                PASSED=$(( ${PASSED}+1 ));
-            fi
+        ./bin/$PARSER -S test_deliverable/test_cases/$BASENAME.c -o test_deliverable/output/$BASENAME.mips.s 2> test_deliverable/output/$BASENAME.stderr.txt  
         
+        # Compile the .s file generated from our compiler
+        mips-linux-gnu-gcc -w -std=c89 -march=mips1 -mfp32 -static -O0 test_deliverable/output/$BASENAME.mips.s test_deliverable/test_cases/${BASENAME}_driver.c -o test_deliverable/output/$BASENAME
+        
+        # Pass the binary through qemu and get exit code
+        qemu-mips test_deliverable/output/$BASENAME
+        
+        # Compare exit codes
+        GOT_EXIT=$?
+        if [[ $GOT_EXIT -ne 0 ]]; then
+            printf "%-50s ${RED_FAIL} GOT_EXIT = ${GOT_EXIT}\n" "$i"
+        else
+            printf "%-50s ${GREEN_PASS}\n" "$i"
+            PASSED=$(( ${PASSED}+1 ));
         fi
         
         CHECKED=$(( ${CHECKED}+1 ));

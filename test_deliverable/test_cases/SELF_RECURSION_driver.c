@@ -1,5 +1,6 @@
-int f();
+int f(int n);
 
 int main(){
-    return f();
+    if(f(4) == 24)return 0;
+    else return 1;
 }
