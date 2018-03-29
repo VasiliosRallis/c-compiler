@@ -1,7 +1,7 @@
 int f(){
-    int a = 0;
+    int a = 3;
     while(a){
-        a = a + 1;
+        a = a - 1;
     }
     return a;
 }

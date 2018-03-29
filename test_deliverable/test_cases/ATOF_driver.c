@@ -2,8 +2,8 @@
 
 int main(){
     if(f() == 1.2){
-        return 1;
-    }else{
         return 0;
+    }else{
+        return 1;
     }
 }
